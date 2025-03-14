@@ -1,4 +1,5 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.TeamCitySimulator.Lib.Events;
+using Dzaba.TeamCitySimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
 
@@ -8,7 +9,8 @@ internal sealed class SimulationRunner
 {
     private readonly SimulationSettings simulationSettings;
     private readonly ISimulationValidation simulationValidation;
-    private readonly DateTime startDate = new DateTime(2025, 1, 1);
+    private readonly DateTime startTime = new DateTime(2025, 1, 1);
+    private readonly EventQueue eventsQueue = new();
     private readonly IReadOnlyDictionary<string, Build> buildsCached;
     private readonly IReadOnlyDictionary<string, Agent> agentsCached;
 
@@ -29,6 +31,21 @@ internal sealed class SimulationRunner
     {
         simulationValidation.Validate(buildsCached, agentsCached, simulationSettings.QueuedBuilds);
 
+        InitBuilds();
+
         throw new NotImplementedException();
+    }
+
+    private void InitBuilds()
+    {
+        foreach (var queuedBuild in simulationSettings.QueuedBuilds)
+        {
+            var waitTime = simulationSettings.SimulationDuration / queuedBuild.BuildsToQueue;
+            for (var i = 0; i < queuedBuild.BuildsToQueue; i++)
+            {
+                var buildStartTime = startTime + waitTime * i;
+                var build = buildsCached[queuedBuild.Name];
+            }
+        }
     }
 }

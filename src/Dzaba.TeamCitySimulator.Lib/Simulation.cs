@@ -11,11 +11,20 @@ public interface ISimulation
 
 internal sealed class Simulation : ISimulation
 {
+    private readonly ISimulationValidation simulationValidation;
+
+    public Simulation(ISimulationValidation simulationValidation)
+    {
+        ArgumentNullException.ThrowIfNull(simulationValidation, nameof(simulationValidation));
+
+        this.simulationValidation = simulationValidation;
+    }
+
     public IEnumerable<EventData> Run(SimulationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings, nameof(settings));
         
-        var runner = new SimulationRunner(settings);
+        var runner = new SimulationRunner(settings, simulationValidation);
         return runner.Run();
     }
 }

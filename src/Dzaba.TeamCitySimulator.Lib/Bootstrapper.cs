@@ -10,5 +10,6 @@ public static class Bootstrapper
         ArgumentNullException.ThrowIfNull(services, nameof(services));
 
         services.AddTransient<ISimulation, Simulation>();
+        services.AddTransient<ISimulationValidation, SimulationValidation>();
     }
 }

@@ -9,7 +9,11 @@ public sealed class Build
     public string Name { get; set; }
 
     public TimeSpan Duration { get; set; }
+
+    [Required]
+    [MinLength(1)]
     public string[] CompatibleAgents { get; set; }
+
     public string[] BuildDependencies { get; set; }
     public bool IsComposite { get; set; }
 }

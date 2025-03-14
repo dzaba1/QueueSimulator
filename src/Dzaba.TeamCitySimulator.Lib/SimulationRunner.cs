@@ -24,6 +24,22 @@ internal sealed class SimulationRunner
 
     public IEnumerable<EventData> Run()
     {
+        Validate();
+
         throw new NotImplementedException();
+    }
+
+    private void Validate()
+    {
+        foreach (var build in simulationSettings.BuildConfigurations)
+        {
+            foreach (var agentName in build.CompatibleAgents)
+            {
+                if (!agentsCached.ContainsKey(agentName))
+                {
+                    throw new ExitCodeException(ExitCode.BuildAgentNotFound, $"Couldn't find agent {agentName} for build configuration {build.Name}.");
+                }
+            }
+        }
     }
 }

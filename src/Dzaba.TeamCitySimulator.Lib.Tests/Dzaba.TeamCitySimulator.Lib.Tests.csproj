@@ -15,4 +15,8 @@
     <PackageReference Include="NUnit3TestAdapter" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Dzaba.TeamCitySimulator.Lib\Dzaba.TeamCitySimulator.Lib.csproj" />
+  </ItemGroup>
+
 </Project>

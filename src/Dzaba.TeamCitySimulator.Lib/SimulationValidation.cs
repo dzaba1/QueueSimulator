@@ -1,6 +1,7 @@
 ﻿using Dzaba.TeamCitySimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dzaba.TeamCitySimulator.Lib;
 
@@ -44,13 +45,46 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         foreach (var queuedBuild in queuedBuilds)
         {
-            if (!buildsCached.TryGetValue(queuedBuild.Name, out var build))
+            if (!buildsCached.ContainsKey(queuedBuild.Name))
             {
                 throw new ExitCodeException(ExitCode.BuildNotFound, $"Couldn't find build configuration {queuedBuild.Name}.");
             }
 
-            HashSet<string> checkedBuilds = new HashSet<string>();
-            checkedBuilds.Add(queuedBuild.Name);
+            Stack<CyclicChain> toCheck = new Stack<CyclicChain>();
+            toCheck.Push(new CyclicChain(queuedBuild.Name, []));
+            
+            while (toCheck.Count > 0)
+            {
+                var buildChain = toCheck.Pop();
+                
+                var chainSet = new HashSet<string>(buildChain.Chain, StringComparer.OrdinalIgnoreCase);
+                if (chainSet.Contains(buildChain.BuildName))
+                {
+                    throw new ExitCodeException(ExitCode.BuildCyclicDependency, $"Detected build cyclic dependnecy on {buildChain.BuildName} starting from {queuedBuild.Name}.");
+                }
+       
+                chainSet.Add(buildChain.BuildName);
+                var build = buildsCached[buildChain.BuildName];
+                if (build.BuildDependencies != null)
+                {
+                    foreach (var buildDep in build.BuildDependencies)
+                    {
+                        toCheck.Push(new CyclicChain(buildDep, chainSet));
+                    }
+                }
+            }
         }
+    }
+
+    private class CyclicChain
+    {
+        public CyclicChain(string buildName, IEnumerable<string> chain)
+        {
+            BuildName = buildName;
+            Chain = chain.ToArray();
+        }
+
+        public string BuildName { get; }
+        public string[] Chain { get; }
     }
 }

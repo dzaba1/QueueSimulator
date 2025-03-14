@@ -209,18 +209,24 @@ public class SimulationValidationTests
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig3"]
+                    BuildDependencies = ["BuildConfig3", "BuildConfig5"]
                 },
                 new Build
                 {
                     Name = "BuildConfig3",
-                    CompatibleAgents = ["TestAgent1"]
+                    CompatibleAgents = ["TestAgent1"],
+                    BuildDependencies = ["BuildConfig4"]
                 },
                 new Build
                 {
                     Name = "BuildConfig4",
+                    CompatibleAgents = ["TestAgent1"]
+                },
+                new Build
+                {
+                    Name = "BuildConfig5",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig3"]
+                    BuildDependencies = ["BuildConfig4"]
                 }
             ],
             QueuedBuilds = [

@@ -14,6 +14,8 @@ internal sealed class Simulation : ISimulation
     public IEnumerable<EventData> Run(SimulationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings, nameof(settings));
-        throw new NotImplementedException();
+        
+        var runner = new SimulationRunner(settings);
+        return runner.Run();
     }
 }

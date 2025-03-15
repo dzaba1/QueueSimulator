@@ -15,6 +15,7 @@ internal sealed class SimulationRunner
     private readonly EventQueue eventsQueue = new();
     private readonly IReadOnlyDictionary<string, BuildConfiguration> buildConfigurationsCached;
     private readonly IReadOnlyDictionary<string, Agent> agentsCached;
+    private readonly List<TimeEventData> timeEvents = new();
 
     public SimulationRunner(SimulationSettings simulationSettings,
         ISimulationValidation simulationValidation,
@@ -38,7 +39,12 @@ internal sealed class SimulationRunner
 
         InitBuilds();
 
-        throw new NotImplementedException();
+        while (eventsQueue.Count > 0)
+        {
+            eventsQueue.Dequeue().Invoke();
+        }
+
+        return timeEvents;
     }
 
     private void InitBuilds()
@@ -50,8 +56,32 @@ internal sealed class SimulationRunner
             {
                 var buildStartTime = startTime + waitTime * i;
                 var build = buildConfigurationsCached[queuedBuild.Name];
-                logger.LogInformation("Initiating build {Build} for {Time}", build.Name, buildStartTime);
+                AddStartBuildQueueEvent(build, buildStartTime);
             }
         }
+    }
+
+    private void AddStartBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
+    {
+        logger.LogInformation("Adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
+        eventsQueue.Enqueue("QueueBuild", buildStartTime, e => QueueBuild(e, buildConfiguration));
+    }
+
+    private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
+    {
+        logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
+
+        AddTimedEventData(eventData);
+    }
+
+    private void AddTimedEventData(EventData data)
+    {
+        var timedEvent = new TimeEventData
+        {
+            Timestamp = data.Time,
+            Name = data.Name,
+        };
+
+        timeEvents.Add(timedEvent);
     }
 }

@@ -17,4 +17,6 @@ public sealed class EventQueue
     {
         return queue.Dequeue();
     }
+
+    public int Count => queue.Count;
 }

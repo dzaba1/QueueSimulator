@@ -25,7 +25,7 @@ public sealed class EventData
 {
     public EventData(string name, DateTime time)
     {
-    ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
         Name = name;
         Time = time;

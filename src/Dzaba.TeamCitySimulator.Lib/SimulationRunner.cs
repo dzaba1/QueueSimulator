@@ -57,21 +57,21 @@ internal sealed class SimulationRunner
             {
                 var buildStartTime = startTime + waitTime * i;
                 var build = simulationPayload.GetBuildConfiguration(queuedBuild.Name);
-                AddQueueBuildQueueEvent(build, buildStartTime);
+                AddQueueBuildQueueEvent(build, null, buildStartTime);
             }
         }
     }
 
-    private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
+    private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, Build parent, DateTime buildStartTime)
     {
         logger.LogInformation("Adding adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
-        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e => QueueBuild(e, buildConfiguration));
+        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e => QueueBuild(e, buildConfiguration, parent));
     }
 
     private void AddEndBuildQueueEvent(Build build, DateTime currentTime)
     {
         var buildConfig = simulationPayload.GetBuildConfiguration(build.BuildConfiguration);
-        var buildEndTime = currentTime + buildConfig.Duration;
+        var buildEndTime = currentTime + buildConfig.Duration.Value;
         logger.LogInformation("Adding finishing build {Build} for {Time} to the event queue.", build.BuildConfiguration, buildEndTime);
         eventsQueue.Enqueue(EventNames.FinishBuild, buildEndTime, e => FinishBuild(e, build));
     }
@@ -94,12 +94,25 @@ internal sealed class SimulationRunner
         eventsQueue.Enqueue(EventNames.InitAgent, time, e => InitAgent(e, build));
     }
 
-    private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
+    private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration, Build parent)
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
         var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
-        AddCreateAgentQueueEvent(build, eventData.Time);
+        if (buildConfiguration.BuildDependencies != null && buildConfiguration.BuildDependencies.Any())
+        {
+            build.State = BuildState.WaitingForDependencies;
+
+            foreach (var dependencyName in buildConfiguration.BuildDependencies)
+            {
+                var dependencyBuildConfig = simulationPayload.GetBuildConfiguration(dependencyName);
+                AddQueueBuildQueueEvent(dependencyBuildConfig, build, eventData.Time);
+            }
+        }
+        else
+        {
+            AddCreateAgentQueueEvent(build, eventData.Time);
+        }
 
         AddTimedEventData(eventData, $"Queued a new build [{build.Id}] {build.BuildConfiguration}.");
     }
@@ -144,10 +157,17 @@ internal sealed class SimulationRunner
         var buildConfig = simulationPayload.GetBuildConfiguration(build.BuildConfiguration);
         var eventMsg = "";
 
+        if (buildConfig.IsComposite)
+        {
+            throw new InvalidOperationException($"Build [{build.Id}] {buildConfig.Name} is composite. It can't be ran on agent.");
+        }
+
         if (build.AgentId != null)
         {
             throw new InvalidOperationException($"Agent with ID {build.AgentId} was already assigned to build with ID {build.Id}.");
         }
+
+        build.State = BuildState.WaitingForAgent;
 
         if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
         {

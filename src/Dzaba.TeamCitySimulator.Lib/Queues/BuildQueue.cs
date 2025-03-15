@@ -8,7 +8,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Queues;
 internal sealed class BuildQueue
 {
     private readonly LongSequence buildIdSequence = new();
-    private readonly List<Build> allBuilds = new();
+    private readonly Dictionary<long, Build> allBuilds = new();
 
     public Build NewBuild(BuildConfiguration buildConfiguration, DateTime currentTime)
     {
@@ -20,14 +20,14 @@ internal sealed class BuildQueue
             BuildConfiguration = buildConfiguration.Name,
             CreatedTime = currentTime,
         };
-        allBuilds.Add(build);
+        allBuilds.Add(build.Id, build);
 
         return build;
     }
 
     public IReadOnlyDictionary<string, Build[]> GroupQueueByBuildConfiguration()
     {
-        return allBuilds
+        return allBuilds.Values
             .Where(IsQueued)
             .GroupBy(b => b.BuildConfiguration)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
@@ -40,17 +40,17 @@ internal sealed class BuildQueue
 
     public int GetQueueLength()
     {
-        return allBuilds.Count(IsQueued);
+        return allBuilds.Values.Count(IsQueued);
     }
 
     public int GetRunningBuildsCount()
     {
-        return allBuilds.Count(b => b.State == BuildState.Running);
+        return allBuilds.Values.Count(b => b.State == BuildState.Running);
     }
 
     public IReadOnlyDictionary<string, Build[]> GroupRunningBuildsByBuildConfiguration()
     {
-        return allBuilds
+        return allBuilds.Values
             .Where(b => b.State == BuildState.Running)
             .GroupBy(b => b.BuildConfiguration)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
@@ -58,13 +58,24 @@ internal sealed class BuildQueue
 
     public IEnumerable<Build> GetWaitingForAgents()
     {
-        return allBuilds
+        return allBuilds.Values
             .Where(b => b.State == BuildState.WaitingForAgent)
             .Where(b => b.AgentId == null);
     }
 
+    public IEnumerable<Build> GetWaitingForDependencies()
+    {
+        return allBuilds.Values
+            .Where(b => b.State == BuildState.WaitingForDependencies);
+    }
+
     public IEnumerable<Build> EnumerateBuilds()
     {
-        return allBuilds;
+        return allBuilds.Values;
+    }
+
+    public Build GetBuild(long id)
+    {
+        return allBuilds[id];
     }
 }

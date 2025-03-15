@@ -11,6 +11,7 @@ public sealed class Build
     public DateTime? StartTime { get; set; }
     public long? AgentId { get; set; }
     public DateTime? EndTime { get; set; }
+    public long[] Dependencies { get; set; }
 
     public Build ShallowCopy()
     {
@@ -20,8 +21,9 @@ public sealed class Build
 
 public enum BuildState
 {
-    WaitingForAgent,
+    Created,
     WaitingForDependencies,
+    WaitingForAgent,
     Running,
     Finished
 }

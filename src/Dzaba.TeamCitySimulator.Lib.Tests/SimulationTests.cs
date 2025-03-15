@@ -93,7 +93,7 @@ public class SimulationTests
     }
 
     [Test]
-    public void Run_WhenOneBuildWithAgentInit_Then4Events()
+    public void Run_WhenOneBuildWithAgentInit_Then5Events()
     {
         var settings = new SimulationSettings
         {
@@ -191,5 +191,47 @@ public class SimulationTests
         ValidateDataForEmptines(last.BuildsQueue);
         ValidateDataForEmptines(last.RunningAgents);
         ValidateDataForEmptines(last.RunningBuilds);
+    }
+
+    [Test]
+    public void Run_WhenOneBuildWithDependency_Then4Events()
+    {
+        var settings = new SimulationSettings
+        {
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "TestAgent1",
+                    InitTime = TimeSpan.FromMinutes(15)
+                }
+            ],
+            BuildConfigurations = [
+                new BuildConfiguration
+                {
+                    Name = "BuildConfig1",
+                    CompatibleAgents = ["TestAgent1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                },
+                new BuildConfiguration
+                {
+                    Name = "BuildConfig2",
+                    CompatibleAgents = ["TestAgent1"],
+                    BuildDependencies = ["BuildConfig1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                }
+            ],
+            QueuedBuilds = [
+                new QueuedBuild
+                {
+                    Name = "BuildConfig2",
+                    BuildsToQueue = 1
+                }
+            ]
+        };
+
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).ToArray();
+        result.Should().HaveCount(1);
     }
 }

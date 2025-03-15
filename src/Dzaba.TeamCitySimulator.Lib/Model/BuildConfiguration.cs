@@ -8,7 +8,7 @@ public sealed class BuildConfiguration
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; }
 
-    public TimeSpan Duration { get; set; }
+    public TimeSpan? Duration { get; set; }
 
     [Required]
     [MinLength(1)]

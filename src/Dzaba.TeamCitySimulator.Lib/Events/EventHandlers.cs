@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Dzaba.TeamCitySimulator.Lib.Events;
 
@@ -9,26 +10,17 @@ internal interface IEventHandlers
 
 internal sealed class EventHandlers : IEventHandlers
 {
-    private readonly IEventHandler<InitAgentEventPayload> initAgentEventHandler;
+    private readonly IServiceProvider container;
 
-    public EventHandlers(IEventHandler<InitAgentEventPayload> initAgentEventHandler)
+    public EventHandlers(IServiceProvider container)
     {
-        ArgumentNullException.ThrowIfNull(initAgentEventHandler, nameof(initAgentEventHandler));
+        ArgumentNullException.ThrowIfNull(container, nameof(container));
 
-        this.initAgentEventHandler = initAgentEventHandler;
+        this.container = container;
     }
 
     public IEventHandler<T> GetHandler<T>() where T : EventDataPayload
     {
-        var type = typeof(T);
-
-        if (type == typeof(InitAgentEventPayload))
-        {
-            return (IEventHandler<T>)initAgentEventHandler;
-        }
-        else
-        {
-            throw new ArgumentOutOfRangeException($"Unknown payload type {type}");
-        }
+        return container.GetRequiredService<IEventHandler<T>>();
     }
 }

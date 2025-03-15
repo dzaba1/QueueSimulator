@@ -57,15 +57,15 @@ internal sealed class SimulationRunner
             {
                 var buildStartTime = startTime + waitTime * i;
                 var build = simulationPayload.GetBuildConfiguration(queuedBuild.Name);
-                AddQueueBuildQueueEvent(build, null, buildStartTime);
+                AddQueueBuildQueueEvent(build, buildStartTime);
             }
         }
     }
 
-    private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, Build parent, DateTime buildStartTime)
+    private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
     {
         logger.LogInformation("Adding adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
-        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e => QueueBuild(e, buildConfiguration, parent));
+        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e => QueueBuild(e, buildConfiguration));
     }
 
     private void AddEndBuildQueueEvent(Build build, DateTime currentTime)
@@ -94,7 +94,7 @@ internal sealed class SimulationRunner
         eventsQueue.Enqueue(EventNames.InitAgent, time, e => InitAgent(e, build));
     }
 
-    private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration, Build parent)
+    private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
@@ -103,11 +103,7 @@ internal sealed class SimulationRunner
         {
             build.State = BuildState.WaitingForDependencies;
 
-            foreach (var dependencyName in buildConfiguration.BuildDependencies)
-            {
-                var dependencyBuildConfig = simulationPayload.GetBuildConfiguration(dependencyName);
-                AddQueueBuildQueueEvent(dependencyBuildConfig, build, eventData.Time);
-            }
+            throw new NotImplementedException();
         }
         else
         {

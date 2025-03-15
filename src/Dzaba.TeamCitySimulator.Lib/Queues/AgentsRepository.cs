@@ -5,7 +5,16 @@ using System.Linq;
 
 namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
-internal sealed class AgentsRepository
+internal interface IAgentsRepository
+{
+    IEnumerable<Agent> EnumerateAgents();
+    IReadOnlyDictionary<string, int> GetActiveAgentsByConfigurationCount();
+    int GetActiveAgentsCount();
+    Agent GetAgent(long id);
+    bool TryInitAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent);
+}
+
+internal sealed class AgentsRepository : IAgentsRepository
 {
     private readonly SimulationPayload simulationPayload;
     private readonly LongSequence agentIdSequence = new();
@@ -37,7 +46,8 @@ internal sealed class AgentsRepository
 
         var ordered = agentsConfigurationIndex
             .Where(a => tempSet.Contains(a.Key))
-            .Select(a => new {
+            .Select(a => new
+            {
                 AgentConfiguration = simulationPayload.GetAgentConfiguration(a.Key),
                 Agents = a.Value,
                 ActiveAgentsCount = GetActiveAgentsCount(a.Value)

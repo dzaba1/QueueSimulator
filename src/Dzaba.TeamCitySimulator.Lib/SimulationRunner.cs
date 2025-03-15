@@ -10,12 +10,13 @@ namespace Dzaba.TeamCitySimulator.Lib;
 
 internal sealed class SimulationRunner
 {
+    private static readonly DateTime StartTime = new DateTime(2025, 1, 1);
+
     private readonly SimulationPayload simulationPayload;
     private readonly ISimulationValidation simulationValidation;
     private readonly ILogger<SimulationRunner> logger;
-    private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
-    private readonly List<TimeEventData> timeEvents = new();
+    private readonly SimulationEvents simulationEvents;
     private readonly BuildsRepository buildRepo;
     private readonly AgentsRepository agentsRepo;
 
@@ -33,6 +34,7 @@ internal sealed class SimulationRunner
         simulationPayload = new SimulationPayload(simulationSettings);
         buildRepo = new BuildsRepository(simulationPayload);
         agentsRepo = new AgentsRepository(simulationPayload);
+        simulationEvents = new SimulationEvents(simulationPayload, buildRepo, agentsRepo);
     }
 
     public IEnumerable<TimeEventData> Run()
@@ -46,7 +48,7 @@ internal sealed class SimulationRunner
             eventsQueue.Dequeue().Invoke();
         }
 
-        return timeEvents;
+        return simulationEvents;
     }
 
     private void InitBuilds()
@@ -56,7 +58,7 @@ internal sealed class SimulationRunner
             var waitTime = simulationPayload.SimulationSettings.SimulationDuration / queuedBuild.BuildsToQueue;
             for (var i = 0; i < queuedBuild.BuildsToQueue; i++)
             {
-                var buildStartTime = startTime + waitTime * i;
+                var buildStartTime = StartTime + waitTime * i;
                 var build = simulationPayload.GetBuildConfiguration(queuedBuild.Name);
                 AddQueueBuildQueueEvent(build, buildStartTime);
             }
@@ -111,7 +113,7 @@ internal sealed class SimulationRunner
             AddCreateAgentQueueEvent(build, eventData.Time);
         }
 
-        AddTimedEventData(eventData, $"Queued a new build [{build.Id}] {build.BuildConfiguration}.");
+        simulationEvents.AddTimedEventData(eventData, $"Queued a new build [{build.Id}] {build.BuildConfiguration}.");
     }
 
     private void StartBuild(EventData eventData, Build build)
@@ -125,7 +127,7 @@ internal sealed class SimulationRunner
         build.State = BuildState.Running;
         AddEndBuildQueueEvent(build, eventData.Time);
 
-        AddTimedEventData(eventData, $"Started the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
+        simulationEvents.AddTimedEventData(eventData, $"Started the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 
     private void FinishBuild(EventData eventData, Build build)
@@ -144,7 +146,7 @@ internal sealed class SimulationRunner
             AddCreateAgentQueueEvent(scheduledBuild, eventData.Time);
         }
 
-        AddTimedEventData(eventData, $"Finished the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
+        simulationEvents.AddTimedEventData(eventData, $"Finished the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 
     private void CreateAgent(EventData eventData, Build build)
@@ -187,7 +189,7 @@ internal sealed class SimulationRunner
             logger.LogInformation("There aren't any agents available for build [{BuildId}] {Build}.", build.Id, build.BuildConfiguration);
         }
 
-        AddTimedEventData(eventData, eventMsg);
+        simulationEvents.AddTimedEventData(eventData, eventMsg);
     }
 
     private void InitAgent(EventData eventData, Build build)
@@ -201,71 +203,6 @@ internal sealed class SimulationRunner
 
         AddStartBuildQueueEvent(build, endTime);
 
-        AddTimedEventData(eventData, $"Start initiating agent [{agent.Id}] {agent.AgentConfiguration}.");
-    }
-
-    private void AddTimedEventData(EventData data, string message)
-    {
-        var buildsQueueData = new ElementsData
-        {
-            Total = buildRepo.GetQueueLength(),
-            Grouped = buildRepo.GroupQueueByBuildConfiguration()
-                .Select(g => new NamedQueueData
-                {
-                    Name = g.Key,
-                    Length = g.Value.Length,
-                })
-                .ToArray()
-        };
-
-        var runningAgents = new ElementsData
-        {
-            Total = agentsRepo.GetActiveAgentsCount(),
-            Grouped = agentsRepo.GetActiveAgentsByConfigurationCount()
-                .Select(g => new NamedQueueData
-                {
-                    Name = g.Key,
-                    Length = g.Value,
-                })
-                .ToArray()
-        };
-
-        var runningBuilds = new ElementsData
-        {
-            Total = buildRepo.GetRunningBuildsCount(),
-            Grouped = buildRepo.GroupRunningBuildsByBuildConfiguration()
-                .Select(g => new NamedQueueData
-                {
-                    Name = g.Key,
-                    Length = g.Value.Length,
-                })
-                .ToArray()
-        };
-
-        var timedEvent = new TimeEventData
-        {
-            Timestamp = data.Time,
-            Name = data.Name,
-            Message = message,
-            BuildsQueue = buildsQueueData,
-            RunningAgents = runningAgents,
-            RunningBuilds = runningBuilds
-        };
-
-        if (simulationPayload.SimulationSettings.IncludeAllAgents)
-        {
-            timedEvent.AllAgents = agentsRepo.EnumerateAgents()
-                .Select(a => a.ShallowCopy())
-                .ToArray();
-        }
-
-        if (simulationPayload.SimulationSettings.IncludeAllBuilds)
-        {
-            timedEvent.AllBuilds = buildRepo.EnumerateBuilds()
-                .Select(a => a.ShallowCopy())
-                .ToArray();
-        }
-
-        timeEvents.Add(timedEvent);
+        simulationEvents.AddTimedEventData(eventData, $"Start initiating agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 }

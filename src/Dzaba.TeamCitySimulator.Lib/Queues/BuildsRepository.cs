@@ -5,7 +5,21 @@ using System.Linq;
 
 namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
-internal sealed class BuildsRepository
+internal interface IBuildsRepository
+{
+    IEnumerable<Build> EnumerateBuilds();
+    Build GetBuild(long id);
+    int GetQueueLength();
+    int GetRunningBuildsCount();
+    IEnumerable<Build> GetWaitingForAgents();
+    IEnumerable<Build> GetWaitingForDependencies();
+    IReadOnlyDictionary<string, Build[]> GroupQueueByBuildConfiguration();
+    IReadOnlyDictionary<string, Build[]> GroupRunningBuildsByBuildConfiguration();
+    Build NewBuild(BuildConfiguration buildConfiguration, DateTime currentTime);
+    IEnumerable<BuildConfiguration> ResolveBuildConfigurationDependencies(BuildConfiguration buildConfiguration, bool recursive);
+}
+
+internal sealed class BuildsRepository : IBuildsRepository
 {
     private readonly SimulationPayload simulationPayload;
     private readonly LongSequence buildIdSequence = new();

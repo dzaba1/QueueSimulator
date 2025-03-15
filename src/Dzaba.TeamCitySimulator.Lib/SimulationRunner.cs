@@ -16,7 +16,7 @@ internal sealed class SimulationRunner
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
     private readonly List<TimeEventData> timeEvents = new();
-    private readonly BuildsRepository buildRepo = new();
+    private readonly BuildsRepository buildRepo;
     private readonly AgentsRepository agentsRepo;
 
     public SimulationRunner(SimulationSettings simulationSettings,
@@ -31,6 +31,7 @@ internal sealed class SimulationRunner
         this.logger = logger;
 
         simulationPayload = new SimulationPayload(simulationSettings);
+        buildRepo = new BuildsRepository(simulationPayload);
         agentsRepo = new AgentsRepository(simulationPayload);
     }
 

@@ -7,8 +7,16 @@ namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
 internal sealed class BuildsRepository
 {
+    private readonly SimulationPayload simulationPayload;
     private readonly LongSequence buildIdSequence = new();
     private readonly Dictionary<long, Build> allBuilds = new();
+
+    public BuildsRepository(SimulationPayload simulationPayload)
+    {
+        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
+
+        this.simulationPayload = simulationPayload;
+    }
 
     public Build NewBuild(BuildConfiguration buildConfiguration, DateTime currentTime)
     {
@@ -27,7 +35,7 @@ internal sealed class BuildsRepository
 
     public IReadOnlyDictionary<string, Build[]> GroupQueueByBuildConfiguration()
     {
-        return allBuilds.Values
+        return EnumerateBuilds()
             .Where(IsQueued)
             .GroupBy(b => b.BuildConfiguration)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
@@ -40,17 +48,17 @@ internal sealed class BuildsRepository
 
     public int GetQueueLength()
     {
-        return allBuilds.Values.Count(IsQueued);
+        return EnumerateBuilds().Count(IsQueued);
     }
 
     public int GetRunningBuildsCount()
     {
-        return allBuilds.Values.Count(b => b.State == BuildState.Running);
+        return EnumerateBuilds().Count(b => b.State == BuildState.Running);
     }
 
     public IReadOnlyDictionary<string, Build[]> GroupRunningBuildsByBuildConfiguration()
     {
-        return allBuilds.Values
+        return EnumerateBuilds()
             .Where(b => b.State == BuildState.Running)
             .GroupBy(b => b.BuildConfiguration)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
@@ -58,14 +66,14 @@ internal sealed class BuildsRepository
 
     public IEnumerable<Build> GetWaitingForAgents()
     {
-        return allBuilds.Values
+        return EnumerateBuilds()
             .Where(b => b.State == BuildState.WaitingForAgent)
             .Where(b => b.AgentId == null);
     }
 
     public IEnumerable<Build> GetWaitingForDependencies()
     {
-        return allBuilds.Values
+        return EnumerateBuilds()
             .Where(b => b.State == BuildState.WaitingForDependencies);
     }
 
@@ -77,5 +85,38 @@ internal sealed class BuildsRepository
     public Build GetBuild(long id)
     {
         return allBuilds[id];
+    }
+
+    public IEnumerable<BuildConfiguration> ResolveBuildConfigurationDependencies(BuildConfiguration buildConfiguration, bool recursive)
+    {
+        ArgumentNullException.ThrowIfNull(buildConfiguration, nameof(buildConfiguration));
+
+        return ResolveBuildConfigurationDependenciesInternal(buildConfiguration, recursive)
+            .Distinct(BuildConfigurationNameEqualityComparer.Instance);
+    }
+
+    private IEnumerable<BuildConfiguration> ResolveBuildConfigurationDependenciesInternal(BuildConfiguration buildConfiguration, bool recursive)
+    {
+        if (buildConfiguration.BuildDependencies == null)
+        {
+            yield break;
+        }
+
+        var current = buildConfiguration.BuildDependencies
+                .Select(simulationPayload.GetBuildConfiguration);
+
+        foreach (var dep in current)
+        {
+            yield return dep;
+
+            if (recursive)
+            {
+                var subDeps = ResolveBuildConfigurationDependencies(dep, true);
+                foreach (var subDep in subDeps)
+                {
+                    yield return subDep;
+                }
+            }
+        }
     }
 }

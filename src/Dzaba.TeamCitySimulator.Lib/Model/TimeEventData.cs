@@ -10,6 +10,7 @@ public sealed class TimeEventData
     public ElementsData BuildsQueue { get; set; }
     public ElementsData RunningAgents { get; set; }
     public ElementsData RunningBuilds { get; set; }
+    public Agent[] AllAgents { get; set; }
 }
 
 public sealed class NamedQueueData

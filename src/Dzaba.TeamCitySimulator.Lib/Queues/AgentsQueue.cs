@@ -72,7 +72,7 @@ internal sealed class AgentsQueue
 
     public int ActiveAgentsCount()
     {
-        return ActiveAgentsCount(allAgents.Values.SelectMany(a => a));
+        return ActiveAgentsCount(EnumerateAgents());
     }
 
     private int ActiveAgentsCount(IEnumerable<Agent> agents)
@@ -91,5 +91,10 @@ internal sealed class AgentsQueue
     public Agent GetAgent(long id)
     {
         return agentsCache[id];
+    }
+
+    public IEnumerable<Agent> EnumerateAgents()
+    {
+        return allAgents.Values.SelectMany(a => a);
     }
 }

@@ -88,10 +88,10 @@ internal sealed class SimulationRunner
         eventsQueue.Enqueue(EventNames.CreateAgent, time, e => CreateAgent(e, build));
     }
 
-    private void AddInitAgentQueueEvent(Agent agent, Build build, DateTime time)
+    private void AddInitAgentQueueEvent(Build build, DateTime time)
     {
-        logger.LogInformation("Adding agent init for [{AgentId}] {Agent} for {Time} to the event queue.", agent.Id, agent.AgentConfiguration, time);
-        eventsQueue.Enqueue(EventNames.InitAgent, time, e => InitAgent(e, agent, build));
+        logger.LogInformation("Adding agent init for [{BuildId}] {Build} for {Time} to the event queue.", build.Id, build.BuildConfiguration, time);
+        eventsQueue.Enqueue(EventNames.InitAgent, time, e => InitAgent(e, build));
     }
 
     private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
@@ -125,6 +125,7 @@ internal sealed class SimulationRunner
         var agent = agentsQueue.GetAgent(build.AgentId.Value);
 
         agent.State = AgentState.Finished;
+        agent.EndTime = eventData.Time;
         build.EndTime = eventData.Time;
         build.State = BuildState.Finished;
 
@@ -148,9 +149,10 @@ internal sealed class SimulationRunner
             build.AgentId = agent.Id;
             var agentConfig = simulationPayload.GetAgentConfiguration(agent.AgentConfiguration);
             eventMsg = $"Created a new agent [{agent.Id}] {agent.AgentConfiguration} for build [{build.Id}] {build.BuildConfiguration}";
+
             if (agentConfig.InitTime != null)
             {
-                AddInitAgentQueueEvent(agent, build, eventData.Time);
+                AddInitAgentQueueEvent(build, eventData.Time);
             }
             else
             {
@@ -166,8 +168,10 @@ internal sealed class SimulationRunner
         AddTimedEventData(eventData, eventMsg);
     }
 
-    private void InitAgent(EventData eventData, Agent agent, Build build)
+    private void InitAgent(EventData eventData, Build build)
     {
+        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+
         agent.State = AgentState.Initiating;
 
         var agentConfig = simulationPayload.GetAgentConfiguration(agent.AgentConfiguration);
@@ -223,7 +227,10 @@ internal sealed class SimulationRunner
             Message = message,
             BuildsQueue = buildsQueueData,
             RunningAgents = runningAgents,
-            RunningBuilds = runningBuilds
+            RunningBuilds = runningBuilds,
+            AllAgents = agentsQueue.EnumerateAgents()
+                .Select(a => a.ShallowCopy())
+                .ToArray()
         };
 
         timeEvents.Add(timedEvent);

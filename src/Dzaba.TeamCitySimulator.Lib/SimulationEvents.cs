@@ -1,6 +1,6 @@
 ﻿using Dzaba.TeamCitySimulator.Lib.Events;
 using Dzaba.TeamCitySimulator.Lib.Model;
-using Dzaba.TeamCitySimulator.Lib.Queues;
+using Dzaba.TeamCitySimulator.Lib.Repositories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,19 +16,19 @@ internal interface ISimulationEvents : IEnumerable<TimeEventData>
 internal sealed class SimulationEvents : ISimulationEvents
 {
     private readonly List<TimeEventData> timeEvents = new();
-    private readonly SimulationPayload simulationPayload;
+    private readonly ISimulationContext context;
     private readonly IBuildsRepository buildRepo;
     private readonly IAgentsRepository agentsRepo;
 
-    public SimulationEvents(SimulationPayload simulationPayload,
+    public SimulationEvents(ISimulationContext context,
         IBuildsRepository buildRepo,
         IAgentsRepository agentsRepo)
     {
-        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
+        ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(buildRepo, nameof(buildRepo));
         ArgumentNullException.ThrowIfNull(agentsRepo, nameof(agentsRepo));
 
-        this.simulationPayload = simulationPayload;
+        this.context = context;
         this.buildRepo = buildRepo;
         this.agentsRepo = agentsRepo;
     }
@@ -84,14 +84,14 @@ internal sealed class SimulationEvents : ISimulationEvents
             RunningBuilds = runningBuilds
         };
 
-        if (simulationPayload.SimulationSettings.IncludeAllAgents)
+        if (context.Payload.SimulationSettings.IncludeAllAgents)
         {
             timedEvent.AllAgents = agentsRepo.EnumerateAgents()
                 .Select(a => a.ShallowCopy())
                 .ToArray();
         }
 
-        if (simulationPayload.SimulationSettings.IncludeAllBuilds)
+        if (context.Payload.SimulationSettings.IncludeAllBuilds)
         {
             timedEvent.AllBuilds = buildRepo.EnumerateBuilds()
                 .Select(a => a.ShallowCopy())

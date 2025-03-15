@@ -1,5 +1,7 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
-using Dzaba.TeamCitySimulator.Lib.Queues;
+﻿using AutoFixture;
+using Dzaba.TeamCitySimulator.Lib.Model;
+using Dzaba.TeamCitySimulator.Lib.Repositories;
+using Dzaba.TestUtils;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
@@ -11,6 +13,19 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
     public class BuildsRepositoryTests
     {
         private static readonly DateTime CurrentTime = DateTime.Now;
+
+        private IFixture fixture;
+
+        [SetUp]
+        public void Setup()
+        {
+            fixture = TestFixture.Create();
+        }
+
+        private BuildsRepository CreateSut()
+        {
+            return fixture.Create<BuildsRepository>();
+        }
 
         private SimulationSettings GetSomeSettings()
         {
@@ -62,11 +77,18 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
             };
         }
 
+        private void SetupSettings(SimulationSettings settings)
+        {
+            var context = fixture.FreezeMock<ISimulationContext>();
+            var payload = new SimulationPayload(settings);
+            context.Setup(x => x.Payload).Returns(payload);
+        }
+
         [Test]
         public void GetBuild_WhenBuildAdded_ThenItCanBeTakenById()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             var build = sut.NewBuild(settings.BuildConfigurations[0], CurrentTime);
             var result = sut.GetBuild(build.Id);
@@ -77,7 +99,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void NewBuild_WhenBuildAdded_ThenItHasCorrectProperties()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             var build = sut.NewBuild(settings.BuildConfigurations[0], CurrentTime);
             build.AgentId.Should().BeNull();
@@ -93,7 +115,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void EnumerateBuilds_WhenCalled_ThenItReturnsAllBuilds()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -107,7 +129,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllBuildsWaitingForDependencies()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -125,7 +147,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllBuildsWaitingForAgents()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             var builds = Enumerable.Range(0, 6)
                 .Select(i => sut.NewBuild(settings.BuildConfigurations[0], CurrentTime))
@@ -148,7 +170,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GroupRunningBuildsByBuildConfiguration_WhenCalled_ThenItReturnsAllBuilds()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -168,7 +190,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GetRunningBuildsCount_WhenCalled_ThenItCountsAllRunningBuilds()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -184,7 +206,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GroupQueueByBuildConfiguration_WhenCalled_ThenItReturnsAllBuilds()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -203,7 +225,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void GetQueueLengtht_WhenCalled_ThenItCountsAllQueuedBuilds()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
@@ -218,7 +240,8 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void ResolveBuildConfigurationDependencies_WhenCalledWithoutRecursion_ThenItReturnsDistinctValues()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            SetupSettings(settings);
+            var sut = CreateSut();
 
             var result = sut.ResolveBuildConfigurationDependencies(settings.BuildConfigurations[1], false)
                 .ToArray();
@@ -232,7 +255,8 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         public void ResolveBuildConfigurationDependencies_WhenCalledWithRecursion_ThenItReturnsDistinctValues()
         {
             var settings = GetSomeSettings();
-            var sut = new BuildsRepository(new SimulationPayload(settings));
+            SetupSettings(settings);
+            var sut = CreateSut();
 
             var result = sut.ResolveBuildConfigurationDependencies(settings.BuildConfigurations[0], true)
                 .ToArray();

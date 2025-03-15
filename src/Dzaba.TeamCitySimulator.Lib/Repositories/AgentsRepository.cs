@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib.Queues;
+namespace Dzaba.TeamCitySimulator.Lib.Repositories;
 
 internal interface IAgentsRepository
 {
@@ -16,25 +16,35 @@ internal interface IAgentsRepository
 
 internal sealed class AgentsRepository : IAgentsRepository
 {
-    private readonly SimulationPayload simulationPayload;
     private readonly LongSequence agentIdSequence = new();
-    private readonly Dictionary<string, List<Agent>> agentsConfigurationIndex = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
+    private readonly Lazy<Dictionary<string, List<Agent>>> agentsConfigurationIndex;
     private readonly Dictionary<long, Agent> allAgents = new Dictionary<long, Agent>();
+    private readonly ISimulationContext simulationContext;
 
-    public AgentsRepository(SimulationPayload simulationPayload)
+    public AgentsRepository(ISimulationContext simulationContext)
     {
-        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
+        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
-        this.simulationPayload = simulationPayload;
-        foreach (var agentConfiguration in simulationPayload.AgentConfigurationsCached)
+        this.simulationContext = simulationContext;
+
+        agentsConfigurationIndex = new Lazy<Dictionary<string, List<Agent>>>(InitAgentsConfigurationIndex);
+    }
+
+    private Dictionary<string, List<Agent>> InitAgentsConfigurationIndex()
+    {
+        var local = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var agentConfiguration in simulationContext.Payload.AgentConfigurationsCached)
         {
-            agentsConfigurationIndex.Add(agentConfiguration.Key, new List<Agent>());
+            local.Add(agentConfiguration.Key, new List<Agent>());
         }
+        return local;
     }
 
     public bool TryInitAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent)
     {
         ArgumentNullException.ThrowIfNull(compatibleAgents, nameof(compatibleAgents));
+
+        var simulationPayload = simulationContext.Payload;
 
         if (simulationPayload.SimulationSettings.MaxRunningAgents != null && GetActiveAgentsCount() == simulationPayload.SimulationSettings.MaxRunningAgents.Value)
         {
@@ -44,7 +54,7 @@ internal sealed class AgentsRepository : IAgentsRepository
 
         var tempSet = new HashSet<string>(compatibleAgents, StringComparer.OrdinalIgnoreCase);
 
-        var ordered = agentsConfigurationIndex
+        var ordered = agentsConfigurationIndex.Value
             .Where(a => tempSet.Contains(a.Key))
             .Select(a => new
             {
@@ -92,7 +102,7 @@ internal sealed class AgentsRepository : IAgentsRepository
 
     public IReadOnlyDictionary<string, int> GetActiveAgentsByConfigurationCount()
     {
-        return agentsConfigurationIndex
+        return agentsConfigurationIndex.Value
             .Select(a => new { AgentConfiguration = a.Key, ActiveAgentsCount = GetActiveAgentsCount(a.Value) })
             .Where(a => a.ActiveAgentsCount > 0)
             .ToDictionary(a => a.AgentConfiguration, a => a.ActiveAgentsCount, StringComparer.OrdinalIgnoreCase);

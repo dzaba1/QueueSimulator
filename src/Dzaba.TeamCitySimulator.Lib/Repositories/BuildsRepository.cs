@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib.Queues;
+namespace Dzaba.TeamCitySimulator.Lib.Repositories;
 
 internal interface IBuildsRepository
 {
@@ -21,15 +21,15 @@ internal interface IBuildsRepository
 
 internal sealed class BuildsRepository : IBuildsRepository
 {
-    private readonly SimulationPayload simulationPayload;
+    private readonly ISimulationContext simulationContext;
     private readonly LongSequence buildIdSequence = new();
     private readonly Dictionary<long, Build> allBuilds = new();
 
-    public BuildsRepository(SimulationPayload simulationPayload)
+    public BuildsRepository(ISimulationContext simulationContext)
     {
-        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
+        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
-        this.simulationPayload = simulationPayload;
+        this.simulationContext = simulationContext;
     }
 
     public Build NewBuild(BuildConfiguration buildConfiguration, DateTime currentTime)
@@ -117,7 +117,7 @@ internal sealed class BuildsRepository : IBuildsRepository
         }
 
         var current = buildConfiguration.BuildDependencies
-                .Select(simulationPayload.GetBuildConfiguration);
+                .Select(simulationContext.Payload.GetBuildConfiguration);
 
         foreach (var dep in current)
         {

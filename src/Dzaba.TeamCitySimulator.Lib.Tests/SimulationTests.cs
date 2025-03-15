@@ -1,4 +1,5 @@
 ﻿using AutoFixture;
+using Dzaba.TeamCitySimulator.Lib.Events;
 using Dzaba.TeamCitySimulator.Lib.Model;
 using Dzaba.TestUtils;
 using FluentAssertions;
@@ -55,6 +56,34 @@ public class SimulationTests
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
-        result.Should().HaveCount(3);
+        result.Should().HaveCount(4);
+
+        result[0].Name.Should().Be(EventNames.QueueBuild);
+        result[0].BuildConfigurationQueues.Should().HaveCount(1);
+        result[0].QueueLength.Should().Be(1);
+        result[0].RunningAgents.Should().BeEmpty();
+        result[0].RunningBuilds.Should().BeEmpty();
+        result[0].TotalRunningBuilds.Should().Be(0);
+
+        result[1].Name.Should().Be(EventNames.CreateAgent);
+        result[1].BuildConfigurationQueues.Should().HaveCount(1);
+        result[1].QueueLength.Should().Be(1);
+        result[1].RunningAgents.Should().HaveCount(1);
+        result[1].RunningBuilds.Should().BeEmpty();
+        result[1].TotalRunningBuilds.Should().Be(0);
+
+        result[2].Name.Should().Be(EventNames.StartBuild);
+        result[2].BuildConfigurationQueues.Should().BeEmpty();
+        result[2].QueueLength.Should().Be(0);
+        result[2].RunningAgents.Should().HaveCount(1);
+        result[2].RunningBuilds.Should().HaveCount(1);
+        result[2].TotalRunningBuilds.Should().Be(1);
+
+        result[3].Name.Should().Be(EventNames.FinishBuild);
+        result[3].BuildConfigurationQueues.Should().BeEmpty();
+        result[3].QueueLength.Should().Be(0);
+        result[3].RunningAgents.Should().BeEmpty();
+        result[3].RunningBuilds.Should().BeEmpty();
+        result[3].TotalRunningBuilds.Should().Be(0);
     }
 }

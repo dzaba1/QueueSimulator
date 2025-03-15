@@ -69,7 +69,7 @@ internal sealed class SimulationRunner
     private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
     {
         logger.LogInformation("Adding adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
-        eventsQueue.Enqueue("QueueBuild", buildStartTime, e => QueueBuild(e, buildConfiguration));
+        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e => QueueBuild(e, buildConfiguration));
     }
 
     private void AddEndBuildQueueEvent(Build build, DateTime currentTime)
@@ -77,13 +77,19 @@ internal sealed class SimulationRunner
         var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
         var buildEndTime = currentTime + buildConfig.Duration;
         logger.LogInformation("Adding finishing build {Build} for {Time} to the event queue.", build.BuildConfiguration, buildEndTime);
-        eventsQueue.Enqueue("FinishBuild", buildEndTime, e => FinishBuild(e, build));
+        eventsQueue.Enqueue(EventNames.FinishBuild, buildEndTime, e => FinishBuild(e, build));
     }
 
     private void AddStartBuildQueueEvent(Build build, DateTime time)
     {
         logger.LogInformation("Adding start build {Build} for {Time} to the event queue.", build.BuildConfiguration, time);
-        eventsQueue.Enqueue("FinishBuild", time, e => StartBuild(e, build));
+        eventsQueue.Enqueue(EventNames.StartBuild, time, e => StartBuild(e, build));
+    }
+
+    private void AddCreateAgentQueueEvent(Build build, DateTime time)
+    {
+        logger.LogInformation("Adding create agent for {Build} for {Time} to the event queue.", build.BuildConfiguration, time);
+        eventsQueue.Enqueue(EventNames.CreateAgent, time, e => CreateAgent(e, build));
     }
 
     private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
@@ -91,24 +97,7 @@ internal sealed class SimulationRunner
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
         var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
-
-        if (agentsQueue.TryInitAgent(buildConfiguration.CompatibleAgents, eventData.Time, out var agent))
-        {
-            build.AgentId = agent.Id;
-            var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
-            if (agentConfig.InitTime != null)
-            {
-                // TODO: Add agent init event
-                throw new NotImplementedException();
-            }
-
-            AddStartBuildQueueEvent(build, eventData.Time);
-        }
-        else
-        {
-            // There aren't any free agents
-            throw new NotImplementedException();
-        }
+        AddCreateAgentQueueEvent(build, eventData.Time);
 
         AddTimedEventData(eventData);
     }
@@ -130,6 +119,32 @@ internal sealed class SimulationRunner
     private void FinishBuild(EventData eventData, Build build)
     {
         logger.LogInformation("Start finishing build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
+
+        AddTimedEventData(eventData);
+    }
+
+    private void CreateAgent(EventData eventData, Build build)
+    {
+        logger.LogInformation("Start creating an agent for build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
+
+        var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
+        if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
+        {
+            build.AgentId = agent.Id;
+            var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+            if (agentConfig.InitTime != null)
+            {
+                // TODO: Add agent init event
+                throw new NotImplementedException();
+            }
+
+            AddStartBuildQueueEvent(build, eventData.Time);
+        }
+        else
+        {
+            // There aren't any free agents
+            throw new NotImplementedException();
+        }
 
         AddTimedEventData(eventData);
     }

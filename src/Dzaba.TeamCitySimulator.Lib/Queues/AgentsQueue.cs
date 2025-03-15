@@ -70,7 +70,9 @@ internal sealed class AgentsQueue
     public IReadOnlyDictionary<string, int> GetActiveAgentsCount()
     {
         return allAgents
-            .ToDictionary(a => a.Key, a => ActiveAgentsCount(a.Value), StringComparer.OrdinalIgnoreCase);
+            .Select(a => new { AgentConfiguration = a.Key, ActiveAgentsCount = ActiveAgentsCount(a.Value) })
+            .Where(a => a.ActiveAgentsCount > 0)
+            .ToDictionary(a => a.AgentConfiguration, a => a.ActiveAgentsCount, StringComparer.OrdinalIgnoreCase);
     }
 
     public Agent GetAgent(long id)

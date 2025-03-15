@@ -61,15 +61,23 @@ internal sealed class SimulationRunner
             {
                 var buildStartTime = startTime + waitTime * i;
                 var build = buildConfigurationsCached[queuedBuild.Name];
-                AddStartBuildQueueEvent(build, buildStartTime);
+                AddQueueBuildQueueEvent(build, buildStartTime);
             }
         }
     }
 
-    private void AddStartBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
+    private void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
     {
-        logger.LogInformation("Adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
+        logger.LogInformation("Adding adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
         eventsQueue.Enqueue("QueueBuild", buildStartTime, e => QueueBuild(e, buildConfiguration));
+    }
+
+    private void AddEndBuildQueueEvent(Build build, DateTime currentTime)
+    {
+        var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
+        var buildEndTime = currentTime + buildConfig.Duration;
+        logger.LogInformation("Adding finishing build {Build} for {Time} to the event queue.", build.BuildConfiguration, buildEndTime);
+        eventsQueue.Enqueue("FinishBuild", buildEndTime, e => FinishBuild(e, build));
     }
 
     private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
@@ -91,12 +99,20 @@ internal sealed class SimulationRunner
             build.StartTime = eventData.Time;
             build.AgentId = agent.Id;
             build.State = BuildState.Running;
+            AddEndBuildQueueEvent(build, eventData.Time);
         }
         else
         {
             // There aren't any free agents
             throw new NotImplementedException();
         }
+
+        AddTimedEventData(eventData);
+    }
+
+    private void FinishBuild(EventData eventData, Build build)
+    {
+        logger.LogInformation("Start finishing build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
         AddTimedEventData(eventData);
     }

@@ -55,6 +55,6 @@ public class SimulationTests
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
-        result.Should().HaveCount(2);
+        result.Should().HaveCount(3);
     }
 }

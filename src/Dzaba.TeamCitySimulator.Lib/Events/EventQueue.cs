@@ -13,6 +13,12 @@ public sealed class EventQueue
         queue.Enqueue(@event, time);
     }
 
+    public void Enqueue(EventData eventData, Action<EventData> action)
+    {
+        var @event = new Event(eventData, action);
+        queue.Enqueue(@event, @event.Data.Time);
+    }
+
     public Event Dequeue()
     {
         return queue.Dequeue();

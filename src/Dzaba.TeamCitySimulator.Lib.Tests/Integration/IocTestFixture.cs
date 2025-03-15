@@ -25,7 +25,14 @@ public class IocTestFixture
 
         services.AddLogging(l => l.AddSerilog(logger, true));
 
+        RegisterServices(services);
+
         container = services.BuildServiceProvider();
+    }
+
+    protected virtual void RegisterServices(IServiceCollection services)
+    {
+        
     }
 
     [TearDown]

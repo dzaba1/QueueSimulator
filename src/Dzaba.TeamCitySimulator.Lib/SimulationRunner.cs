@@ -128,6 +128,11 @@ internal sealed class SimulationRunner
         build.EndTime = eventData.Time;
         build.State = BuildState.Finished;
 
+        foreach (var scheduledBuild in buildQueue.GetWaitingForAgents())
+        {
+            AddCreateAgentQueueEvent(scheduledBuild, eventData.Time);
+        }
+
         AddTimedEventData(eventData, $"Finished the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 

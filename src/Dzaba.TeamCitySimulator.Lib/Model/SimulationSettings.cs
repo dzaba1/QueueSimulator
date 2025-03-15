@@ -5,7 +5,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Model;
 
 public sealed class SimulationSettings
 {
-    public ushort? MaxQueue { get; set; }
+    public int? MaxRunningAgents { get; set; }
     public TimeSpan SimulationDuration { get; set; } = TimeSpan.FromHours(8);
 
     [Required]

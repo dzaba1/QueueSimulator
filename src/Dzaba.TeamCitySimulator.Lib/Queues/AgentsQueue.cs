@@ -7,7 +7,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
 internal sealed class AgentsQueue
 {
-    private readonly IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached;
+    private readonly SimulationPayload simulationPayload;
     private readonly LongSequence agentIdSequence = new();
     private readonly Dictionary<string, List<Agent>> allAgents = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<long, Agent> agentsCache = new Dictionary<long, Agent>();
@@ -16,8 +16,8 @@ internal sealed class AgentsQueue
     {
         ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
-        agentConfigurationsCached = simulationPayload.AgentConfigurationsCached;
-        foreach (var agentConfiguration in agentConfigurationsCached)
+        this.simulationPayload = simulationPayload;
+        foreach (var agentConfiguration in simulationPayload.AgentConfigurationsCached)
         {
             allAgents.Add(agentConfiguration.Key, new List<Agent>());
         }
@@ -27,12 +27,18 @@ internal sealed class AgentsQueue
     {
         ArgumentNullException.ThrowIfNull(compatibleAgents, nameof(compatibleAgents));
 
+        if (simulationPayload.SimulationSettings.MaxRunningAgents != null && ActiveAgentsCount() == simulationPayload.SimulationSettings.MaxRunningAgents.Value)
+        {
+            agent = null;
+            return false;
+        }
+
         var tempSet = new HashSet<string>(compatibleAgents, StringComparer.OrdinalIgnoreCase);
 
         var ordered = allAgents
             .Where(a => tempSet.Contains(a.Key))
             .Select(a => new {
-                AgentConfiguration = agentConfigurationsCached[a.Key],
+                AgentConfiguration = simulationPayload.GetAgentConfiguration(a.Key),
                 Agents = a.Value,
                 ActiveAgentsCount = ActiveAgentsCount(a.Value)
             })
@@ -62,6 +68,11 @@ internal sealed class AgentsQueue
 
         agent = null;
         return false;
+    }
+
+    private int ActiveAgentsCount()
+    {
+        return ActiveAgentsCount(allAgents.Values.SelectMany(a => a));
     }
 
     private int ActiveAgentsCount(IEnumerable<Agent> agents)

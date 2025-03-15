@@ -10,6 +10,7 @@ internal sealed class AgentsQueue
     private readonly IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached;
     private readonly LongSequence agentIdSequence = new();
     private readonly Dictionary<string, List<Agent>> allAgents = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<long, Agent> agentsCache = new Dictionary<long, Agent>();
 
     public AgentsQueue(IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached)
     {
@@ -55,6 +56,7 @@ internal sealed class AgentsQueue
                 AgentConfiguration = list.AgentConfiguration.Name
             };
             list.Agents.Add(agent);
+            agentsCache.Add(agent.Id, agent);
             return true;
         }
 
@@ -77,9 +79,6 @@ internal sealed class AgentsQueue
 
     public Agent GetAgent(long id)
     {
-        // TODO: cache those
-        return allAgents
-            .SelectMany(a => a.Value)
-            .First(a => a.Id == id);
+        return agentsCache[id];
     }
 }

@@ -7,7 +7,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
 internal sealed class BuildQueue
 {
-    private readonly BuildIdSequence buildIdSequence = new();
+    private readonly LongSequence buildIdSequence = new();
     private readonly List<Build> builds = new();
 
     public Build NewBuild(BuildConfiguration buildConfiguration, DateTime currentTime)

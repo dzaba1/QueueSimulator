@@ -1,6 +1,6 @@
-﻿namespace Dzaba.TeamCitySimulator.Lib;
+﻿namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
-internal sealed class BuildIdSequence
+internal sealed class LongSequence
 {
     private long current = 0;
 

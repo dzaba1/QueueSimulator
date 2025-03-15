@@ -6,7 +6,7 @@ namespace Dzaba.TeamCitySimulator.Lib;
 
 public interface ISimulation
 {
-    IEnumerable<EventData> Run(SimulationSettings settings);
+    IEnumerable<TimeEventData> Run(SimulationSettings settings);
 }
 
 internal sealed class Simulation : ISimulation
@@ -20,7 +20,7 @@ internal sealed class Simulation : ISimulation
         this.simulationValidation = simulationValidation;
     }
 
-    public IEnumerable<EventData> Run(SimulationSettings settings)
+    public IEnumerable<TimeEventData> Run(SimulationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings, nameof(settings));
         

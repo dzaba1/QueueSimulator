@@ -7,7 +7,7 @@ public sealed class EventQueue
 {
     private readonly PriorityQueue<Event, DateTime> queue = new();
 
-    public void Enqueue(string name, DateTime time, Action<Event> action)
+    public void Enqueue(string name, DateTime time, Action<EventData> action)
     {
         var @event = new Event(name, time, action);
         queue.Enqueue(@event, time);

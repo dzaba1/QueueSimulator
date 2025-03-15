@@ -36,7 +36,7 @@ public class SimulationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],

@@ -11,7 +11,7 @@ internal sealed class SimulationRunner
     private readonly ISimulationValidation simulationValidation;
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
-    private readonly IReadOnlyDictionary<string, Build> buildsCached;
+    private readonly IReadOnlyDictionary<string, BuildConfiguration> buildsCached;
     private readonly IReadOnlyDictionary<string, Agent> agentsCached;
 
     public SimulationRunner(SimulationSettings simulationSettings,
@@ -27,7 +27,7 @@ internal sealed class SimulationRunner
         agentsCached = simulationSettings.CacheAgents();
     }
 
-    public IEnumerable<EventData> Run()
+    public IEnumerable<TimeEventData> Run()
     {
         simulationValidation.Validate(buildsCached, agentsCached, simulationSettings.QueuedBuilds);
 

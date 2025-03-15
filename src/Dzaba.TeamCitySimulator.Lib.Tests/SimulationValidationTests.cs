@@ -34,7 +34,7 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent2"]
@@ -61,7 +61,7 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
@@ -89,7 +89,7 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"]
@@ -121,7 +121,7 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
@@ -154,19 +154,19 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     BuildDependencies = ["BuildConfig2"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
                     BuildDependencies = ["BuildConfig3"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
@@ -199,30 +199,30 @@ public class SimulationValidationTests
                 }
             ],
             BuildConfigurations = [
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     BuildDependencies = ["BuildConfig2"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
                     BuildDependencies = ["BuildConfig3", "BuildConfig5"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
                     BuildDependencies = ["BuildConfig4"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig4",
                     CompatibleAgents = ["TestAgent1"]
                 },
-                new Build
+                new BuildConfiguration
                 {
                     Name = "BuildConfig5",
                     CompatibleAgents = ["TestAgent1"],

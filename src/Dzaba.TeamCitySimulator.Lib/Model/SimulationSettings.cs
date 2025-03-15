@@ -16,13 +16,13 @@ public sealed class SimulationSettings
 
     [Required]
     [MinLength(1)]
-    public Build[] BuildConfigurations { get; set; }
+    public BuildConfiguration[] BuildConfigurations { get; set; }
 
     [Required]
     [MinLength(1)]
     public QueuedBuild[] QueuedBuilds { get; set; }
 
-    public IReadOnlyDictionary<string, Build> CacheBuildConfiguration()
+    public IReadOnlyDictionary<string, BuildConfiguration> CacheBuildConfiguration()
     {
         return BuildConfigurations.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
     }

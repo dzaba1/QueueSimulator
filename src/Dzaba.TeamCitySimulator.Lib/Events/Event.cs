@@ -4,23 +4,20 @@ namespace Dzaba.TeamCitySimulator.Lib.Events;
 
 public sealed class Event
 {
-    public Event(string name, DateTime time, Action<Event> action)
+    public Event(string name, DateTime time, Action<EventData> action)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentNullException.ThrowIfNull(action, nameof(action));
 
-        Name = name;
-        Time = time;
+        Data = new EventData(name, time);
         Action = action;
     }
 
-    public string Name { get; }
-    public DateTime Time { get; }
-    public Action<Event> Action { get; }
+    public EventData Data { get; }
+    public Action<EventData> Action { get; }
 
     public void Invoke()
     {
-        Action(this);
+        Action(Data);
     }
 }
 

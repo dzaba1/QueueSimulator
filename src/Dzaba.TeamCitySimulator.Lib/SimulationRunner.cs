@@ -154,8 +154,7 @@ internal sealed class SimulationRunner
         }
         else
         {
-            // There aren't any free agents
-            throw new NotImplementedException();
+            logger.LogInformation("There aren't any agents available for build [{BuildId}] {Build}.", build.Id, build.BuildConfiguration);
         }
 
         AddTimedEventData(eventData, eventMsg);

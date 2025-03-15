@@ -55,4 +55,10 @@ internal sealed class BuildQueue
             .GroupBy(b => b.BuildConfiguration)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
     }
+
+    public IEnumerable<Build> GetWaitingForAgents()
+    {
+        return allBuilds
+            .Where(b => b.State == BuildState.WaitingForAgent);
+    }
 }

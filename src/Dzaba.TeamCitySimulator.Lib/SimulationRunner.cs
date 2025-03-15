@@ -144,6 +144,11 @@ internal sealed class SimulationRunner
         var buildConfig = simulationPayload.GetBuildConfiguration(build.BuildConfiguration);
         var eventMsg = "";
 
+        if (build.AgentId != null)
+        {
+            throw new InvalidOperationException($"Agent with ID {build.AgentId} was already assigned to build with ID {build.Id}.");
+        }
+
         if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             build.AgentId = agent.Id;

@@ -59,6 +59,7 @@ internal sealed class BuildQueue
     public IEnumerable<Build> GetWaitingForAgents()
     {
         return allBuilds
-            .Where(b => b.State == BuildState.WaitingForAgent);
+            .Where(b => b.State == BuildState.WaitingForAgent)
+            .Where(b => b.AgentId == null);
     }
 }

@@ -215,6 +215,20 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         }
 
         [Test]
+        public void ResolveBuildConfigurationDependencies_WhenCalledWithoutRecursion_ThenItReturnsDistinctValues()
+        {
+            var settings = GetSomeSettings();
+            var sut = new BuildsRepository(new SimulationPayload(settings));
+
+            var result = sut.ResolveBuildConfigurationDependencies(settings.BuildConfigurations[1], false)
+                .ToArray();
+
+            result.Should().NotContain(settings.BuildConfigurations[1]);
+            result.Should().OnlyHaveUniqueItems(s => s.Name);
+            result.Should().HaveCount(2);
+        }
+
+        [Test]
         public void ResolveBuildConfigurationDependencies_WhenCalledWithRecursion_ThenItReturnsDistinctValues()
         {
             var settings = GetSomeSettings();

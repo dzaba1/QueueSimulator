@@ -120,6 +120,12 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Start finishing build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
+        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+
+        agent.State = AgentState.Finished;
+        build.EndTime = eventData.Time;
+        build.State = BuildState.Finished;
+
         AddTimedEventData(eventData);
     }
 

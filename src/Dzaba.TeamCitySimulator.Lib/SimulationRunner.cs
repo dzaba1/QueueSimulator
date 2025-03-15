@@ -80,6 +80,12 @@ internal sealed class SimulationRunner
         eventsQueue.Enqueue("FinishBuild", buildEndTime, e => FinishBuild(e, build));
     }
 
+    private void AddStartBuildQueueEvent(Build build, DateTime time)
+    {
+        logger.LogInformation("Adding start build {Build} for {Time} to the event queue.", build.BuildConfiguration, time);
+        eventsQueue.Enqueue("FinishBuild", time, e => StartBuild(e, build));
+    }
+
     private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
@@ -88,6 +94,7 @@ internal sealed class SimulationRunner
 
         if (agentsQueue.TryInitAgent(buildConfiguration.CompatibleAgents, eventData.Time, out var agent))
         {
+            build.AgentId = agent.Id;
             var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
             if (agentConfig.InitTime != null)
             {
@@ -95,17 +102,27 @@ internal sealed class SimulationRunner
                 throw new NotImplementedException();
             }
 
-            agent.State = AgentState.Running;
-            build.StartTime = eventData.Time;
-            build.AgentId = agent.Id;
-            build.State = BuildState.Running;
-            AddEndBuildQueueEvent(build, eventData.Time);
+            AddStartBuildQueueEvent(build, eventData.Time);
         }
         else
         {
             // There aren't any free agents
             throw new NotImplementedException();
         }
+
+        AddTimedEventData(eventData);
+    }
+
+    private void StartBuild(EventData eventData, Build build)
+    {
+        logger.LogInformation("Starting a build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
+
+        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+
+        agent.State = AgentState.Running;
+        build.StartTime = eventData.Time;
+        build.State = BuildState.Running;
+        AddEndBuildQueueEvent(build, eventData.Time);
 
         AddTimedEventData(eventData);
     }

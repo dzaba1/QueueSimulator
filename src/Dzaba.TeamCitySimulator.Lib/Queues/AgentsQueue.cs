@@ -72,4 +72,12 @@ internal sealed class AgentsQueue
         return allAgents
             .ToDictionary(a => a.Key, a => ActiveAgentsCount(a.Value), StringComparer.OrdinalIgnoreCase);
     }
+
+    public Agent GetAgent(long id)
+    {
+        // TODO: cache those
+        return allAgents
+            .SelectMany(a => a.Value)
+            .First(a => a.Id == id);
+    }
 }

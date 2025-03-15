@@ -104,6 +104,13 @@ internal sealed class SimulationRunner
                     Name = g.Key,
                     Length = g.Value.Length,
                 })
+                .ToArray(),
+            RunningAgents = agentsQueue.GetActiveAgentsCount()
+                .Select(g => new NamedQueueData
+                {
+                    Name = g.Key,
+                    Length = g.Value,
+                })
                 .ToArray()
         };
 

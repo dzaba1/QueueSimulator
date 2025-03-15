@@ -45,6 +45,7 @@ internal sealed class AgentsQueue
             }
             return true;
         });
+
         if (list != null)
         {
             agent = new Agent
@@ -64,5 +65,11 @@ internal sealed class AgentsQueue
     private int ActiveAgentsCount(IEnumerable<Agent> agents)
     {
         return agents.Count(a => a.State != AgentState.Finished);
+    }
+
+    public IReadOnlyDictionary<string, int> GetActiveAgentsCount()
+    {
+        return allAgents
+            .ToDictionary(a => a.Key, a => ActiveAgentsCount(a.Value), StringComparer.OrdinalIgnoreCase);
     }
 }

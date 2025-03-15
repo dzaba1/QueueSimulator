@@ -8,7 +8,7 @@ public sealed class TimeEventData
     public string Name { get; set; }
     public int QueueLength { get; set; }
     public uint TotalRunningBuilds { get; set; }
-    public NamedQueueData[] AgentQueues { get; set; }
+    public NamedQueueData[] RunningAgents { get; set; }
     public NamedQueueData[] BuildConfigurationQueues { get; set; }
 }
 

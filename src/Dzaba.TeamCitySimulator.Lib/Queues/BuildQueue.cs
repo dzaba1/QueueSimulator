@@ -31,6 +31,6 @@ internal sealed class BuildQueue
     {
         return builds
             .GroupBy(b => b.BuildConfiguration)
-            .ToDictionary(g => g.Key, g => g.ToArray());
+            .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
     }
 }

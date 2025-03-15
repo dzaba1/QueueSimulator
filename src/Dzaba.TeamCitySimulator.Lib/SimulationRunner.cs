@@ -232,11 +232,22 @@ internal sealed class SimulationRunner
             Message = message,
             BuildsQueue = buildsQueueData,
             RunningAgents = runningAgents,
-            RunningBuilds = runningBuilds,
-            AllAgents = agentsQueue.EnumerateAgents()
-                .Select(a => a.ShallowCopy())
-                .ToArray()
+            RunningBuilds = runningBuilds
         };
+
+        if (simulationPayload.SimulationSettings.IncludeAllAgents)
+        {
+            timedEvent.AllAgents = agentsQueue.EnumerateAgents()
+                .Select(a => a.ShallowCopy())
+                .ToArray();
+        }
+
+        if (simulationPayload.SimulationSettings.IncludeAllBuilds)
+        {
+            timedEvent.AllBuilds = buildQueue.EnumerateBuilds()
+                .Select(a => a.ShallowCopy())
+                .ToArray();
+        }
 
         timeEvents.Add(timedEvent);
     }

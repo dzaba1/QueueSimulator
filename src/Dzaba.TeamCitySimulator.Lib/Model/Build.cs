@@ -11,11 +11,17 @@ public sealed class Build
     public DateTime? StartTime { get; set; }
     public long? AgentId { get; set; }
     public DateTime? EndTime { get; set; }
+
+    public Build ShallowCopy()
+    {
+        return (Build)MemberwiseClone();
+    }
 }
 
 public enum BuildState
 {
     WaitingForAgent,
+    WaitingForDependencies,
     Running,
     Finished
 }

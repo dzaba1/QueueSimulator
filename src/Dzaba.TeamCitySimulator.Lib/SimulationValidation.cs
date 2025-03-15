@@ -8,14 +8,14 @@ namespace Dzaba.TeamCitySimulator.Lib;
 internal interface ISimulationValidation
 {
     void Validate(IReadOnlyDictionary<string, BuildConfiguration> buildsCached,
-        IReadOnlyDictionary<string, Agent> agentsCached,
+        IReadOnlyDictionary<string, AgentConfiguration> agentsCached,
         IEnumerable<QueuedBuild> queuedBuilds);
 }
 
 internal sealed class SimulationValidation : ISimulationValidation
 {
     public void Validate(IReadOnlyDictionary<string, BuildConfiguration> buildsCached,
-        IReadOnlyDictionary<string, Agent> agentsCached,
+        IReadOnlyDictionary<string, AgentConfiguration> agentsCached,
         IEnumerable<QueuedBuild> queuedBuilds)
     {
         ArgumentNullException.ThrowIfNull(buildsCached, nameof(buildsCached));

@@ -30,7 +30,7 @@ public class SimulationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }

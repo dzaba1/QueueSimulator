@@ -16,7 +16,7 @@ internal sealed class SimulationRunner
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
     private readonly IReadOnlyDictionary<string, BuildConfiguration> buildConfigurationsCached;
-    private readonly IReadOnlyDictionary<string, Agent> agentsCached;
+    private readonly IReadOnlyDictionary<string, AgentConfiguration> agentsCached;
     private readonly List<TimeEventData> timeEvents = new();
     private readonly BuildQueue buildQueue = new();
 

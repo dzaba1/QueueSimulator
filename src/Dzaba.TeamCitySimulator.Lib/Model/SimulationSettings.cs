@@ -12,7 +12,7 @@ public sealed class SimulationSettings
 
     [Required]
     [MinLength(1)]
-    public Agent[] Agents { get; set; }
+    public AgentConfiguration[] Agents { get; set; }
 
     [Required]
     [MinLength(1)]
@@ -27,7 +27,7 @@ public sealed class SimulationSettings
         return BuildConfigurations.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
     }
 
-    public IReadOnlyDictionary<string, Agent> CacheAgents()
+    public IReadOnlyDictionary<string, AgentConfiguration> CacheAgents()
     {
         return Agents.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
     }

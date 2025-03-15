@@ -28,7 +28,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }
@@ -55,7 +55,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }
@@ -83,7 +83,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }
@@ -115,7 +115,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }
@@ -148,7 +148,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }
@@ -193,7 +193,7 @@ public class SimulationValidationTests
         var settings = new SimulationSettings
         {
             Agents = [
-                new Agent
+                new AgentConfiguration
                 {
                     Name = "TestAgent1"
                 }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dzaba.TeamCitySimulator.Lib.Model;
 
-public sealed class Agent
+public sealed class AgentConfiguration
 {
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; }

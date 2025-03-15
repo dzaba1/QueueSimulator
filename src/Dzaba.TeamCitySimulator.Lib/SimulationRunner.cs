@@ -80,7 +80,17 @@ internal sealed class SimulationRunner
 
         if (agentsQueue.TryInitAgent(buildConfiguration.CompatibleAgents, eventData.Time, out var agent))
         {
+            var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+            if (agentConfig.InitTime != null)
+            {
+                // TODO: Add agent init event
+                throw new NotImplementedException();
+            }
 
+            agent.State = AgentState.Running;
+            build.StartTime = eventData.Time;
+            build.AgentId = agent.Id;
+            build.State = BuildState.Running;
         }
         else
         {
@@ -97,8 +107,8 @@ internal sealed class SimulationRunner
         {
             Timestamp = data.Time,
             Name = data.Name,
-            QueueLength = buildQueue.Count,
-            BuildConfigurationQueues = buildQueue.GroupByBuildConfiguration()
+            QueueLength = buildQueue.GetQueueLength(),
+            BuildConfigurationQueues = buildQueue.GroupQueueByBuildConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -110,6 +120,14 @@ internal sealed class SimulationRunner
                 {
                     Name = g.Key,
                     Length = g.Value,
+                })
+                .ToArray(),
+            TotalRunningBuilds = buildQueue.GetRunningBuildsCount(),
+            RunningBuilds = buildQueue.GroupRunningBuildsByBuildConfiguration()
+                .Select(g => new NamedQueueData
+                {
+                    Name = g.Key,
+                    Length = g.Value.Length,
                 })
                 .ToArray()
         };

@@ -9,10 +9,13 @@ public sealed class Build
     public BuildState State { get; set; }
     public DateTime CreatedTime { get; set; }
     public DateTime? StartTime { get; set; }
+    public long? AgentId { get; set; }
     public DateTime? EndTime { get; set; }
 }
 
 public enum BuildState
 {
-    WaitingForAgent
+    WaitingForAgent,
+    Running,
+    Finished
 }

@@ -13,5 +13,6 @@ public sealed class Agent
 public enum AgentState
 {
     Created,
+    Running,
     Finished
 }

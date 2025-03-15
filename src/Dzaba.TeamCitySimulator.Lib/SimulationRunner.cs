@@ -1,8 +1,10 @@
 ﻿using Dzaba.TeamCitySimulator.Lib.Events;
 using Dzaba.TeamCitySimulator.Lib.Model;
+using Dzaba.TeamCitySimulator.Lib.Queues;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dzaba.TeamCitySimulator.Lib;
 
@@ -16,6 +18,7 @@ internal sealed class SimulationRunner
     private readonly IReadOnlyDictionary<string, BuildConfiguration> buildConfigurationsCached;
     private readonly IReadOnlyDictionary<string, Agent> agentsCached;
     private readonly List<TimeEventData> timeEvents = new();
+    private readonly BuildQueue buildQueue = new();
 
     public SimulationRunner(SimulationSettings simulationSettings,
         ISimulationValidation simulationValidation,
@@ -71,6 +74,8 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
+        var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
+
         AddTimedEventData(eventData);
     }
 
@@ -80,6 +85,14 @@ internal sealed class SimulationRunner
         {
             Timestamp = data.Time,
             Name = data.Name,
+            QueueLength = buildQueue.Count,
+            BuildConfigurationQueues = buildQueue.GroupByBuildConfiguration()
+                .Select(g => new NamedQueueData
+                {
+                    Name = g.Key,
+                    Length = g.Value.Length,
+                })
+                .ToArray()
         };
 
         timeEvents.Add(timedEvent);

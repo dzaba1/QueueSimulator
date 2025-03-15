@@ -19,6 +19,7 @@ public static class Bootstrapper
         services.AddScoped<IAgentsRepository, AgentsRepository>();
         services.AddScoped<IBuildsRepository, BuildsRepository>();
         services.AddScoped<ISimulationEvents, SimulationEvents>();
+        services.AddScoped<ISimulationEventQueue, SimulationEventQueue>();
 
         services.AddTransient<IEventHandler<InitAgentEventPayload>, InitAgentEventHandler>();
         services.AddTransient<IEventHandler<StartBuildEventPayload>, StartBuildEventHandler>();

@@ -1,28 +1,20 @@
-﻿using AutoFixture;
-using Dzaba.TeamCitySimulator.Lib.Events;
+﻿using Dzaba.TeamCitySimulator.Lib.Events;
 using Dzaba.TeamCitySimulator.Lib.Model;
 using Dzaba.TestUtils;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests;
+namespace Dzaba.TeamCitySimulator.Lib.Tests.Integration;
 
 [TestFixture]
-public class SimulationTests
+public class SimulationTests : IocTestFixture
 {
-    private IFixture fixture;
-
-    [SetUp]
-    public void Setup()
+    private ISimulation CreateSut()
     {
-        fixture = TestFixture.Create();
-    }
-
-    private Simulation CreateSut()
-    {
-        return fixture.Create<Simulation>();
+        return Container.GetRequiredService<ISimulation>();
     }
 
     private void ValidateDataForEmptines(ElementsData actual)

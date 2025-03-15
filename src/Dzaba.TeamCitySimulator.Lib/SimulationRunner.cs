@@ -99,12 +99,12 @@ internal sealed class SimulationRunner
         var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
         AddCreateAgentQueueEvent(build, eventData.Time);
 
-        AddTimedEventData(eventData);
+        AddTimedEventData(eventData, $"Queued a new build [{build.Id}] {build.BuildConfiguration}.");
     }
 
     private void StartBuild(EventData eventData, Build build)
     {
-        logger.LogInformation("Starting a build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
+        logger.LogInformation("Starting the build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
         var agent = agentsQueue.GetAgent(build.AgentId.Value);
 
@@ -113,7 +113,7 @@ internal sealed class SimulationRunner
         build.State = BuildState.Running;
         AddEndBuildQueueEvent(build, eventData.Time);
 
-        AddTimedEventData(eventData);
+        AddTimedEventData(eventData, $"Started the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 
     private void FinishBuild(EventData eventData, Build build)
@@ -126,7 +126,7 @@ internal sealed class SimulationRunner
         build.EndTime = eventData.Time;
         build.State = BuildState.Finished;
 
-        AddTimedEventData(eventData);
+        AddTimedEventData(eventData, $"Finished the build [{build.Id}] {build.BuildConfiguration} on agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 
     private void CreateAgent(EventData eventData, Build build)
@@ -134,6 +134,8 @@ internal sealed class SimulationRunner
         logger.LogInformation("Start creating an agent for build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
         var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
+        var eventMsg = "";
+
         if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             build.AgentId = agent.Id;
@@ -144,6 +146,7 @@ internal sealed class SimulationRunner
                 throw new NotImplementedException();
             }
 
+            eventMsg = $"Created a new agent [{agent.Id}] {agent.AgentConfiguration} for build [{build.Id}] {build.BuildConfiguration}";
             AddStartBuildQueueEvent(build, eventData.Time);
         }
         else
@@ -152,15 +155,16 @@ internal sealed class SimulationRunner
             throw new NotImplementedException();
         }
 
-        AddTimedEventData(eventData);
+        AddTimedEventData(eventData, eventMsg);
     }
 
-    private void AddTimedEventData(EventData data)
+    private void AddTimedEventData(EventData data, string message)
     {
         var timedEvent = new TimeEventData
         {
             Timestamp = data.Time,
             Name = data.Name,
+            Message = message,
             QueueLength = buildQueue.GetQueueLength(),
             BuildConfigurationQueues = buildQueue.GroupQueueByBuildConfiguration()
                 .Select(g => new NamedQueueData

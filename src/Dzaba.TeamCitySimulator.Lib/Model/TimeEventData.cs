@@ -6,6 +6,7 @@ public sealed class TimeEventData
 {
     public DateTime Timestamp { get; set; }
     public string Name { get; set; }
+    public string Message { get; set; }
     public int QueueLength { get; set; }
     public int TotalRunningBuilds { get; set; }
     public NamedQueueData[] RunningAgents { get; set; }

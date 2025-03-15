@@ -16,8 +16,8 @@ internal sealed class SimulationRunner
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
     private readonly List<TimeEventData> timeEvents = new();
-    private readonly BuildQueue buildQueue = new();
-    private readonly AgentsQueue agentsQueue;
+    private readonly BuildsRepository buildRepo = new();
+    private readonly AgentsRepository agentsRepo;
 
     public SimulationRunner(SimulationSettings simulationSettings,
         ISimulationValidation simulationValidation,
@@ -31,7 +31,7 @@ internal sealed class SimulationRunner
         this.logger = logger;
 
         simulationPayload = new SimulationPayload(simulationSettings);
-        agentsQueue = new AgentsQueue(simulationPayload);
+        agentsRepo = new AgentsRepository(simulationPayload);
     }
 
     public IEnumerable<TimeEventData> Run()
@@ -98,7 +98,7 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
-        var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
+        var build = buildRepo.NewBuild(buildConfiguration, eventData.Time);
         if (buildConfiguration.BuildDependencies != null && buildConfiguration.BuildDependencies.Any())
         {
             build.State = BuildState.WaitingForDependencies;
@@ -117,7 +117,7 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Starting the build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
-        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+        var agent = agentsRepo.GetAgent(build.AgentId.Value);
 
         agent.State = AgentState.Running;
         build.StartTime = eventData.Time;
@@ -131,14 +131,14 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Start finishing build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
-        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+        var agent = agentsRepo.GetAgent(build.AgentId.Value);
 
         agent.State = AgentState.Finished;
         agent.EndTime = eventData.Time;
         build.EndTime = eventData.Time;
         build.State = BuildState.Finished;
 
-        foreach (var scheduledBuild in buildQueue.GetWaitingForAgents())
+        foreach (var scheduledBuild in buildRepo.GetWaitingForAgents())
         {
             AddCreateAgentQueueEvent(scheduledBuild, eventData.Time);
         }
@@ -165,7 +165,7 @@ internal sealed class SimulationRunner
 
         build.State = BuildState.WaitingForAgent;
 
-        if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
+        if (agentsRepo.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             build.AgentId = agent.Id;
             var agentConfig = simulationPayload.GetAgentConfiguration(agent.AgentConfiguration);
@@ -191,7 +191,7 @@ internal sealed class SimulationRunner
 
     private void InitAgent(EventData eventData, Build build)
     {
-        var agent = agentsQueue.GetAgent(build.AgentId.Value);
+        var agent = agentsRepo.GetAgent(build.AgentId.Value);
 
         agent.State = AgentState.Initiating;
 
@@ -207,8 +207,8 @@ internal sealed class SimulationRunner
     {
         var buildsQueueData = new ElementsData
         {
-            Total = buildQueue.GetQueueLength(),
-            Grouped = buildQueue.GroupQueueByBuildConfiguration()
+            Total = buildRepo.GetQueueLength(),
+            Grouped = buildRepo.GroupQueueByBuildConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -219,8 +219,8 @@ internal sealed class SimulationRunner
 
         var runningAgents = new ElementsData
         {
-            Total = agentsQueue.ActiveAgentsCount(),
-            Grouped = agentsQueue.GetActiveAgentsCount()
+            Total = agentsRepo.GetActiveAgentsCount(),
+            Grouped = agentsRepo.GetActiveAgentsByConfigurationCount()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -231,8 +231,8 @@ internal sealed class SimulationRunner
 
         var runningBuilds = new ElementsData
         {
-            Total = buildQueue.GetRunningBuildsCount(),
-            Grouped = buildQueue.GroupRunningBuildsByBuildConfiguration()
+            Total = buildRepo.GetRunningBuildsCount(),
+            Grouped = buildRepo.GroupRunningBuildsByBuildConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -253,14 +253,14 @@ internal sealed class SimulationRunner
 
         if (simulationPayload.SimulationSettings.IncludeAllAgents)
         {
-            timedEvent.AllAgents = agentsQueue.EnumerateAgents()
+            timedEvent.AllAgents = agentsRepo.EnumerateAgents()
                 .Select(a => a.ShallowCopy())
                 .ToArray();
         }
 
         if (simulationPayload.SimulationSettings.IncludeAllBuilds)
         {
-            timedEvent.AllBuilds = buildQueue.EnumerateBuilds()
+            timedEvent.AllBuilds = buildRepo.EnumerateBuilds()
                 .Select(a => a.ShallowCopy())
                 .ToArray();
         }

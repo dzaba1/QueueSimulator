@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Dzaba.TeamCitySimulator.Lib.Queues;
 
-internal sealed class BuildQueue
+internal sealed class BuildsRepository
 {
     private readonly LongSequence buildIdSequence = new();
     private readonly Dictionary<long, Build> allBuilds = new();

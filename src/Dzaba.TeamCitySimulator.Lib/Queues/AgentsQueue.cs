@@ -70,7 +70,7 @@ internal sealed class AgentsQueue
         return false;
     }
 
-    private int ActiveAgentsCount()
+    public int ActiveAgentsCount()
     {
         return ActiveAgentsCount(allAgents.Values.SelectMany(a => a));
     }

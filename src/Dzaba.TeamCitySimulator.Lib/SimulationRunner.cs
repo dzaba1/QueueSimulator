@@ -159,6 +159,7 @@ internal sealed class SimulationRunner
         }
         else
         {
+            eventMsg = $"There aren't any agents available for build [{build.Id}] {build.BuildConfiguration}.";
             logger.LogInformation("There aren't any agents available for build [{BuildId}] {Build}.", build.Id, build.BuildConfiguration);
         }
 
@@ -179,34 +180,50 @@ internal sealed class SimulationRunner
 
     private void AddTimedEventData(EventData data, string message)
     {
-        var timedEvent = new TimeEventData
+        var buildsQueueData = new ElementsData
         {
-            Timestamp = data.Time,
-            Name = data.Name,
-            Message = message,
-            QueueLength = buildQueue.GetQueueLength(),
-            BuildConfigurationQueues = buildQueue.GroupQueueByBuildConfiguration()
-                .Select(g => new NamedQueueData
-                {
-                    Name = g.Key,
-                    Length = g.Value.Length,
-                })
-                .ToArray(),
-            RunningAgents = agentsQueue.GetActiveAgentsCount()
-                .Select(g => new NamedQueueData
-                {
-                    Name = g.Key,
-                    Length = g.Value,
-                })
-                .ToArray(),
-            TotalRunningBuilds = buildQueue.GetRunningBuildsCount(),
-            RunningBuilds = buildQueue.GroupRunningBuildsByBuildConfiguration()
+            Total = buildQueue.GetQueueLength(),
+            Grouped = buildQueue.GroupQueueByBuildConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
                     Length = g.Value.Length,
                 })
                 .ToArray()
+        };
+
+        var runningAgents = new ElementsData
+        {
+            Total = agentsQueue.ActiveAgentsCount(),
+            Grouped = agentsQueue.GetActiveAgentsCount()
+                .Select(g => new NamedQueueData
+                {
+                    Name = g.Key,
+                    Length = g.Value,
+                })
+                .ToArray()
+        };
+
+        var runningBuilds = new ElementsData
+        {
+            Total = buildQueue.GetRunningBuildsCount(),
+            Grouped = buildQueue.GroupRunningBuildsByBuildConfiguration()
+                .Select(g => new NamedQueueData
+                {
+                    Name = g.Key,
+                    Length = g.Value.Length,
+                })
+                .ToArray()
+        };
+
+        var timedEvent = new TimeEventData
+        {
+            Timestamp = data.Time,
+            Name = data.Name,
+            Message = message,
+            BuildsQueue = buildsQueueData,
+            RunningAgents = runningAgents,
+            RunningBuilds = runningBuilds
         };
 
         timeEvents.Add(timedEvent);

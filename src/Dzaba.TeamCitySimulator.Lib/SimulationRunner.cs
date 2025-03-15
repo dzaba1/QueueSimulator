@@ -92,6 +92,12 @@ internal sealed class SimulationRunner
         eventsQueue.Enqueue(EventNames.CreateAgent, time, e => CreateAgent(e, build));
     }
 
+    private void AddInitAgentQueueEvent(Agent agent, Build build, DateTime time)
+    {
+        logger.LogInformation("Adding agent init for [{AgentId}] {Agent} for {Time} to the event queue.", agent.Id, agent.AgentConfiguration, time);
+        eventsQueue.Enqueue(EventNames.InitAgent, time, e => InitAgent(e, agent, build));
+    }
+
     private void QueueBuild(EventData eventData, BuildConfiguration buildConfiguration)
     {
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
@@ -140,14 +146,15 @@ internal sealed class SimulationRunner
         {
             build.AgentId = agent.Id;
             var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+            eventMsg = $"Created a new agent [{agent.Id}] {agent.AgentConfiguration} for build [{build.Id}] {build.BuildConfiguration}";
             if (agentConfig.InitTime != null)
             {
-                // TODO: Add agent init event
-                throw new NotImplementedException();
+                AddInitAgentQueueEvent(agent, build, eventData.Time);
             }
-
-            eventMsg = $"Created a new agent [{agent.Id}] {agent.AgentConfiguration} for build [{build.Id}] {build.BuildConfiguration}";
-            AddStartBuildQueueEvent(build, eventData.Time);
+            else
+            {
+                AddStartBuildQueueEvent(build, eventData.Time);
+            }
         }
         else
         {
@@ -156,6 +163,18 @@ internal sealed class SimulationRunner
         }
 
         AddTimedEventData(eventData, eventMsg);
+    }
+
+    private void InitAgent(EventData eventData, Agent agent, Build build)
+    {
+        agent.State = AgentState.Initiating;
+
+        var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+        var endTime = eventData.Time + agentConfig.InitTime.Value;
+
+        AddStartBuildQueueEvent(build, endTime);
+
+        AddTimedEventData(eventData, $"Start initiating agent [{agent.Id}] {agent.AgentConfiguration}.");
     }
 
     private void AddTimedEventData(EventData data, string message)

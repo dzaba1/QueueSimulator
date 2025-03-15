@@ -42,10 +42,11 @@ public class SimulationValidationTests
             ],
             QueuedBuilds = []
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        this.Invoking(_ => sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds))
+        this.Invoking(_ => sut.Validate(payload))
             .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildAgentNotFound);
     }
 
@@ -70,10 +71,11 @@ public class SimulationValidationTests
             ],
             QueuedBuilds = []
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        this.Invoking(_ => sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds))
+        this.Invoking(_ => sut.Validate(payload))
             .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildNotFound);
     }
 
@@ -102,10 +104,11 @@ public class SimulationValidationTests
                 }
             ]
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        this.Invoking(_ => sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds))
+        this.Invoking(_ => sut.Validate(payload))
             .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildNotFound);
     }
 
@@ -135,10 +138,11 @@ public class SimulationValidationTests
                 }
             ]
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        this.Invoking(_ => sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds))
+        this.Invoking(_ => sut.Validate(payload))
             .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildCyclicDependency);
     }
 
@@ -180,10 +184,11 @@ public class SimulationValidationTests
                 }
             ]
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        this.Invoking(_ => sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds))
+        this.Invoking(_ => sut.Validate(payload))
             .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildCyclicDependency);
     }
 
@@ -236,9 +241,10 @@ public class SimulationValidationTests
                 }
             ]
         };
+        var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
-        sut.Validate(settings.CacheBuildConfiguration(), settings.CacheAgents(), settings.QueuedBuilds);
+        sut.Validate(payload);
     }
 }

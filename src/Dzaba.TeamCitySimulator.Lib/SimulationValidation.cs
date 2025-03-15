@@ -1,5 +1,4 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,25 +6,20 @@ namespace Dzaba.TeamCitySimulator.Lib;
 
 internal interface ISimulationValidation
 {
-    void Validate(IReadOnlyDictionary<string, BuildConfiguration> buildsCached,
-        IReadOnlyDictionary<string, AgentConfiguration> agentsCached,
-        IEnumerable<QueuedBuild> queuedBuilds);
+    void Validate(SimulationPayload simulationPayload);
 }
 
 internal sealed class SimulationValidation : ISimulationValidation
 {
-    public void Validate(IReadOnlyDictionary<string, BuildConfiguration> buildsCached,
-        IReadOnlyDictionary<string, AgentConfiguration> agentsCached,
-        IEnumerable<QueuedBuild> queuedBuilds)
+    public void Validate(SimulationPayload simulationPayload)
     {
-        ArgumentNullException.ThrowIfNull(buildsCached, nameof(buildsCached));
-        ArgumentNullException.ThrowIfNull(agentsCached, nameof(agentsCached));
+        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
-        foreach (var build in buildsCached.Values)
+        foreach (var build in simulationPayload.BuildConfigurationsCached.Values)
         {
             foreach (var agentName in build.CompatibleAgents)
             {
-                if (!agentsCached.ContainsKey(agentName))
+                if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
                 {
                     throw new ExitCodeException(ExitCode.BuildAgentNotFound, $"Couldn't find agent {agentName} for build configuration {build.Name}.");
                 }
@@ -35,7 +29,7 @@ internal sealed class SimulationValidation : ISimulationValidation
             {
                 foreach (var buildName in build.BuildDependencies)
                 {
-                    if (!buildsCached.ContainsKey(buildName))
+                    if (!simulationPayload.BuildConfigurationsCached.ContainsKey(buildName))
                     {
                         throw new ExitCodeException(ExitCode.BuildNotFound, $"Couldn't find dependent build configuration {buildName} for build configuration {build.Name}.");
                     }
@@ -43,9 +37,9 @@ internal sealed class SimulationValidation : ISimulationValidation
             }
         }
 
-        foreach (var queuedBuild in queuedBuilds)
+        foreach (var queuedBuild in simulationPayload.SimulationSettings.QueuedBuilds)
         {
-            if (!buildsCached.ContainsKey(queuedBuild.Name))
+            if (!simulationPayload.BuildConfigurationsCached.ContainsKey(queuedBuild.Name))
             {
                 throw new ExitCodeException(ExitCode.BuildNotFound, $"Couldn't find build configuration {queuedBuild.Name}.");
             }
@@ -64,7 +58,7 @@ internal sealed class SimulationValidation : ISimulationValidation
                 }
        
                 chainSet.Add(buildChain.BuildName);
-                var build = buildsCached[buildChain.BuildName];
+                var build = simulationPayload.GetBuildConfiguration(buildChain.BuildName);
                 if (build.BuildDependencies != null)
                 {
                     foreach (var buildDep in build.BuildDependencies)

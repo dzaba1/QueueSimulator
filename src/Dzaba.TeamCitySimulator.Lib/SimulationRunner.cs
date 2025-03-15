@@ -10,13 +10,11 @@ namespace Dzaba.TeamCitySimulator.Lib;
 
 internal sealed class SimulationRunner
 {
-    private readonly SimulationSettings simulationSettings;
+    private readonly SimulationPayload simulationPayload;
     private readonly ISimulationValidation simulationValidation;
     private readonly ILogger<SimulationRunner> logger;
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
-    private readonly IReadOnlyDictionary<string, BuildConfiguration> buildConfigurationsCached;
-    private readonly IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached;
     private readonly List<TimeEventData> timeEvents = new();
     private readonly BuildQueue buildQueue = new();
     private readonly AgentsQueue agentsQueue;
@@ -29,18 +27,16 @@ internal sealed class SimulationRunner
         ArgumentNullException.ThrowIfNull(simulationValidation, nameof(simulationValidation));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
-        this.simulationSettings = simulationSettings;
         this.simulationValidation = simulationValidation;
         this.logger = logger;
 
-        buildConfigurationsCached = simulationSettings.CacheBuildConfiguration();
-        agentConfigurationsCached = simulationSettings.CacheAgents();
-        agentsQueue = new AgentsQueue(agentConfigurationsCached);
+        simulationPayload = new SimulationPayload(simulationSettings);
+        agentsQueue = new AgentsQueue(simulationPayload);
     }
 
     public IEnumerable<TimeEventData> Run()
     {
-        simulationValidation.Validate(buildConfigurationsCached, agentConfigurationsCached, simulationSettings.QueuedBuilds);
+        simulationValidation.Validate(simulationPayload);
 
         InitBuilds();
 
@@ -54,13 +50,13 @@ internal sealed class SimulationRunner
 
     private void InitBuilds()
     {
-        foreach (var queuedBuild in simulationSettings.QueuedBuilds)
+        foreach (var queuedBuild in simulationPayload.SimulationSettings.QueuedBuilds)
         {
-            var waitTime = simulationSettings.SimulationDuration / queuedBuild.BuildsToQueue;
+            var waitTime = simulationPayload.SimulationSettings.SimulationDuration / queuedBuild.BuildsToQueue;
             for (var i = 0; i < queuedBuild.BuildsToQueue; i++)
             {
                 var buildStartTime = startTime + waitTime * i;
-                var build = buildConfigurationsCached[queuedBuild.Name];
+                var build = simulationPayload.GetBuildConfiguration(queuedBuild.Name);
                 AddQueueBuildQueueEvent(build, buildStartTime);
             }
         }
@@ -74,7 +70,7 @@ internal sealed class SimulationRunner
 
     private void AddEndBuildQueueEvent(Build build, DateTime currentTime)
     {
-        var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
+        var buildConfig = simulationPayload.GetBuildConfiguration(build.BuildConfiguration);
         var buildEndTime = currentTime + buildConfig.Duration;
         logger.LogInformation("Adding finishing build {Build} for {Time} to the event queue.", build.BuildConfiguration, buildEndTime);
         eventsQueue.Enqueue(EventNames.FinishBuild, buildEndTime, e => FinishBuild(e, build));
@@ -139,13 +135,13 @@ internal sealed class SimulationRunner
     {
         logger.LogInformation("Start creating an agent for build [{BuildId}] {Build}, Current time: {Time}", build.Id, build.BuildConfiguration, eventData.Time);
 
-        var buildConfig = buildConfigurationsCached[build.BuildConfiguration];
+        var buildConfig = simulationPayload.GetBuildConfiguration(build.BuildConfiguration);
         var eventMsg = "";
 
         if (agentsQueue.TryInitAgent(buildConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             build.AgentId = agent.Id;
-            var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+            var agentConfig = simulationPayload.GetAgentConfiguration(agent.AgentConfiguration);
             eventMsg = $"Created a new agent [{agent.Id}] {agent.AgentConfiguration} for build [{build.Id}] {build.BuildConfiguration}";
             if (agentConfig.InitTime != null)
             {
@@ -169,7 +165,7 @@ internal sealed class SimulationRunner
     {
         agent.State = AgentState.Initiating;
 
-        var agentConfig = agentConfigurationsCached[agent.AgentConfiguration];
+        var agentConfig = simulationPayload.GetAgentConfiguration(agent.AgentConfiguration);
         var endTime = eventData.Time + agentConfig.InitTime.Value;
 
         AddStartBuildQueueEvent(build, endTime);

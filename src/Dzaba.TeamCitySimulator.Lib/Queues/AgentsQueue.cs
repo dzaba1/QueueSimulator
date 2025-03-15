@@ -12,11 +12,11 @@ internal sealed class AgentsQueue
     private readonly Dictionary<string, List<Agent>> allAgents = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<long, Agent> agentsCache = new Dictionary<long, Agent>();
 
-    public AgentsQueue(IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached)
+    public AgentsQueue(SimulationPayload simulationPayload)
     {
-        ArgumentNullException.ThrowIfNull(agentConfigurationsCached, nameof(agentConfigurationsCached));
+        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
-        this.agentConfigurationsCached = agentConfigurationsCached;
+        agentConfigurationsCached = simulationPayload.AgentConfigurationsCached;
         foreach (var agentConfiguration in agentConfigurationsCached)
         {
             allAgents.Add(agentConfiguration.Key, new List<Agent>());

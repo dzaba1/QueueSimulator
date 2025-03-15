@@ -16,9 +16,10 @@ internal sealed class SimulationRunner
     private readonly DateTime startTime = new DateTime(2025, 1, 1);
     private readonly EventQueue eventsQueue = new();
     private readonly IReadOnlyDictionary<string, BuildConfiguration> buildConfigurationsCached;
-    private readonly IReadOnlyDictionary<string, AgentConfiguration> agentsCached;
+    private readonly IReadOnlyDictionary<string, AgentConfiguration> agentConfigurationsCached;
     private readonly List<TimeEventData> timeEvents = new();
     private readonly BuildQueue buildQueue = new();
+    private readonly AgentsQueue agentsQueue;
 
     public SimulationRunner(SimulationSettings simulationSettings,
         ISimulationValidation simulationValidation,
@@ -33,12 +34,13 @@ internal sealed class SimulationRunner
         this.logger = logger;
 
         buildConfigurationsCached = simulationSettings.CacheBuildConfiguration();
-        agentsCached = simulationSettings.CacheAgents();
+        agentConfigurationsCached = simulationSettings.CacheAgents();
+        agentsQueue = new AgentsQueue(agentConfigurationsCached);
     }
 
     public IEnumerable<TimeEventData> Run()
     {
-        simulationValidation.Validate(buildConfigurationsCached, agentsCached, simulationSettings.QueuedBuilds);
+        simulationValidation.Validate(buildConfigurationsCached, agentConfigurationsCached, simulationSettings.QueuedBuilds);
 
         InitBuilds();
 
@@ -75,6 +77,16 @@ internal sealed class SimulationRunner
         logger.LogInformation("Start queuening a new build {Build}, Current time: {Time}", buildConfiguration.Name, eventData.Time);
 
         var build = buildQueue.NewBuild(buildConfiguration, eventData.Time);
+
+        if (agentsQueue.TryInitAgent(buildConfiguration.CompatibleAgents, eventData.Time, out var agent))
+        {
+
+        }
+        else
+        {
+            // There aren't any free agents
+            throw new NotImplementedException();
+        }
 
         AddTimedEventData(eventData);
     }

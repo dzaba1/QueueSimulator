@@ -76,4 +76,41 @@ public class CreateAgentEventHandlerTests
         request.AgentId.Should().Be(agent.Id);
         eventsPump.Verify(x => x.AddInitAgentQueueEvent(request, CurrentTime), Times.Once());
     }
+
+    [Test]
+    public void Handle_WhenAgentNotCreated_ThenNothing()
+    {
+        var eventData = new EventData("TestEvent", CurrentTime);
+        var request = new Request
+        {
+            RequestConfiguration = "BuildConfig1"
+        };
+
+        var settings = new SimulationSettings
+        {
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = request.RequestConfiguration,
+                    CompatibleAgents = ["Agent1"]
+                }
+            ],
+            Agents = []
+        };
+
+        SetupContext(settings);
+
+        Agent agent = null;
+
+        fixture.FreezeMock<IAgentsRepository>()
+            .Setup(x => x.TryCreateAgent(settings.RequestConfigurations[0].CompatibleAgents, CurrentTime, out agent))
+            .Returns(false);
+
+        var sut = CreateSut();
+
+        sut.Handle(eventData, request);
+
+        request.State.Should().Be(RequestState.WaitingForAgent);
+        request.AgentId.Should().BeNull();
+    }
 }

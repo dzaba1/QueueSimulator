@@ -70,16 +70,8 @@ internal sealed class CreateAgentEventHandler : EventHandler<CreateAgentEventPay
         if (agentsRepo.TryCreateAgent(requestConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             request.AgentId = agent.Id;
-            var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);
 
-            if (agentConfig.InitTime != null)
-            {
-                eventsQueue.AddInitAgentQueueEvent(request, eventData.Time);
-            }
-            else
-            {
-                eventsQueue.AddStartRequestQueueEvent(request, eventData.Time);
-            }
+            eventsQueue.AddInitAgentQueueEvent(request, eventData.Time);
 
             return $"Created a new agent {agent.Id} [{agent.AgentConfiguration}] for request {request.Id} [{request.RequestConfiguration}].";
         }

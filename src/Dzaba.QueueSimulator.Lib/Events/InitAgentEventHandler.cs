@@ -59,7 +59,12 @@ internal sealed class InitAgentEventHandler : EventHandler<InitAgentEventPayload
         agent.State = AgentState.Initiating;
 
         var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);
-        var endTime = payload.EventData.Time + agentConfig.InitTime.Value;
+
+        var endTime = eventData.Time;
+        if (agentConfig.InitTime != null)
+        {
+            endTime = eventData.Time + agentConfig.InitTime.Value;
+        }
 
         eventQueue.AddStartRequestQueueEvent(request, endTime);
 

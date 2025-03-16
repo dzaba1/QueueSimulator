@@ -11,7 +11,7 @@ internal interface IAgentsRepository
     IReadOnlyDictionary<string, int> GetActiveAgentsByConfigurationCount();
     int GetActiveAgentsCount();
     Agent GetAgent(long id);
-    bool TryInitAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent);
+    bool TryCreateAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent);
 }
 
 internal sealed class AgentsRepository : IAgentsRepository
@@ -40,7 +40,7 @@ internal sealed class AgentsRepository : IAgentsRepository
         return local;
     }
 
-    public bool TryInitAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent)
+    public bool TryCreateAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent)
     {
         ArgumentNullException.ThrowIfNull(compatibleAgents, nameof(compatibleAgents));
 

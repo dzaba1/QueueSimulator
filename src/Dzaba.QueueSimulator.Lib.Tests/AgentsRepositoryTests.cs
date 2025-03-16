@@ -82,7 +82,7 @@ public class AgentsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            sut.TryInitAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
         }
 
         sut.EnumerateAgents().Should().HaveCount(3);
@@ -95,7 +95,7 @@ public class AgentsRepositoryTests
         SetupSettings(settings);
         var sut = CreateSut();
 
-        sut.TryInitAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
 
         var result = sut.GetAgent(agent.Id);
         result.Should().BeSameAs(agent);
@@ -112,13 +112,13 @@ public class AgentsRepositoryTests
 
         for (var i = 0; i < 2; i++)
         {
-            sut.TryInitAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
             agentsList.Add(agent);
 
-            sut.TryInitAgent(["TestAgent2"], CurrentTime, out agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent2"], CurrentTime, out agent).Should().BeTrue();
             agentsList.Add(agent);
 
-            sut.TryInitAgent(["TestAgent3"], CurrentTime, out agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent3"], CurrentTime, out agent).Should().BeTrue();
             agentsList.Add(agent);
         }
 
@@ -144,13 +144,13 @@ public class AgentsRepositoryTests
 
         for (var i = 0; i < 2; i++)
         {
-            sut.TryInitAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent1"], CurrentTime, out var agent).Should().BeTrue();
             agentsList.Add(agent);
 
-            sut.TryInitAgent(["TestAgent2"], CurrentTime, out agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent2"], CurrentTime, out agent).Should().BeTrue();
             agentsList.Add(agent);
 
-            sut.TryInitAgent(["TestAgent3"], CurrentTime, out agent).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent3"], CurrentTime, out agent).Should().BeTrue();
             agentsList.Add(agent);
         }
 
@@ -164,7 +164,7 @@ public class AgentsRepositoryTests
     }
 
     [Test]
-    public void TryInitAgent_WhenTotalMaxAgentsReached_ThenDontCreateANewOne()
+    public void TryCreateAgent_WhenTotalMaxAgentsReached_ThenDontCreateANewOne()
     {
         var settings = GetSomeSettings();
         settings.MaxRunningAgents = 1;
@@ -172,41 +172,41 @@ public class AgentsRepositoryTests
         SetupSettings(settings);
         var sut = CreateSut();
 
-        sut.TryInitAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
 
-        sut.TryInitAgent(["TestAgent1"], CurrentTime, out var result).Should().BeFalse();
+        sut.TryCreateAgent(["TestAgent1"], CurrentTime, out var result).Should().BeFalse();
         result.Should().BeNull();
     }
 
     [Test]
-    public void TryInitAgent_WhenMaxAgentsReached_ThenDontCreateANewOne()
+    public void TryCreateAgent_WhenMaxAgentsReached_ThenDontCreateANewOne()
     {
         var settings = GetSomeSettings();
         SetupSettings(settings);
         var sut = CreateSut();
 
-        sut.TryInitAgent(["TestAgent4"], CurrentTime, out _).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent4"], CurrentTime, out _).Should().BeTrue();
 
-        sut.TryInitAgent(["TestAgent4"], CurrentTime, out var result).Should().BeFalse();
+        sut.TryCreateAgent(["TestAgent4"], CurrentTime, out var result).Should().BeFalse();
         result.Should().BeNull();
     }
 
     [Test]
-    public void TryInitAgent_WhenMultipleCompatibleAgent_ThenSelectMinCountConfiguration()
+    public void TryCreateAgent_WhenMultipleCompatibleAgent_ThenSelectMinCountConfiguration()
     {
         var settings = GetSomeSettings();
         SetupSettings(settings);
         var sut = CreateSut();
 
-        sut.TryInitAgent(["TestAgent4"], CurrentTime, out _).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent4"], CurrentTime, out _).Should().BeTrue();
         for (var i = 0; i < 3; i++)
         {
-            sut.TryInitAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
-            sut.TryInitAgent(["TestAgent2"], CurrentTime, out _).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
+            sut.TryCreateAgent(["TestAgent2"], CurrentTime, out _).Should().BeTrue();
         }
-        sut.TryInitAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent1"], CurrentTime, out _).Should().BeTrue();
 
-        sut.TryInitAgent(["TestAgent1", "TestAgent2", "TestAgent4"], CurrentTime, out var result).Should().BeTrue();
+        sut.TryCreateAgent(["TestAgent1", "TestAgent2", "TestAgent4"], CurrentTime, out var result).Should().BeTrue();
         result.AgentConfiguration.Should().Be("TestAgent2");
     }
 }

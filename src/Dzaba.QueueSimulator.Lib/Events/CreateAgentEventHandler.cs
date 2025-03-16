@@ -67,7 +67,7 @@ internal sealed class CreateAgentEventHandler : EventHandler<CreateAgentEventPay
 
         request.State = RequestState.WaitingForAgent;
 
-        if (agentsRepo.TryInitAgent(requestConfig.CompatibleAgents, eventData.Time, out var agent))
+        if (agentsRepo.TryCreateAgent(requestConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             request.AgentId = agent.Id;
             var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);

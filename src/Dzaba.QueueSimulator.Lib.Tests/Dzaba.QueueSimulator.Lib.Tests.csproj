@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dzaba.TeamCitySimulator.Lib\Dzaba.QueueSimulator.Lib.csproj" />
+    <ProjectReference Include="..\Dzaba.QueueSimulator.Lib\Dzaba.QueueSimulator.Lib.csproj" />
   </ItemGroup>
 
 </Project>

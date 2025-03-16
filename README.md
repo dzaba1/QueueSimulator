@@ -1,2 +1,2 @@
-# TeamCitySimulator
-Dummy TeamCity queueing simulator
+# QueueSimulator
+Dummy queueing simulator

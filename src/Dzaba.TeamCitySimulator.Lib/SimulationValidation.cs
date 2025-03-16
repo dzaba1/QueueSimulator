@@ -54,16 +54,16 @@ internal sealed class SimulationValidation : ISimulationValidation
                 var chainSet = new HashSet<string>(requestChain.Chain, StringComparer.OrdinalIgnoreCase);
                 if (chainSet.Contains(requestChain.RequestName))
                 {
-                    throw new ExitCodeException(ExitCode.RequestCyclicDependency, $"Detected build cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}.");
+                    throw new ExitCodeException(ExitCode.RequestCyclicDependency, $"Detected request cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}.");
                 }
        
                 chainSet.Add(requestChain.RequestName);
-                var build = simulationPayload.GetRequestConfiguration(requestChain.RequestName);
-                if (build.RequestDependencies != null)
+                var request = simulationPayload.GetRequestConfiguration(requestChain.RequestName);
+                if (request.RequestDependencies != null)
                 {
-                    foreach (var buildDep in build.RequestDependencies)
+                    foreach (var requestDep in request.RequestDependencies)
                     {
-                        toCheck.Push(new CyclicChain(buildDep, chainSet));
+                        toCheck.Push(new CyclicChain(requestDep, chainSet));
                     }
                 }
             }

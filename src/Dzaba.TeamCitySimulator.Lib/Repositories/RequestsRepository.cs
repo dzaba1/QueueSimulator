@@ -105,11 +105,11 @@ internal sealed class RequestsRepository : IRequestsRepository
 
         var comparer = new StringPropertyEqualityComparer<RequestConfiguration>(r => r.Name, StringComparer.OrdinalIgnoreCase);
 
-        return ResolveBuildConfigurationDependenciesInternal(requestConfiguration, recursive)
+        return ResolveRequestConfigurationDependenciesInternal(requestConfiguration, recursive)
             .Distinct(comparer);
     }
 
-    private IEnumerable<RequestConfiguration> ResolveBuildConfigurationDependenciesInternal(RequestConfiguration requestConfiguration, bool recursive)
+    private IEnumerable<RequestConfiguration> ResolveRequestConfigurationDependenciesInternal(RequestConfiguration requestConfiguration, bool recursive)
     {
         if (requestConfiguration.RequestDependencies == null)
         {
@@ -125,7 +125,7 @@ internal sealed class RequestsRepository : IRequestsRepository
 
             if (recursive)
             {
-                var subDeps = ResolveBuildConfigurationDependenciesInternal(dep, true);
+                var subDeps = ResolveRequestConfigurationDependenciesInternal(dep, true);
                 foreach (var subDep in subDeps)
                 {
                     yield return subDep;

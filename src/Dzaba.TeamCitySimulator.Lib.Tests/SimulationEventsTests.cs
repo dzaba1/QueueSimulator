@@ -17,14 +17,14 @@ public class SimulationEventsTests
     private static readonly DateTime CurrentTime = DateTime.Now;
 
     private IFixture fixture;
-    private Mock<IBuildsRepository> buildsRepo;
+    private Mock<IRequestsRepository> requestRepo;
     private Mock<IAgentsRepository> agentsRepo;
 
     [SetUp]
     public void Setup()
     {
         fixture = TestFixture.Create();
-        buildsRepo = fixture.FreezeMock<IBuildsRepository>();
+        requestRepo = fixture.FreezeMock<IRequestsRepository>();
         agentsRepo = fixture.FreezeMock<IAgentsRepository>();
     }
 
@@ -33,39 +33,39 @@ public class SimulationEventsTests
         return fixture.Create<SimulationEvents>();
     }
 
-    private void SetupIncludeAllAgentsAndBuilds(bool include)
+    private void SetupIncludeAllAgentsAndRequests(bool include)
     {
         var settings = new SimulationSettings
         {
             IncludeAllAgents = include,
-            IncludeAllBuilds = include,
-            BuildConfigurations = [],
+            IncludeAllRequests = include,
+            RequestConfigurations = [],
             Agents = [],
         };
         fixture.FreezeMock<ISimulationContext>()
             .Setup(x => x.Payload).Returns(new SimulationPayload(settings));
     }
 
-    private void SetupBuildsQueue(params Build[] builds)
+    private void SetupRequestsQueue(params Request[] requests)
     {
-        buildsRepo.Setup(x => x.GetQueueLength())
-            .Returns(builds.Length);
-        buildsRepo.Setup(x => x.GroupQueueByBuildConfiguration())
-            .Returns(builds.GroupByToArrayDict(b => b.BuildConfiguration, StringComparer.OrdinalIgnoreCase));
+        requestRepo.Setup(x => x.GetQueueLength())
+            .Returns(requests.Length);
+        requestRepo.Setup(x => x.GroupQueueByConfiguration())
+            .Returns(requests.GroupByToArrayDict(b => b.RequestConfiguration, StringComparer.OrdinalIgnoreCase));
     }
 
-    private void SetupRunningBuilds(params Build[] builds)
+    private void SetupRunningRequests(params Request[] requests)
     {
-        buildsRepo.Setup(x => x.GetRunningBuildsCount())
-            .Returns(builds.Length);
-        buildsRepo.Setup(x => x.GroupRunningBuildsByBuildConfiguration())
-            .Returns(builds.GroupByToArrayDict(b => b.BuildConfiguration, StringComparer.OrdinalIgnoreCase));
+        requestRepo.Setup(x => x.GetRunningRequestCount())
+            .Returns(requests.Length);
+        requestRepo.Setup(x => x.GroupRunningRequestsByConfiguration())
+            .Returns(requests.GroupByToArrayDict(b => b.RequestConfiguration, StringComparer.OrdinalIgnoreCase));
     }
 
-    private void SetupAllBuilds(params Build[] builds)
+    private void SetupAllRequests(params Request[] requests)
     {
-        buildsRepo.Setup(x => x.EnumerateBuilds())
-            .Returns(builds);
+        requestRepo.Setup(x => x.EnumerateRequests())
+            .Returns(requests);
     }
 
     private void SetupAllAgents(params Agent[] agents)
@@ -84,9 +84,9 @@ public class SimulationEventsTests
     }
 
     [Test]
-    public void AddTimedEventData_WhenEventAdded_ThenAllDataAboutBuildsAndAgentsIsIncluded()
+    public void AddTimedEventData_WhenEventAdded_ThenAllDataAboutRequestAndAgentsIsIncluded()
     {
-        SetupIncludeAllAgentsAndBuilds(true);
+        SetupIncludeAllAgentsAndRequests(true);
 
         var sut = CreateSut();
 
@@ -96,15 +96,15 @@ public class SimulationEventsTests
         var result = sut.First();
 
         result.AllAgents.Should().HaveCount(4);
-        result.AllBuilds.Should().HaveCount(4);
-        result.BuildsQueue.Total.Should().Be(2);
-        result.BuildsQueue.Grouped.Should().HaveCount(2);
+        result.AllRequests.Should().HaveCount(4);
+        result.RequestsQueue.Total.Should().Be(2);
+        result.RequestsQueue.Grouped.Should().HaveCount(2);
         result.Message.Should().Be("TestMsg");
         result.Name.Should().Be("TestEvent");
         result.RunningAgents.Total.Should().Be(2);
         result.RunningAgents.Grouped.Should().HaveCount(2);
-        result.RunningBuilds.Total.Should().Be(2);
-        result.RunningBuilds.Grouped.Should().HaveCount(2);
+        result.RunningRequests.Total.Should().Be(2);
+        result.RunningRequests.Grouped.Should().HaveCount(2);
         result.Timestamp.Should().Be(CurrentTime);
     }
 }

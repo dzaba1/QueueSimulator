@@ -30,7 +30,7 @@ public class SimulationTests : IocTestFixture
     }
 
     [Test]
-    public void Run_WhenOneBuild_Then4Events()
+    public void Run_WhenOneRequest_Then4Events()
     {
         var settings = new SimulationSettings
         {
@@ -40,19 +40,19 @@ public class SimulationTests : IocTestFixture
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     Duration = TimeSpan.FromMinutes(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    BuildsToQueue = 1
+                    NumberToQueue = 1
                 }
             ]
         };
@@ -62,30 +62,30 @@ public class SimulationTests : IocTestFixture
         var result = sut.Run(settings).ToArray();
         result.Should().HaveCount(4);
 
-        result[0].Name.Should().Be(EventNames.QueueBuild);
-        ValidateDataForCount(result[0].BuildsQueue, 1);
+        result[0].Name.Should().Be(EventNames.QueueRequest);
+        ValidateDataForCount(result[0].RequestsQueue, 1);
         ValidateDataForEmptines(result[0].RunningAgents);
-        ValidateDataForEmptines(result[0].RunningBuilds);
+        ValidateDataForEmptines(result[0].RunningRequests);
 
         result[1].Name.Should().Be(EventNames.CreateAgent);
-        ValidateDataForCount(result[1].BuildsQueue, 1);
+        ValidateDataForCount(result[1].RequestsQueue, 1);
         ValidateDataForCount(result[1].RunningAgents, 1);
-        ValidateDataForEmptines(result[1].RunningBuilds);
+        ValidateDataForEmptines(result[1].RunningRequests);
 
-        result[2].Name.Should().Be(EventNames.StartBuild);
-        ValidateDataForEmptines(result[2].BuildsQueue);
+        result[2].Name.Should().Be(EventNames.StartRequest);
+        ValidateDataForEmptines(result[2].RequestsQueue);
         ValidateDataForCount(result[2].RunningAgents, 1);
-        ValidateDataForCount(result[2].RunningBuilds, 1);
+        ValidateDataForCount(result[2].RunningRequests, 1);
 
-        result[3].Name.Should().Be(EventNames.FinishBuild);
-        ValidateDataForEmptines(result[3].BuildsQueue);
+        result[3].Name.Should().Be(EventNames.FinishRequest);
+        ValidateDataForEmptines(result[3].RequestsQueue);
         ValidateDataForEmptines(result[3].RunningAgents);
-        ValidateDataForEmptines(result[3].RunningBuilds);
+        ValidateDataForEmptines(result[3].RunningRequests);
         result[3].Timestamp.Minute.Should().Be(1);
     }
 
     [Test]
-    public void Run_WhenOneBuildWithAgentInit_Then5Events()
+    public void Run_WhenOneRequestWithAgentInit_Then5Events()
     {
         var settings = new SimulationSettings
         {
@@ -96,19 +96,19 @@ public class SimulationTests : IocTestFixture
                     InitTime = TimeSpan.FromMinutes(15)
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     Duration = TimeSpan.FromMinutes(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    BuildsToQueue = 1
+                    NumberToQueue = 1
                 }
             ]
         };
@@ -118,35 +118,35 @@ public class SimulationTests : IocTestFixture
         var result = sut.Run(settings).ToArray();
         result.Should().HaveCount(5);
 
-        result[0].Name.Should().Be(EventNames.QueueBuild);
-        ValidateDataForCount(result[0].BuildsQueue, 1);
+        result[0].Name.Should().Be(EventNames.QueueRequest);
+        ValidateDataForCount(result[0].RequestsQueue, 1);
         ValidateDataForEmptines(result[0].RunningAgents);
-        ValidateDataForEmptines(result[0].RunningBuilds);
+        ValidateDataForEmptines(result[0].RunningRequests);
 
         result[1].Name.Should().Be(EventNames.CreateAgent);
-        ValidateDataForCount(result[1].BuildsQueue, 1);
+        ValidateDataForCount(result[1].RequestsQueue, 1);
         ValidateDataForCount(result[1].RunningAgents, 1);
-        ValidateDataForEmptines(result[1].RunningBuilds);
+        ValidateDataForEmptines(result[1].RunningRequests);
 
         result[2].Name.Should().Be(EventNames.InitAgent);
-        ValidateDataForCount(result[2].BuildsQueue, 1);
+        ValidateDataForCount(result[2].RequestsQueue, 1);
         ValidateDataForCount(result[2].RunningAgents, 1);
-        ValidateDataForEmptines(result[2].RunningBuilds);
+        ValidateDataForEmptines(result[2].RunningRequests);
 
-        result[3].Name.Should().Be(EventNames.StartBuild);
-        ValidateDataForEmptines(result[3].BuildsQueue);
+        result[3].Name.Should().Be(EventNames.StartRequest);
+        ValidateDataForEmptines(result[3].RequestsQueue);
         ValidateDataForCount(result[3].RunningAgents, 1);
-        ValidateDataForCount(result[3].RunningBuilds, 1);
+        ValidateDataForCount(result[3].RunningRequests, 1);
 
-        result[4].Name.Should().Be(EventNames.FinishBuild);
-        ValidateDataForEmptines(result[4].BuildsQueue);
+        result[4].Name.Should().Be(EventNames.FinishRequest);
+        ValidateDataForEmptines(result[4].RequestsQueue);
         ValidateDataForEmptines(result[4].RunningAgents);
-        ValidateDataForEmptines(result[4].RunningBuilds);
+        ValidateDataForEmptines(result[4].RunningRequests);
         result[4].Timestamp.Minute.Should().Be(16);
     }
 
     [Test]
-    public void Run_WhenALotOfQueuedBuilds_ThenEveryoneIsProcessed()
+    public void Run_WhenALotOfQueuedRequests_ThenEveryoneIsProcessed()
     {
         var settings = new SimulationSettings
         {
@@ -159,19 +159,19 @@ public class SimulationTests : IocTestFixture
                     MaxInstances = 20
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     Duration = TimeSpan.FromHours(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    BuildsToQueue = 130
+                    NumberToQueue = 130
                 }
             ]
         };
@@ -180,13 +180,13 @@ public class SimulationTests : IocTestFixture
 
         var result = sut.Run(settings).ToArray();
         var last = result[result.Length - 1];
-        ValidateDataForEmptines(last.BuildsQueue);
+        ValidateDataForEmptines(last.RequestsQueue);
         ValidateDataForEmptines(last.RunningAgents);
-        ValidateDataForEmptines(last.RunningBuilds);
+        ValidateDataForEmptines(last.RunningRequests);
     }
 
     [Test]
-    public void Run_WhenOneBuildWithDependency_Then4Events()
+    public void Run_WhenOneRequestWithDependency_Then4Events()
     {
         var settings = new SimulationSettings
         {
@@ -197,26 +197,26 @@ public class SimulationTests : IocTestFixture
                     InitTime = TimeSpan.FromMinutes(15)
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     Duration = TimeSpan.FromMinutes(1)
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig1"],
+                    RequestDependencies = ["BuildConfig1"],
                     Duration = TimeSpan.FromMinutes(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig2",
-                    BuildsToQueue = 1
+                    NumberToQueue = 1
                 }
             ]
         };

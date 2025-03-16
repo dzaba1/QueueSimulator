@@ -48,19 +48,19 @@ public class EventHandlersTests : IocTestFixture
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     Duration = TimeSpan.FromMinutes(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    BuildsToQueue = 1
+                    NumberToQueue = 1
                 }
             ]
         };
@@ -73,19 +73,19 @@ public class EventHandlersTests : IocTestFixture
                     Name = "TestAgent2"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent2"],
                     Duration = TimeSpan.FromMinutes(1)
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig2",
-                    BuildsToQueue = 1
+                    NumberToQueue = 1
                 }
             ]
         };

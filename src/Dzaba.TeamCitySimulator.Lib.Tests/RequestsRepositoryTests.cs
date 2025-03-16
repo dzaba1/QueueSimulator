@@ -10,7 +10,7 @@ using System.Linq;
 namespace Dzaba.TeamCitySimulator.Lib.Tests
 {
     [TestFixture]
-    public class BuildsRepositoryTests
+    public class RequestsRepositoryTests
     {
         private static readonly DateTime CurrentTime = DateTime.Now;
 
@@ -22,9 +22,9 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
             fixture = TestFixture.Create();
         }
 
-        private BuildsRepository CreateSut()
+        private RequestsRepository CreateSut()
         {
-            return fixture.Create<BuildsRepository>();
+            return fixture.Create<RequestsRepository>();
         }
 
         private SimulationSettings GetSomeSettings()
@@ -37,39 +37,39 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
                         Name = "TestAgent1"
                     }
                 ],
-                BuildConfigurations = [
-                    new BuildConfiguration
+                RequestConfigurations = [
+                    new RequestConfiguration
                     {
                         Name = "BuildConfig1",
                         CompatibleAgents = ["TestAgent1"],
-                        BuildDependencies = ["BuildConfig2"]
+                        RequestDependencies = ["BuildConfig2"]
                     },
-                    new BuildConfiguration
+                    new RequestConfiguration
                     {
                         Name = "BuildConfig2",
                         CompatibleAgents = ["TestAgent1"],
-                        BuildDependencies = ["BuildConfig3", "BuildConfig5"]
+                        RequestDependencies = ["BuildConfig3", "BuildConfig5"]
                     },
-                    new BuildConfiguration
+                    new RequestConfiguration
                     {
                         Name = "BuildConfig3",
                         CompatibleAgents = ["TestAgent1"],
-                        BuildDependencies = ["BuildConfig4"]
+                        RequestDependencies = ["BuildConfig4"]
                     },
-                    new BuildConfiguration
+                    new RequestConfiguration
                     {
                         Name = "BuildConfig4",
                         CompatibleAgents = ["TestAgent1"]
                     },
-                    new BuildConfiguration
+                    new RequestConfiguration
                     {
                         Name = "BuildConfig5",
                         CompatibleAgents = ["TestAgent1"],
-                        BuildDependencies = ["BuildConfig4"]
+                        RequestDependencies = ["BuildConfig4"]
                     }
                 ],
-                QueuedBuilds = [
-                    new QueuedBuild
+                InitialRequests = [
+                    new InitialRequest
                     {
                         Name = "BuildConfig1"
                     }
@@ -85,58 +85,58 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         }
 
         [Test]
-        public void GetBuild_WhenBuildAdded_ThenItCanBeTakenById()
+        public void GetRequest_WhenRequestAdded_ThenItCanBeTakenById()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
-            var build = sut.NewBuild(settings.BuildConfigurations[0], CurrentTime);
-            var result = sut.GetBuild(build.Id);
-            result.Should().BeSameAs(build);
+            var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+            var result = sut.GetRequest(request.Id);
+            result.Should().BeSameAs(request);
         }
 
         [Test]
-        public void NewBuild_WhenBuildAdded_ThenItHasCorrectProperties()
+        public void NewRequest_WhenRequestAdded_ThenItHasCorrectProperties()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
-            var build = sut.NewBuild(settings.BuildConfigurations[0], CurrentTime);
-            build.AgentId.Should().BeNull();
-            build.BuildConfiguration.Should().Be(settings.BuildConfigurations[0].Name);
-            build.CreatedTime.Should().Be(CurrentTime);
-            build.EndTime.Should().BeNull();
-            build.StartTime.Should().BeNull();
-            build.Id.Should().Be(1);
-            build.State.Should().Be(BuildState.Created);
+            var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+            request.AgentId.Should().BeNull();
+            request.RequestConfiguration.Should().Be(settings.RequestConfigurations[0].Name);
+            request.CreatedTime.Should().Be(CurrentTime);
+            request.EndTime.Should().BeNull();
+            request.StartTime.Should().BeNull();
+            request.Id.Should().Be(1);
+            request.State.Should().Be(RequestState.Created);
         }
 
         [Test]
-        public void EnumerateBuilds_WhenCalled_ThenItReturnsAllBuilds()
+        public void EnumerateRequests_WhenCalled_ThenItReturnsAllRequests()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
+                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
             }
             
-            sut.EnumerateBuilds().Should().HaveCount(3);
+            sut.EnumerateRequests().Should().HaveCount(3);
         }
 
         [Test]
-        public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllBuildsWaitingForDependencies()
+        public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllRequestsWaitingForDependencies()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                var build = sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
+                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
                 if (i > 0)
                 {
-                    build.State = BuildState.WaitingForDependencies;
+                    request.State = RequestState.WaitingForDependencies;
                 }
             }
 
@@ -144,92 +144,92 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         }
 
         [Test]
-        public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllBuildsWaitingForAgents()
+        public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllRequestWaitingForAgents()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
-            var builds = Enumerable.Range(0, 6)
-                .Select(i => sut.NewBuild(settings.BuildConfigurations[0], CurrentTime))
+            var requests = Enumerable.Range(0, 6)
+                .Select(i => sut.NewRequest(settings.RequestConfigurations[0], CurrentTime))
                 .ToArray();
 
             for (var i = 0; i < 4; i++)
             {
                 if (i > 1)
                 {
-                    builds[i].AgentId = i;
+                    requests[i].AgentId = i;
                 }
 
-                builds[i].State = BuildState.WaitingForAgent;
+                requests[i].State = RequestState.WaitingForAgent;
             }
 
             sut.GetWaitingForAgents().Should().HaveCount(2);
         }
 
         [Test]
-        public void GroupRunningBuildsByBuildConfiguration_WhenCalled_ThenItReturnsAllBuilds()
+        public void GroupRunningRequestsByConfiguration_WhenCalled_ThenItReturnsAllRequests()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                var build = sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
-                build.State = BuildState.Running;
+                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+                request.State = RequestState.Running;
             }
 
-            var result = sut.GroupRunningBuildsByBuildConfiguration();
+            var result = sut.GroupRunningRequestsByConfiguration();
             result.Should().HaveCount(3);
             for (var i = 0; i < 3; i++)
             {
-                result[settings.BuildConfigurations[i].Name].Should().HaveCount(1);
+                result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
             }
         }
 
         [Test]
-        public void GetRunningBuildsCount_WhenCalled_ThenItCountsAllRunningBuilds()
+        public void GetRunningRequestCount_WhenCalled_ThenItCountsAllRunningRequests()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                var build = sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
-                build.State = BuildState.Running;
+                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+                request.State = RequestState.Running;
             }
 
-            var result = sut.GetRunningBuildsCount();
+            var result = sut.GetRunningRequestCount();
             result.Should().Be(3);
         }
 
         [Test]
-        public void GroupQueueByBuildConfiguration_WhenCalled_ThenItReturnsAllBuilds()
+        public void GroupQueueByConfiguration_WhenCalled_ThenItReturnsAllRequests()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
+                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
             }
 
-            var result = sut.GroupQueueByBuildConfiguration();
+            var result = sut.GroupQueueByConfiguration();
             result.Should().HaveCount(3);
             for (var i = 0; i < 3; i++)
             {
-                result[settings.BuildConfigurations[i].Name].Should().HaveCount(1);
+                result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
             }
         }
 
         [Test]
-        public void GetQueueLengtht_WhenCalled_ThenItCountsAllQueuedBuilds()
+        public void GetQueueLengtht_WhenCalled_ThenItCountsAllQueuedRequests()
         {
             var settings = GetSomeSettings();
             var sut = CreateSut();
 
             for (var i = 0; i < 3; i++)
             {
-                sut.NewBuild(settings.BuildConfigurations[i], CurrentTime);
+                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
             }
 
             var result = sut.GetQueueLength();
@@ -237,31 +237,31 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
         }
 
         [Test]
-        public void ResolveBuildConfigurationDependencies_WhenCalledWithoutRecursion_ThenItReturnsDistinctValues()
+        public void ResolveRequestConfigurationDependencies_WhenCalledWithoutRecursion_ThenItReturnsDistinctValues()
         {
             var settings = GetSomeSettings();
             SetupSettings(settings);
             var sut = CreateSut();
 
-            var result = sut.ResolveBuildConfigurationDependencies(settings.BuildConfigurations[1], false)
+            var result = sut.ResolveRequestConfigurationDependencies(settings.RequestConfigurations[1], false)
                 .ToArray();
 
-            result.Should().NotContain(settings.BuildConfigurations[1]);
+            result.Should().NotContain(settings.RequestConfigurations[1]);
             result.Should().OnlyHaveUniqueItems(s => s.Name);
             result.Should().HaveCount(2);
         }
 
         [Test]
-        public void ResolveBuildConfigurationDependencies_WhenCalledWithRecursion_ThenItReturnsDistinctValues()
+        public void ResolveRequestConfigurationDependencies_WhenCalledWithRecursion_ThenItReturnsDistinctValues()
         {
             var settings = GetSomeSettings();
             SetupSettings(settings);
             var sut = CreateSut();
 
-            var result = sut.ResolveBuildConfigurationDependencies(settings.BuildConfigurations[0], true)
+            var result = sut.ResolveRequestConfigurationDependencies(settings.RequestConfigurations[0], true)
                 .ToArray();
 
-            result.Should().NotContain(settings.BuildConfigurations[0]);
+            result.Should().NotContain(settings.RequestConfigurations[0]);
             result.Should().OnlyHaveUniqueItems(s => s.Name);
             result.Should().HaveCount(4);
         }

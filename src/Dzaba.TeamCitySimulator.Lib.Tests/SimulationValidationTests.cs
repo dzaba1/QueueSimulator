@@ -23,7 +23,7 @@ public class SimulationValidationTests
     }
 
     [Test]
-    public void Validate_WhenBuildConfigWithWrongAgent_ThenError()
+    public void Validate_WhenRequestConfigWithWrongAgent_ThenError()
     {
         var settings = new SimulationSettings
         {
@@ -33,25 +33,25 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent2"]
                 }
             ],
-            QueuedBuilds = []
+            InitialRequests = []
         };
         var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildAgentNotFound);
+            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.AgentNotFound);
     }
 
     [Test]
-    public void Validate_WhenBuildConfigNotFoundInDependencies_ThenError()
+    public void Validate_WhenRequestConfigNotFoundInDependencies_ThenError()
     {
         var settings = new SimulationSettings
         {
@@ -61,26 +61,26 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig2"]
+                    RequestDependencies = ["BuildConfig2"]
                 }
             ],
-            QueuedBuilds = []
+            InitialRequests = []
         };
         var payload = new SimulationPayload(settings);
 
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildNotFound);
+            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestNotFound);
     }
 
     [Test]
-    public void Validate_WhenBuildConfigNotFoundInQueuedBuilds_ThenError()
+    public void Validate_WhenRequestConfigNotFoundInQueuedRequests_ThenError()
     {
         var settings = new SimulationSettings
         {
@@ -90,15 +90,15 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"]
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig2"
                 }
@@ -109,11 +109,11 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildNotFound);
+            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestNotFound);
     }
 
     [Test]
-    public void Validate_WhenBuildCyclicDependency_ThenError()
+    public void Validate_WhenRequestCyclicDependency_ThenError()
     {
         var settings = new SimulationSettings
         {
@@ -123,16 +123,16 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig1"]
+                    RequestDependencies = ["BuildConfig1"]
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1"
                 }
@@ -143,11 +143,11 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildCyclicDependency);
+            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestCyclicDependency);
     }
 
     [Test]
-    public void Validate_WhenBuild3CyclicDependency_ThenError()
+    public void Validate_WhenRequest3CyclicDependency_ThenError()
     {
         var settings = new SimulationSettings
         {
@@ -157,28 +157,28 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig2"]
+                    RequestDependencies = ["BuildConfig2"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig3"]
+                    RequestDependencies = ["BuildConfig3"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig1"]
+                    RequestDependencies = ["BuildConfig1"]
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1"
                 }
@@ -189,7 +189,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.BuildCyclicDependency);
+            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestCyclicDependency);
     }
 
     [Test]
@@ -203,39 +203,39 @@ public class SimulationValidationTests
                     Name = "TestAgent1"
                 }
             ],
-            BuildConfigurations = [
-                new BuildConfiguration
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig2"]
+                    RequestDependencies = ["BuildConfig2"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig3", "BuildConfig5"]
+                    RequestDependencies = ["BuildConfig3", "BuildConfig5"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig4"]
+                    RequestDependencies = ["BuildConfig4"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig4",
                     CompatibleAgents = ["TestAgent1"]
                 },
-                new BuildConfiguration
+                new RequestConfiguration
                 {
                     Name = "BuildConfig5",
                     CompatibleAgents = ["TestAgent1"],
-                    BuildDependencies = ["BuildConfig4"]
+                    RequestDependencies = ["BuildConfig4"]
                 }
             ],
-            QueuedBuilds = [
-                new QueuedBuild
+            InitialRequests = [
+                new InitialRequest
                 {
                     Name = "BuildConfig1"
                 }

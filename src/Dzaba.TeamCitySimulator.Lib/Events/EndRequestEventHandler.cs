@@ -65,6 +65,6 @@ internal sealed class EndRequestEventHandler : EventHandler<EndRequestEventPaylo
             eventQueue.AddCreateAgentQueueEvent(scheduledRequest, eventData.Time);
         }
 
-        return $"Finished the build {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
+        return $"Finished the request {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
     }
 }

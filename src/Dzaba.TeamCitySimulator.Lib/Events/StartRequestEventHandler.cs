@@ -45,7 +45,7 @@ internal sealed class StartRequestEventHandler : EventHandler<StartRequestEventP
         var request = payload.Request;
         var eventData = payload.EventData;
 
-        logger.LogInformation("Starting the build {RequestId} [{Request}], Current time: {Time}",
+        logger.LogInformation("Starting the request {RequestId} [{Request}], Current time: {Time}",
             request.Id,
             request.RequestConfiguration,
             eventData.Time);

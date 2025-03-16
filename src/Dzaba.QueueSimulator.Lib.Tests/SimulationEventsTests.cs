@@ -88,6 +88,65 @@ public class SimulationEventsTests
     {
         SetupIncludeAllAgentsAndRequests(true);
 
+        Request[] runningRequests = [
+            new Request
+            {
+                AgentId = 1,
+                Id = 1,
+                CreatedTime = CurrentTime,
+                RequestConfiguration = "BuildConfig1",
+                State = RequestState.Running
+            },
+            new Request
+            {
+                AgentId = 2,
+                Id = 2,
+                CreatedTime = CurrentTime,
+                RequestConfiguration = "BuildConfig2",
+                State = RequestState.Running
+            }
+        ];
+
+        Request[] queuedRequests = [
+            new Request
+            {
+                AgentId = 3,
+                Id = 3,
+                CreatedTime = CurrentTime,
+                RequestConfiguration = "BuildConfig1",
+                State = RequestState.WaitingForAgent
+            },
+            new Request
+            {
+                AgentId = 4,
+                Id = 4,
+                CreatedTime = CurrentTime,
+                RequestConfiguration = "BuildConfig2",
+                State = RequestState.WaitingForAgent
+            }
+        ];
+
+        Agent[] activeAgents = [
+            new Agent
+            {
+                AgentConfiguration = "Agent1",
+                State = AgentState.Running,
+                Id = 1
+            },
+            new Agent
+            {
+                AgentConfiguration = "Agent2",
+                State = AgentState.Running,
+                Id = 2
+            }
+        ];
+
+        SetupRequestsQueue(queuedRequests);
+        SetupActiveAgents(activeAgents);
+        SetupAllAgents(activeAgents);
+        SetupRunningRequests(runningRequests);
+        SetupAllRequests(queuedRequests.Concat(runningRequests).ToArray());
+
         var sut = CreateSut();
 
         sut.AddTimedEventData(new EventData("TestEvent", CurrentTime), "TestMsg");
@@ -95,7 +154,7 @@ public class SimulationEventsTests
         sut.Should().HaveCount(1);
         var result = sut.First();
 
-        result.AllAgents.Should().HaveCount(4);
+        result.AllAgents.Should().HaveCount(2);
         result.AllRequests.Should().HaveCount(4);
         result.RequestsQueue.Total.Should().Be(2);
         result.RequestsQueue.Grouped.Should().HaveCount(2);

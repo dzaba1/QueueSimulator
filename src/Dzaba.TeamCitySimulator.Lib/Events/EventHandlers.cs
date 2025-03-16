@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Events;
+namespace Dzaba.QueueSimulator.Lib.Events;
 
 internal interface IEventHandlers
 {

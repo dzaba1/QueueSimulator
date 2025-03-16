@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 [Serializable]
 public class ExitCodeException : Exception

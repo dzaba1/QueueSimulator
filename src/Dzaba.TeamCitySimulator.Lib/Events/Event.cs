@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Events;
+namespace Dzaba.QueueSimulator.Lib.Events;
 
 public sealed class Event
 {

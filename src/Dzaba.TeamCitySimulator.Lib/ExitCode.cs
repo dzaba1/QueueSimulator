@@ -1,4 +1,4 @@
-﻿namespace Dzaba.TeamCitySimulator.Lib;
+﻿namespace Dzaba.QueueSimulator.Lib;
 
 public enum ExitCode
 {

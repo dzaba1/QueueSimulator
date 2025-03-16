@@ -1,8 +1,8 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Model;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Events;
+namespace Dzaba.QueueSimulator.Lib.Events;
 
 public interface ISimulationEventQueue
 {

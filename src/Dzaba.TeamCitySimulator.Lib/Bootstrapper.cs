@@ -1,13 +1,13 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Events;
-using Dzaba.TeamCitySimulator.Lib.Repositories;
+﻿using Dzaba.QueueSimulator.Lib.Events;
+using Dzaba.QueueSimulator.Lib.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 public static class Bootstrapper
 {
-    public static void RegisterDzabaTeamCitySimulatorLib(this IServiceCollection services)
+    public static void RegisterDzabaQueueSimulatorLib(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services, nameof(services));
 

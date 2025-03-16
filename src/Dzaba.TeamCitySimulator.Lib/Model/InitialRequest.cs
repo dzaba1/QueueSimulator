@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Dzaba.TeamCitySimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Model;
 
 public sealed class InitialRequest
 {

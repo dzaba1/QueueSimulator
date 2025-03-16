@@ -1,4 +1,4 @@
-﻿namespace Dzaba.TeamCitySimulator.Lib.Repositories;
+﻿namespace Dzaba.QueueSimulator.Lib.Repositories;
 
 internal sealed class LongSequence
 {

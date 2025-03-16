@@ -1,10 +1,10 @@
 ﻿using AutoFixture;
-using Dzaba.TeamCitySimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.TestUtils;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests;
+namespace Dzaba.QueueSimulator.Lib.Tests;
 
 [TestFixture]
 public class SimulationValidationTests

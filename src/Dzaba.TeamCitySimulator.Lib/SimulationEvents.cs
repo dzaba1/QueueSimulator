@@ -1,12 +1,12 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Events;
-using Dzaba.TeamCitySimulator.Lib.Model;
-using Dzaba.TeamCitySimulator.Lib.Repositories;
+﻿using Dzaba.QueueSimulator.Lib.Events;
+using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Repositories;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 internal interface ISimulationEvents : IEnumerable<TimeEventData>
 {

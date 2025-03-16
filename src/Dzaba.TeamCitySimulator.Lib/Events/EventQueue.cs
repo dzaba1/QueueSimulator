@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Dzaba.TeamCitySimulator.Lib.Events;
+namespace Dzaba.QueueSimulator.Lib.Events;
 
 public sealed class EventQueue
 {

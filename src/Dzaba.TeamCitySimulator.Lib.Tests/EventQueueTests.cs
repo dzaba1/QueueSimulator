@@ -1,10 +1,10 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Events;
+﻿using Dzaba.QueueSimulator.Lib.Events;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests;
+namespace Dzaba.QueueSimulator.Lib.Tests;
 
 [TestFixture]
 public class EventQueueTests
@@ -38,7 +38,7 @@ public class EventQueueTests
 
         sut.Enqueue("1", startTime.AddHours(1), e => list.Add(1));
         sut.Enqueue("2", startTime.AddHours(2), e => list.Add(2));
-        
+
         sut.Dequeue().Invoke();
         sut.Dequeue().Invoke();
 

@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Serilog;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests.Integration;
+namespace Dzaba.QueueSimulator.Lib.Tests.Integration;
 
 public class IocTestFixture
 {
@@ -16,7 +16,7 @@ public class IocTestFixture
     {
         var services = new ServiceCollection();
 
-        services.RegisterDzabaTeamCitySimulatorLib();
+        services.RegisterDzabaQueueSimulatorLib();
 
         var logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -32,7 +32,7 @@ public class IocTestFixture
 
     protected virtual void RegisterServices(IServiceCollection services)
     {
-        
+
     }
 
     [TearDown]

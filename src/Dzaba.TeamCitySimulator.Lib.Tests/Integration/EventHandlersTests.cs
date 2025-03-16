@@ -1,11 +1,11 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Events;
-using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Events;
+using Dzaba.QueueSimulator.Lib.Model;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests.Integration;
+namespace Dzaba.QueueSimulator.Lib.Tests.Integration;
 
 [TestFixture]
 public class EventHandlersTests : IocTestFixture

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Dzaba.TeamCitySimulator.Lib.Model
+namespace Dzaba.QueueSimulator.Lib.Model
 {
     public sealed class StringPropertyEqualityComparer<T> : IEqualityComparer<T>
     {
@@ -12,7 +12,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Model
         public StringPropertyEqualityComparer(Func<T, string> keySelector)
             : this(keySelector, StringComparer.CurrentCulture)
         {
-            
+
         }
 
         public StringPropertyEqualityComparer(Func<T, string> keySelector,

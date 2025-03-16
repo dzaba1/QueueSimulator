@@ -1,9 +1,9 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib.Repositories;
+namespace Dzaba.QueueSimulator.Lib.Repositories;
 
 internal interface IAgentsRepository
 {

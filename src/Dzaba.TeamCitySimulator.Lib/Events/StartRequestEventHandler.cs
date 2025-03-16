@@ -1,9 +1,9 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
-using Dzaba.TeamCitySimulator.Lib.Repositories;
+﻿using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib.Events;
+namespace Dzaba.QueueSimulator.Lib.Events;
 
 internal sealed class StartRequestEventPayload : EventDataPayload
 {

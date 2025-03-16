@@ -1,4 +1,4 @@
-﻿namespace Dzaba.TeamCitySimulator.Lib.Events;
+﻿namespace Dzaba.QueueSimulator.Lib.Events;
 
 public static class EventNames
 {

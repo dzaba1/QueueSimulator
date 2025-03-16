@@ -1,13 +1,13 @@
 ﻿using AutoFixture;
-using Dzaba.TeamCitySimulator.Lib.Model;
-using Dzaba.TeamCitySimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Repositories;
 using Dzaba.TestUtils;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib.Tests
+namespace Dzaba.QueueSimulator.Lib.Tests
 {
     [TestFixture]
     public class RequestsRepositoryTests
@@ -121,7 +121,7 @@ namespace Dzaba.TeamCitySimulator.Lib.Tests
             {
                 sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
             }
-            
+
             sut.EnumerateRequests().Should().HaveCount(3);
         }
 

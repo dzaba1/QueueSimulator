@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 internal interface ISimulationValidation
 {
@@ -46,17 +46,17 @@ internal sealed class SimulationValidation : ISimulationValidation
 
             Stack<CyclicChain> toCheck = new Stack<CyclicChain>();
             toCheck.Push(new CyclicChain(queuedRequest.Name, []));
-            
+
             while (toCheck.Count > 0)
             {
                 var requestChain = toCheck.Pop();
-                
+
                 var chainSet = new HashSet<string>(requestChain.Chain, StringComparer.OrdinalIgnoreCase);
                 if (chainSet.Contains(requestChain.RequestName))
                 {
                     throw new ExitCodeException(ExitCode.RequestCyclicDependency, $"Detected request cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}.");
                 }
-       
+
                 chainSet.Add(requestChain.RequestName);
                 var request = simulationPayload.GetRequestConfiguration(requestChain.RequestName);
                 if (request.RequestDependencies != null)

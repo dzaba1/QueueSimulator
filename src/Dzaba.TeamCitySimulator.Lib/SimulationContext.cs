@@ -1,7 +1,7 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Model;
 using System;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 internal interface ISimulationContext
 {

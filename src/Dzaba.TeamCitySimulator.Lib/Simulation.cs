@@ -1,9 +1,9 @@
-﻿using Dzaba.TeamCitySimulator.Lib.Events;
-using Dzaba.TeamCitySimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Events;
+using Dzaba.QueueSimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
 
-namespace Dzaba.TeamCitySimulator.Lib;
+namespace Dzaba.QueueSimulator.Lib;
 
 public interface ISimulation
 {

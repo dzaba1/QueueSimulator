@@ -8,9 +8,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Packages.props = Directory.Packages.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dzaba.TeamCitySimulator.Lib", "src\Dzaba.TeamCitySimulator.Lib\Dzaba.TeamCitySimulator.Lib.csproj", "{522829AE-1495-4B35-8B18-B84DF56CD076}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dzaba.QueueSimulator.Lib", "src\Dzaba.TeamCitySimulator.Lib\Dzaba.QueueSimulator.Lib.csproj", "{522829AE-1495-4B35-8B18-B84DF56CD076}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dzaba.TeamCitySimulator.Lib.Tests", "src\Dzaba.TeamCitySimulator.Lib.Tests\Dzaba.TeamCitySimulator.Lib.Tests.csproj", "{61A293AD-C408-4DAD-8987-7BB4832EA52C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dzaba.QueueSimulator.Lib.Tests", "src\Dzaba.TeamCitySimulator.Lib.Tests\Dzaba.QueueSimulator.Lib.Tests.csproj", "{61A293AD-C408-4DAD-8987-7BB4832EA52C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

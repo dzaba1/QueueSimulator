@@ -83,11 +83,8 @@ public class SimulationEventsTests
                 .ToDictionary(g => g.Key, g => g.Count()));
     }
 
-    [Test]
-    public void AddTimedEventData_WhenEventAdded_ThenAllDataAboutRequestAndAgentsIsIncluded()
+    private void SetupSomeData()
     {
-        SetupIncludeAllAgentsAndRequests(true);
-
         Request[] runningRequests = [
             new Request
             {
@@ -146,6 +143,13 @@ public class SimulationEventsTests
         SetupAllAgents(activeAgents);
         SetupRunningRequests(runningRequests);
         SetupAllRequests(queuedRequests.Concat(runningRequests).ToArray());
+    }
+
+    [Test]
+    public void AddTimedEventData_WhenEventAdded_ThenAllDataAboutRequestAndAgentsIsIncluded()
+    {
+        SetupIncludeAllAgentsAndRequests(true);
+        SetupSomeData();
 
         var sut = CreateSut();
 
@@ -156,6 +160,32 @@ public class SimulationEventsTests
 
         result.AllAgents.Should().HaveCount(2);
         result.AllRequests.Should().HaveCount(4);
+        result.RequestsQueue.Total.Should().Be(2);
+        result.RequestsQueue.Grouped.Should().HaveCount(2);
+        result.Message.Should().Be("TestMsg");
+        result.Name.Should().Be("TestEvent");
+        result.RunningAgents.Total.Should().Be(2);
+        result.RunningAgents.Grouped.Should().HaveCount(2);
+        result.RunningRequests.Total.Should().Be(2);
+        result.RunningRequests.Grouped.Should().HaveCount(2);
+        result.Timestamp.Should().Be(CurrentTime);
+    }
+
+    [Test]
+    public void AddTimedEventData_WhenEventAddedAndSkipRequestsAndAgentrs_ThenADataAboutRequestAndAgentsIsSkipped()
+    {
+        SetupIncludeAllAgentsAndRequests(false);
+        SetupSomeData();
+
+        var sut = CreateSut();
+
+        sut.AddTimedEventData(new EventData("TestEvent", CurrentTime), "TestMsg");
+
+        sut.Should().HaveCount(1);
+        var result = sut.First();
+
+        result.AllAgents.Should().BeNull();
+        result.AllRequests.Should().BeNull();
         result.RequestsQueue.Total.Should().Be(2);
         result.RequestsQueue.Grouped.Should().HaveCount(2);
         result.Message.Should().Be("TestMsg");

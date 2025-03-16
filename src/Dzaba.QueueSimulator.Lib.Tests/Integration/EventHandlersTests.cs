@@ -115,7 +115,7 @@ public class EventHandlersTests : IocTestFixture
         public SimulationPayload ActualPayload { get; set; }
     }
 
-    private class TestEventHandler : Events.EventHandler<TestEventPayload>
+    private class TestEventHandler : Lib.Events.EventHandler<TestEventPayload>
     {
         private readonly ISimulationContext simulationContext;
 

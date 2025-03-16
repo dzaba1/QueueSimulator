@@ -51,8 +51,7 @@ internal sealed class BuildsRepository : IBuildsRepository
     {
         return EnumerateBuilds()
             .Where(IsQueued)
-            .GroupBy(b => b.BuildConfiguration)
-            .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
+            .GroupByToArrayDict(b => b.BuildConfiguration, StringComparer.OrdinalIgnoreCase);
     }
 
     private bool IsQueued(Build build)
@@ -74,8 +73,7 @@ internal sealed class BuildsRepository : IBuildsRepository
     {
         return EnumerateBuilds()
             .Where(b => b.State == BuildState.Running)
-            .GroupBy(b => b.BuildConfiguration)
-            .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.OrdinalIgnoreCase);
+            .GroupByToArrayDict(b => b.BuildConfiguration, StringComparer.OrdinalIgnoreCase);
     }
 
     public IEnumerable<Build> GetWaitingForAgents()

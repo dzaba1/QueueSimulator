@@ -10,7 +10,7 @@ public static class Extensions
         Func<TValue, TKey> keySelector,
         IEqualityComparer<TKey> comparer = null)
     {
-        return collection.GroupBy(keySelector)
+        return collection.GroupBy(keySelector, comparer)
             .ToDictionary(g => g.Key, g => g.ToArray(), comparer);
     }
 }

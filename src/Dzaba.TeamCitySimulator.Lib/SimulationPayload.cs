@@ -12,19 +12,19 @@ internal sealed class SimulationPayload
         ArgumentNullException.ThrowIfNull(simulationSettings, nameof(simulationSettings));
 
         SimulationSettings = simulationSettings;
-        BuildConfigurationsCached = simulationSettings.BuildConfigurations.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+        RequestConfigurationsCached = simulationSettings.RequestConfigurations.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
         AgentConfigurationsCached = simulationSettings.Agents.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
     }
 
     public SimulationSettings SimulationSettings { get; }
-    public IReadOnlyDictionary<string, BuildConfiguration> BuildConfigurationsCached { get; }
+    public IReadOnlyDictionary<string, RequestConfiguration> RequestConfigurationsCached { get; }
     public IReadOnlyDictionary<string, AgentConfiguration> AgentConfigurationsCached { get; }
 
-    public BuildConfiguration GetBuildConfiguration(string name)
+    public RequestConfiguration GetRequestConfiguration(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
-        return BuildConfigurationsCached[name];
+        return RequestConfigurationsCached[name];
     }
 
     public AgentConfiguration GetAgentConfiguration(string name)

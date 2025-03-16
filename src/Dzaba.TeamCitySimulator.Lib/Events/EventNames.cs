@@ -2,9 +2,9 @@
 
 public static class EventNames
 {
-    public static readonly string QueueBuild = "QueueBuild";
+    public static readonly string QueueRequest = "QueueRequest";
     public static readonly string CreateAgent = "CreateAgent";
     public static readonly string InitAgent = "InitAgent";
-    public static readonly string StartBuild = "StartBuild";
-    public static readonly string FinishBuild = "FinishBuild";
+    public static readonly string StartRequest = "StartRequest";
+    public static readonly string FinishRequest = "FinishRequest";
 }

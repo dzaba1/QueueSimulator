@@ -15,53 +15,53 @@ internal sealed class SimulationValidation : ISimulationValidation
     {
         ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
-        foreach (var build in simulationPayload.BuildConfigurationsCached.Values)
+        foreach (var request in simulationPayload.RequestConfigurationsCached.Values)
         {
-            foreach (var agentName in build.CompatibleAgents)
+            foreach (var agentName in request.CompatibleAgents)
             {
                 if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
                 {
-                    throw new ExitCodeException(ExitCode.BuildAgentNotFound, $"Couldn't find agent {agentName} for build configuration {build.Name}.");
+                    throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
                 }
             }
 
-            if (build.BuildDependencies != null)
+            if (request.RequestDependencies != null)
             {
-                foreach (var buildName in build.BuildDependencies)
+                foreach (var requestName in request.RequestDependencies)
                 {
-                    if (!simulationPayload.BuildConfigurationsCached.ContainsKey(buildName))
+                    if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
                     {
-                        throw new ExitCodeException(ExitCode.BuildNotFound, $"Couldn't find dependent build configuration {buildName} for build configuration {build.Name}.");
+                        throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}.");
                     }
                 }
             }
         }
 
-        foreach (var queuedBuild in simulationPayload.SimulationSettings.QueuedBuilds)
+        foreach (var queuedRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
-            if (!simulationPayload.BuildConfigurationsCached.ContainsKey(queuedBuild.Name))
+            if (!simulationPayload.RequestConfigurationsCached.ContainsKey(queuedRequest.Name))
             {
-                throw new ExitCodeException(ExitCode.BuildNotFound, $"Couldn't find build configuration {queuedBuild.Name}.");
+                throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find request configuration {queuedRequest.Name}.");
             }
 
             Stack<CyclicChain> toCheck = new Stack<CyclicChain>();
-            toCheck.Push(new CyclicChain(queuedBuild.Name, []));
+            toCheck.Push(new CyclicChain(queuedRequest.Name, []));
             
             while (toCheck.Count > 0)
             {
-                var buildChain = toCheck.Pop();
+                var requestChain = toCheck.Pop();
                 
-                var chainSet = new HashSet<string>(buildChain.Chain, StringComparer.OrdinalIgnoreCase);
-                if (chainSet.Contains(buildChain.BuildName))
+                var chainSet = new HashSet<string>(requestChain.Chain, StringComparer.OrdinalIgnoreCase);
+                if (chainSet.Contains(requestChain.RequestName))
                 {
-                    throw new ExitCodeException(ExitCode.BuildCyclicDependency, $"Detected build cyclic dependnecy on {buildChain.BuildName} starting from {queuedBuild.Name}.");
+                    throw new ExitCodeException(ExitCode.RequestCyclicDependency, $"Detected build cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}.");
                 }
        
-                chainSet.Add(buildChain.BuildName);
-                var build = simulationPayload.GetBuildConfiguration(buildChain.BuildName);
-                if (build.BuildDependencies != null)
+                chainSet.Add(requestChain.RequestName);
+                var build = simulationPayload.GetRequestConfiguration(requestChain.RequestName);
+                if (build.RequestDependencies != null)
                 {
-                    foreach (var buildDep in build.BuildDependencies)
+                    foreach (var buildDep in build.RequestDependencies)
                     {
                         toCheck.Push(new CyclicChain(buildDep, chainSet));
                     }
@@ -72,13 +72,13 @@ internal sealed class SimulationValidation : ISimulationValidation
 
     private class CyclicChain
     {
-        public CyclicChain(string buildName, IEnumerable<string> chain)
+        public CyclicChain(string requestName, IEnumerable<string> chain)
         {
-            BuildName = buildName;
+            RequestName = requestName;
             Chain = chain.ToArray();
         }
 
-        public string BuildName { get; }
+        public string RequestName { get; }
         public string[] Chain { get; }
     }
 }

@@ -43,24 +43,24 @@ internal sealed class Simulation : ISimulation
 
         simulationValidation.Validate(context.Payload);
 
-        InitBuilds();
+        InitRequests();
 
         eventsQueue.Run();
         return simulationEvents;
     }
 
-    private void InitBuilds()
+    private void InitRequests()
     {
         var simulationPayload = context.Payload;
 
-        foreach (var queuedBuild in simulationPayload.SimulationSettings.QueuedBuilds)
+        foreach (var initRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
-            var waitTime = simulationPayload.SimulationSettings.SimulationDuration / queuedBuild.BuildsToQueue;
-            for (var i = 0; i < queuedBuild.BuildsToQueue; i++)
+            var waitTime = simulationPayload.SimulationSettings.SimulationDuration / initRequest.NumberToQueue;
+            for (var i = 0; i < initRequest.NumberToQueue; i++)
             {
-                var buildStartTime = StartTime + waitTime * i;
-                var build = simulationPayload.GetBuildConfiguration(queuedBuild.Name);
-                eventsQueue.AddQueueBuildQueueEvent(build, buildStartTime);
+                var requestStartTime = StartTime + waitTime * i;
+                var request = simulationPayload.GetRequestConfiguration(initRequest.Name);
+                eventsQueue.AddQueueRequestQueueEvent(request, requestStartTime);
             }
         }
     }

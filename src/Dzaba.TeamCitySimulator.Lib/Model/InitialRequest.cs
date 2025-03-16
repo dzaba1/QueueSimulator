@@ -2,10 +2,10 @@
 
 namespace Dzaba.TeamCitySimulator.Lib.Model;
 
-public sealed class QueuedBuild
+public sealed class InitialRequest
 {
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; }
 
-    public ushort BuildsToQueue { get; set; }
+    public ushort NumberToQueue { get; set; }
 }

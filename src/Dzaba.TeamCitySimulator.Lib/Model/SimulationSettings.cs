@@ -7,7 +7,7 @@ public sealed class SimulationSettings
 {
     public int? MaxRunningAgents { get; set; }
     public TimeSpan SimulationDuration { get; set; } = TimeSpan.FromHours(8);
-    public bool IncludeAllBuilds { get; set; }
+    public bool IncludeAllRequests { get; set; }
     public bool IncludeAllAgents { get; set; }
 
     [Required]
@@ -16,9 +16,9 @@ public sealed class SimulationSettings
 
     [Required]
     [MinLength(1)]
-    public BuildConfiguration[] BuildConfigurations { get; set; }
+    public RequestConfiguration[] RequestConfigurations { get; set; }
 
     [Required]
     [MinLength(1)]
-    public QueuedBuild[] QueuedBuilds { get; set; }
+    public InitialRequest[] InitialRequests { get; set; }
 }

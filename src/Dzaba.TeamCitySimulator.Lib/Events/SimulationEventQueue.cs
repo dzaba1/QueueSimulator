@@ -7,11 +7,11 @@ namespace Dzaba.TeamCitySimulator.Lib.Events;
 public interface ISimulationEventQueue
 {
     void Run();
-    void AddInitAgentQueueEvent(Build build, DateTime time);
-    void AddStartBuildQueueEvent(Build build, DateTime time);
-    void AddEndBuildQueueEvent(Build build, DateTime time);
-    void AddCreateAgentQueueEvent(Build build, DateTime time);
-    void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime);
+    void AddInitAgentQueueEvent(Request request, DateTime time);
+    void AddStartRequestQueueEvent(Request request, DateTime time);
+    void AddEndRequestQueueEvent(Request request, DateTime time);
+    void AddCreateAgentQueueEvent(Request request, DateTime time);
+    void AddQueueRequestQueueEvent(RequestConfiguration requestConfiguration, DateTime requestStartTime);
 }
 
 internal sealed class SimulationEventQueue : ISimulationEventQueue
@@ -42,76 +42,80 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         }
     }
 
-    public void AddInitAgentQueueEvent(Build build, DateTime time)
+    public void AddInitAgentQueueEvent(Request request, DateTime time)
     {
-        ArgumentNullException.ThrowIfNull(build, nameof(build));
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding agent init for [{BuildId}] {Build} for {Time} to the event queue.", build.Id, build.BuildConfiguration, time);
+        logger.LogInformation("Adding agent init for {RequestId} [{Request}] for {Time} to the event queue.",
+            request.Id, request.RequestConfiguration, time);
 
         eventsQueue.Enqueue(EventNames.InitAgent, time, e =>
         {
-            var payload = new InitAgentEventPayload(e, build);
+            var payload = new InitAgentEventPayload(e, request);
             var handler = eventHandlers.GetHandler<InitAgentEventPayload>();
             handler.Handle(payload);
         });
     }
 
-    public void AddStartBuildQueueEvent(Build build, DateTime time)
+    public void AddStartRequestQueueEvent(Request request, DateTime time)
     {
-        ArgumentNullException.ThrowIfNull(build, nameof(build));
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding start build {Build} for {Time} to the event queue.", build.BuildConfiguration, time);
+        logger.LogInformation("Adding start request {Request} for {Time} to the event queue.", request.RequestConfiguration, time);
 
-        eventsQueue.Enqueue(EventNames.StartBuild, time, e =>
+        eventsQueue.Enqueue(EventNames.StartRequest, time, e =>
         {
-            var payload = new StartBuildEventPayload(e, build);
-            var handler = eventHandlers.GetHandler<StartBuildEventPayload>();
+            var payload = new StartRequestEventPayload(e, request);
+            var handler = eventHandlers.GetHandler<StartRequestEventPayload>();
             handler.Handle(payload);
         });
     }
 
-    public void AddEndBuildQueueEvent(Build build, DateTime time)
+    public void AddEndRequestQueueEvent(Request request, DateTime time)
     {
-        ArgumentNullException.ThrowIfNull(build, nameof(build));
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         var payload = simulationContext.Payload;
-        var buildConfig = payload.GetBuildConfiguration(build.BuildConfiguration);
-        var buildEndTime = time + buildConfig.Duration.Value;
+        var requestConfig = payload.GetRequestConfiguration(request.RequestConfiguration);
+        var requestEndTime = time + requestConfig.Duration.Value;
 
-        logger.LogInformation("Adding finishing build {Build} for {Time} to the event queue.", build.BuildConfiguration, buildEndTime);
+        logger.LogInformation("Adding finishing request {Request} for {Time} to the event queue.",
+            request.RequestConfiguration, requestEndTime);
 
-        eventsQueue.Enqueue(EventNames.FinishBuild, buildEndTime, e =>
+        eventsQueue.Enqueue(EventNames.FinishRequest, requestEndTime, e =>
         {
-            var payload = new EndBuildEventPayload(e, build);
-            var handler = eventHandlers.GetHandler<EndBuildEventPayload>();
+            var payload = new EndRequestEventPayload(e, request);
+            var handler = eventHandlers.GetHandler<EndRequestEventPayload>();
             handler.Handle(payload);
         });
     }
 
-    public void AddCreateAgentQueueEvent(Build build, DateTime time)
+    public void AddCreateAgentQueueEvent(Request request, DateTime time)
     {
-        ArgumentNullException.ThrowIfNull(build, nameof(build));
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding create agent for {Build} for {Time} to the event queue.", build.BuildConfiguration, time);
+        logger.LogInformation("Adding create agent for request {Request} for {Time} to the event queue.",
+            request.RequestConfiguration, time);
 
         eventsQueue.Enqueue(EventNames.CreateAgent, time, e =>
         {
-            var payload = new CreateAgentEventPayload(e, build);
+            var payload = new CreateAgentEventPayload(e, request);
             var handler = eventHandlers.GetHandler<CreateAgentEventPayload>();
             handler.Handle(payload);
         });
     }
 
-    public void AddQueueBuildQueueEvent(BuildConfiguration buildConfiguration, DateTime buildStartTime)
+    public void AddQueueRequestQueueEvent(RequestConfiguration requestConfiguration, DateTime requestStartTime)
     {
-        ArgumentNullException.ThrowIfNull(buildConfiguration, nameof(buildConfiguration));
+        ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
 
-        logger.LogInformation("Adding adding build {Build} for {Time} to the event queue.", buildConfiguration.Name, buildStartTime);
+        logger.LogInformation("Adding adding request {Request} for {Time} to the event queue.",
+            requestConfiguration.Name, requestStartTime);
 
-        eventsQueue.Enqueue(EventNames.QueueBuild, buildStartTime, e =>
+        eventsQueue.Enqueue(EventNames.QueueRequest, requestStartTime, e =>
         {
-            var payload = new QueueBuildEventPayload(e, buildConfiguration);
-            var handler = eventHandlers.GetHandler<QueueBuildEventPayload>();
+            var payload = new QueueRequestEventPayload(e, requestConfiguration);
+            var handler = eventHandlers.GetHandler<QueueRequestEventPayload>();
             handler.Handle(payload);
         });
     }

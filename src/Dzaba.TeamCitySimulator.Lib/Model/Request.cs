@@ -2,23 +2,23 @@
 
 namespace Dzaba.TeamCitySimulator.Lib.Model;
 
-public sealed class Build
+public sealed class Request
 {
     public long Id { get; set; }
-    public string BuildConfiguration { get; set; }
-    public BuildState State { get; set; }
+    public string RequestConfiguration { get; set; }
+    public RequestState State { get; set; }
     public DateTime CreatedTime { get; set; }
     public DateTime? StartTime { get; set; }
     public long? AgentId { get; set; }
     public DateTime? EndTime { get; set; }
 
-    public Build ShallowCopy()
+    public Request ShallowCopy()
     {
-        return (Build)MemberwiseClone();
+        return (Request)MemberwiseClone();
     }
 }
 
-public enum BuildState
+public enum RequestState
 {
     Created,
     WaitingForDependencies,

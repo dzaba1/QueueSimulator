@@ -17,19 +17,19 @@ internal sealed class SimulationEvents : ISimulationEvents
 {
     private readonly List<TimeEventData> timeEvents = new();
     private readonly ISimulationContext context;
-    private readonly IBuildsRepository buildRepo;
+    private readonly IRequestsRepository requestRepo;
     private readonly IAgentsRepository agentsRepo;
 
     public SimulationEvents(ISimulationContext context,
-        IBuildsRepository buildRepo,
+        IRequestsRepository requestRepo,
         IAgentsRepository agentsRepo)
     {
         ArgumentNullException.ThrowIfNull(context, nameof(context));
-        ArgumentNullException.ThrowIfNull(buildRepo, nameof(buildRepo));
+        ArgumentNullException.ThrowIfNull(requestRepo, nameof(requestRepo));
         ArgumentNullException.ThrowIfNull(agentsRepo, nameof(agentsRepo));
 
         this.context = context;
-        this.buildRepo = buildRepo;
+        this.requestRepo = requestRepo;
         this.agentsRepo = agentsRepo;
     }
 
@@ -38,10 +38,10 @@ internal sealed class SimulationEvents : ISimulationEvents
         ArgumentNullException.ThrowIfNull(data, nameof(data));
         ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
 
-        var buildsQueueData = new ElementsData
+        var requestsQueueData = new ElementsData
         {
-            Total = buildRepo.GetQueueLength(),
-            Grouped = buildRepo.GroupQueueByBuildConfiguration()
+            Total = requestRepo.GetQueueLength(),
+            Grouped = requestRepo.GroupQueueByConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -62,10 +62,10 @@ internal sealed class SimulationEvents : ISimulationEvents
                 .ToArray()
         };
 
-        var runningBuilds = new ElementsData
+        var runningRequests = new ElementsData
         {
-            Total = buildRepo.GetRunningBuildsCount(),
-            Grouped = buildRepo.GroupRunningBuildsByBuildConfiguration()
+            Total = requestRepo.GetRunningRequestCount(),
+            Grouped = requestRepo.GroupRunningRequestsByConfiguration()
                 .Select(g => new NamedQueueData
                 {
                     Name = g.Key,
@@ -79,9 +79,9 @@ internal sealed class SimulationEvents : ISimulationEvents
             Timestamp = data.Time,
             Name = data.Name,
             Message = message,
-            BuildsQueue = buildsQueueData,
+            RequestsQueue = requestsQueueData,
             RunningAgents = runningAgents,
-            RunningBuilds = runningBuilds
+            RunningRequests = runningRequests
         };
 
         if (context.Payload.SimulationSettings.IncludeAllAgents)
@@ -91,9 +91,9 @@ internal sealed class SimulationEvents : ISimulationEvents
                 .ToArray();
         }
 
-        if (context.Payload.SimulationSettings.IncludeAllBuilds)
+        if (context.Payload.SimulationSettings.IncludeAllRequests)
         {
-            timedEvent.AllBuilds = buildRepo.EnumerateBuilds()
+            timedEvent.AllRequests = requestRepo.EnumerateRequests()
                 .Select(a => a.ShallowCopy())
                 .ToArray();
         }

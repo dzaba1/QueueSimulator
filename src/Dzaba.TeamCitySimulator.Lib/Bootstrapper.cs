@@ -17,14 +17,14 @@ public static class Bootstrapper
 
         services.AddScoped<ISimulationContext, SimulationContext>();
         services.AddScoped<IAgentsRepository, AgentsRepository>();
-        services.AddScoped<IBuildsRepository, BuildsRepository>();
+        services.AddScoped<IRequestsRepository, RequestsRepository>();
         services.AddScoped<ISimulationEvents, SimulationEvents>();
         services.AddScoped<ISimulationEventQueue, SimulationEventQueue>();
 
         services.AddTransient<IEventHandler<InitAgentEventPayload>, InitAgentEventHandler>();
-        services.AddTransient<IEventHandler<StartBuildEventPayload>, StartBuildEventHandler>();
-        services.AddTransient<IEventHandler<EndBuildEventPayload>, EndBuildEventHandler>();
+        services.AddTransient<IEventHandler<StartRequestEventPayload>, StartRequestEventHandler>();
+        services.AddTransient<IEventHandler<EndRequestEventPayload>, EndRequestEventHandler>();
         services.AddTransient<IEventHandler<CreateAgentEventPayload>, CreateAgentEventHandler>();
-        services.AddTransient<IEventHandler<QueueBuildEventPayload>, QueueBuildEventHandler>();
+        services.AddTransient<IEventHandler<QueueRequestEventPayload>, QueueRequestEventHandler>();
     }
 }

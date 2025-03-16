@@ -7,15 +7,15 @@ namespace Dzaba.TeamCitySimulator.Lib.Events;
 
 internal sealed class InitAgentEventPayload : EventDataPayload
 {
-    public InitAgentEventPayload(EventData eventData, Build build)
+    public InitAgentEventPayload(EventData eventData, Request request)
         : base(eventData)
     {
-        ArgumentNullException.ThrowIfNull(build, nameof(build));
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        Build = build;
+        Request = request;
     }
 
-    public Build Build { get; }
+    public Request Request { get; }
 }
 
 internal sealed class InitAgentEventHandler : EventHandler<InitAgentEventPayload>
@@ -45,19 +45,24 @@ internal sealed class InitAgentEventHandler : EventHandler<InitAgentEventPayload
 
     protected override string OnHandle(InitAgentEventPayload payload)
     {
-        logger.LogInformation("Adding agent init for [{BuildId}] {Build} for {Time} to the event queue.",
-            payload.Build.Id,
-            payload.Build.BuildConfiguration, payload.EventData.Time);
+        ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var agent = agentsRepo.GetAgent(payload.Build.AgentId.Value);
+        var request = payload.Request;
+        var eventData = payload.EventData;
+
+        logger.LogInformation("Adding agent init for request {RequestdId} [{Request}] for {Time} to the event queue.",
+            request.Id,
+            request.RequestConfiguration, eventData.Time);
+
+        var agent = agentsRepo.GetAgent(request.AgentId.Value);
 
         agent.State = AgentState.Initiating;
 
         var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);
         var endTime = payload.EventData.Time + agentConfig.InitTime.Value;
 
-        eventQueue.AddStartBuildQueueEvent(payload.Build, endTime);
+        eventQueue.AddStartRequestQueueEvent(request, endTime);
 
-        return $"Start initiating agent [{agent.Id}] {agent.AgentConfiguration}.";
+        return $"Start initiating agent {agent.Id} [{agent.AgentConfiguration}].";
     }
 }

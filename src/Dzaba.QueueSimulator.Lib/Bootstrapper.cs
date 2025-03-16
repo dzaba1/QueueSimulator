@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Events;
+using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -21,10 +22,10 @@ public static class Bootstrapper
         services.AddScoped<ISimulationEvents, SimulationEvents>();
         services.AddScoped<ISimulationEventQueue, SimulationEventQueue>();
 
-        services.AddTransient<IEventHandler<InitAgentEventPayload>, InitAgentEventHandler>();
-        services.AddTransient<IEventHandler<StartRequestEventPayload>, StartRequestEventHandler>();
-        services.AddTransient<IEventHandler<EndRequestEventPayload>, EndRequestEventHandler>();
-        services.AddTransient<IEventHandler<CreateAgentEventPayload>, CreateAgentEventHandler>();
-        services.AddTransient<IEventHandler<QueueRequestEventPayload>, QueueRequestEventHandler>();
+        services.AddKeyedTransient<IEventHandler<Request>, InitAgentEventHandler>(EventNames.InitAgent);
+        services.AddKeyedTransient<IEventHandler<Request>, StartRequestEventHandler>(EventNames.StartRequest);
+        services.AddKeyedTransient<IEventHandler<Request>, EndRequestEventHandler>(EventNames.FinishRequest);
+        services.AddKeyedTransient<IEventHandler<Request>, CreateAgentEventHandler>(EventNames.CreateAgent);
+        services.AddKeyedTransient<IEventHandler<RequestConfiguration>, QueueRequestEventHandler>(EventNames.QueueRequest);
     }
 }

@@ -28,33 +28,26 @@ public class EventHandlerTests
     [Test]
     public void Handle_WhenHandled_ThenTimedEventIsSaved()
     {
-        var payload = new TestPayload(new EventData("TestEvent", CurrentTime));
+        var eventData = new EventData("TestEvent", CurrentTime);
 
         var events = fixture.FreezeMock<ISimulationEvents>();
 
         var sut = CreateSut();
 
-        sut.Handle(payload);
+        sut.Handle(eventData, "Data");
 
-        events.Verify(x => x.AddTimedEventData(payload.EventData, "Test"), Times.Once());
+        events.Verify(x => x.AddTimedEventData(eventData, "Data"), Times.Once());
     }
 
-    private class TestPayload : EventDataPayload
-    {
-        public TestPayload(EventData eventData) : base(eventData)
-        {
-        }
-    }
-
-    private class TestEventHandler : Lib.Events.EventHandler<TestPayload>
+    private class TestEventHandler : Lib.Events.EventHandler<string>
     {
         public TestEventHandler(ISimulationEvents simulationEvents) : base(simulationEvents)
         {
         }
 
-        protected override string OnHandle(TestPayload payload)
+        protected override string OnHandle(EventData eventData, string payload)
         {
-            return "Test";
+            return payload;
         }
     }
 }

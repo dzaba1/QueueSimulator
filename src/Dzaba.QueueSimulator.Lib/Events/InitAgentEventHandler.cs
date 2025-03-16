@@ -5,20 +5,7 @@ using System;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-internal sealed class InitAgentEventPayload : EventDataPayload
-{
-    public InitAgentEventPayload(EventData eventData, Request request)
-        : base(eventData)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        Request = request;
-    }
-
-    public Request Request { get; }
-}
-
-internal sealed class InitAgentEventHandler : EventHandler<InitAgentEventPayload>
+internal sealed class InitAgentEventHandler : EventHandler<Request>
 {
     private readonly IAgentsRepository agentsRepo;
     private readonly ISimulationContext simulationContext;
@@ -43,12 +30,11 @@ internal sealed class InitAgentEventHandler : EventHandler<InitAgentEventPayload
         this.logger = logger;
     }
 
-    protected override string OnHandle(InitAgentEventPayload payload)
+    protected override string OnHandle(EventData eventData, Request payload)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var request = payload.Request;
-        var eventData = payload.EventData;
+        var request = payload;
 
         logger.LogInformation("Adding agent init for request {RequestdId} [{Request}] for {Time} to the event queue.",
             request.Id,

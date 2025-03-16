@@ -37,17 +37,18 @@ public class CreateAgentEventHandlerTests
     [Test]
     public void Handle_WhenAgentCreated_ThenNextInitIt()
     {
-        var payload = new CreateAgentEventPayload(new EventData("TestEvent", CurrentTime), new Request
+        var eventData = new EventData("TestEvent", CurrentTime);
+        var request = new Request
         {
             RequestConfiguration = "BuildConfig1"
-        });
+        };
 
         var settings = new SimulationSettings
         {
             RequestConfigurations = [
                 new RequestConfiguration
                 {
-                    Name = payload.Request.RequestConfiguration,
+                    Name = request.RequestConfiguration,
                     CompatibleAgents = ["Agent1"]
                 }
             ],
@@ -69,10 +70,10 @@ public class CreateAgentEventHandlerTests
 
         var sut = CreateSut();
 
-        sut.Handle(payload);
+        sut.Handle(eventData, request);
 
-        payload.Request.State.Should().Be(RequestState.WaitingForAgent);
-        payload.Request.AgentId.Should().Be(agent.Id);
-        eventsPump.Verify(x => x.AddInitAgentQueueEvent(payload.Request, CurrentTime), Times.Once());
+        request.State.Should().Be(RequestState.WaitingForAgent);
+        request.AgentId.Should().Be(agent.Id);
+        eventsPump.Verify(x => x.AddInitAgentQueueEvent(request, CurrentTime), Times.Once());
     }
 }

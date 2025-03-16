@@ -6,20 +6,7 @@ using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-internal sealed class QueueRequestEventPayload : EventDataPayload
-{
-    public QueueRequestEventPayload(EventData eventData, RequestConfiguration requestConfiguration)
-        : base(eventData)
-    {
-        ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
-
-        RequestConfiguration = requestConfiguration;
-    }
-
-    public RequestConfiguration RequestConfiguration { get; }
-}
-
-internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventPayload>
+internal sealed class QueueRequestEventHandler : EventHandler<RequestConfiguration>
 {
     private readonly ILogger<QueueRequestEventHandler> logger;
     private readonly IRequestsRepository requestRepo;
@@ -40,12 +27,11 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
         this.eventsQueue = eventsQueue;
     }
 
-    protected override string OnHandle(QueueRequestEventPayload payload)
+    protected override string OnHandle(EventData eventData, RequestConfiguration payload)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var requestConfiguration = payload.RequestConfiguration;
-        var eventData = payload.EventData;
+        var requestConfiguration = payload;
 
         logger.LogInformation("Start queuening a new request {Request}, Current time: {Time}",
             requestConfiguration.Name, eventData.Time);

@@ -42,6 +42,15 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         }
     }
 
+    private void Enqueue<T>(string eventName, DateTime time, T payload)
+    {
+        eventsQueue.Enqueue(eventName, time, e =>
+        {
+            var handler = eventHandlers.GetHandler<T>(eventName);
+            handler.Handle(e, payload);
+        });
+    }
+
     public void AddInitAgentQueueEvent(Request request, DateTime time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -49,12 +58,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         logger.LogInformation("Adding agent init for {RequestId} [{Request}] for {Time} to the event queue.",
             request.Id, request.RequestConfiguration, time);
 
-        eventsQueue.Enqueue(EventNames.InitAgent, time, e =>
-        {
-            var payload = new InitAgentEventPayload(e, request);
-            var handler = eventHandlers.GetHandler<InitAgentEventPayload>();
-            handler.Handle(payload);
-        });
+        Enqueue(EventNames.InitAgent, time, request);
     }
 
     public void AddStartRequestQueueEvent(Request request, DateTime time)
@@ -63,12 +67,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
 
         logger.LogInformation("Adding start request {Request} for {Time} to the event queue.", request.RequestConfiguration, time);
 
-        eventsQueue.Enqueue(EventNames.StartRequest, time, e =>
-        {
-            var payload = new StartRequestEventPayload(e, request);
-            var handler = eventHandlers.GetHandler<StartRequestEventPayload>();
-            handler.Handle(payload);
-        });
+        Enqueue(EventNames.StartRequest, time, request);
     }
 
     public void AddEndRequestQueueEvent(Request request, DateTime time)
@@ -82,12 +81,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         logger.LogInformation("Adding finishing request {Request} for {Time} to the event queue.",
             request.RequestConfiguration, requestEndTime);
 
-        eventsQueue.Enqueue(EventNames.FinishRequest, requestEndTime, e =>
-        {
-            var payload = new EndRequestEventPayload(e, request);
-            var handler = eventHandlers.GetHandler<EndRequestEventPayload>();
-            handler.Handle(payload);
-        });
+        Enqueue(EventNames.FinishRequest, requestEndTime, request);
     }
 
     public void AddCreateAgentQueueEvent(Request request, DateTime time)
@@ -97,12 +91,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         logger.LogInformation("Adding create agent for request {Request} for {Time} to the event queue.",
             request.RequestConfiguration, time);
 
-        eventsQueue.Enqueue(EventNames.CreateAgent, time, e =>
-        {
-            var payload = new CreateAgentEventPayload(e, request);
-            var handler = eventHandlers.GetHandler<CreateAgentEventPayload>();
-            handler.Handle(payload);
-        });
+        Enqueue(EventNames.CreateAgent, time, request);
     }
 
     public void AddQueueRequestQueueEvent(RequestConfiguration requestConfiguration, DateTime requestStartTime)
@@ -112,11 +101,6 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         logger.LogInformation("Adding adding request {Request} for {Time} to the event queue.",
             requestConfiguration.Name, requestStartTime);
 
-        eventsQueue.Enqueue(EventNames.QueueRequest, requestStartTime, e =>
-        {
-            var payload = new QueueRequestEventPayload(e, requestConfiguration);
-            var handler = eventHandlers.GetHandler<QueueRequestEventPayload>();
-            handler.Handle(payload);
-        });
+        Enqueue(EventNames.QueueRequest, requestStartTime, requestConfiguration);
     }
 }

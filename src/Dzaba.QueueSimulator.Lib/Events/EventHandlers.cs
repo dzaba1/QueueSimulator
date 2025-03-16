@@ -5,7 +5,7 @@ namespace Dzaba.QueueSimulator.Lib.Events;
 
 internal interface IEventHandlers
 {
-    IEventHandler<T> GetHandler<T>() where T : EventDataPayload;
+    IEventHandler<T> GetHandler<T>(string eventName);
 }
 
 internal sealed class EventHandlers : IEventHandlers
@@ -19,8 +19,10 @@ internal sealed class EventHandlers : IEventHandlers
         this.container = container;
     }
 
-    public IEventHandler<T> GetHandler<T>() where T : EventDataPayload
+    public IEventHandler<T> GetHandler<T>(string eventName)
     {
-        return container.GetRequiredService<IEventHandler<T>>();
+        ArgumentException.ThrowIfNullOrWhiteSpace(eventName, nameof(eventName));
+
+        return container.GetRequiredKeyedService<IEventHandler<T>>(eventName);
     }
 }

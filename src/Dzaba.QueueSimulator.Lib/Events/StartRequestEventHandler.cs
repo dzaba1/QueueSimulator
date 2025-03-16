@@ -5,19 +5,7 @@ using System;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-internal sealed class StartRequestEventPayload : EventDataPayload
-{
-    public StartRequestEventPayload(EventData eventData, Request request) : base(eventData)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        Request = request;
-    }
-
-    public Request Request { get; }
-}
-
-internal sealed class StartRequestEventHandler : EventHandler<StartRequestEventPayload>
+internal sealed class StartRequestEventHandler : EventHandler<Request>
 {
     private readonly ILogger<StartRequestEventHandler> logger;
     private readonly IAgentsRepository agentsRepo;
@@ -38,12 +26,11 @@ internal sealed class StartRequestEventHandler : EventHandler<StartRequestEventP
         this.eventQueue = eventQueue;
     }
 
-    protected override string OnHandle(StartRequestEventPayload payload)
+    protected override string OnHandle(EventData eventData, Request payload)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var request = payload.Request;
-        var eventData = payload.EventData;
+        var request = payload;
 
         logger.LogInformation("Starting the request {RequestId} [{Request}], Current time: {Time}",
             request.Id,

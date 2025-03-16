@@ -5,20 +5,7 @@ using System;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-internal sealed class EndRequestEventPayload : EventDataPayload
-{
-    public EndRequestEventPayload(EventData eventData, Request request)
-        : base(eventData)
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        Request = request;
-    }
-
-    public Request Request { get; }
-}
-
-internal sealed class EndRequestEventHandler : EventHandler<EndRequestEventPayload>
+internal sealed class EndRequestEventHandler : EventHandler<Request>
 {
     private readonly ILogger<EndRequestEventHandler> logger;
     private readonly IAgentsRepository agentsRepo;
@@ -43,12 +30,12 @@ internal sealed class EndRequestEventHandler : EventHandler<EndRequestEventPaylo
         this.eventQueue = eventQueue;
     }
 
-    protected override string OnHandle(EndRequestEventPayload payload)
+    protected override string OnHandle(EventData eventData, Request payload)
     {
+        ArgumentNullException.ThrowIfNull(eventData, nameof(eventData));
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var request = payload.Request;
-        var eventData = payload.EventData;
+        var request = payload;
 
         logger.LogInformation("Start finishing request {RequestdId} [{Request}], Current time: {Time}",
             request.Id, request.RequestConfiguration, eventData.Time);

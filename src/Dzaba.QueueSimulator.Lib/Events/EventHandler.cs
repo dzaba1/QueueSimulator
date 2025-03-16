@@ -3,13 +3,11 @@
 namespace Dzaba.QueueSimulator.Lib.Events;
 
 internal interface IEventHandler<T>
-    where T : EventDataPayload
 {
-    void Handle(T payload);
+    void Handle(EventData eventData, T payload);
 }
 
 internal abstract class EventHandler<T> : IEventHandler<T>
-    where T : EventDataPayload
 {
     private readonly ISimulationEvents simulationEvents;
 
@@ -20,14 +18,14 @@ internal abstract class EventHandler<T> : IEventHandler<T>
         this.simulationEvents = simulationEvents;
     }
 
-    public void Handle(T payload)
+    public void Handle(EventData eventData, T payload)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var msg = OnHandle(payload);
+        var msg = OnHandle(eventData, payload);
 
-        simulationEvents.AddTimedEventData(payload.EventData, msg);
+        simulationEvents.AddTimedEventData(eventData, msg);
     }
 
-    protected abstract string OnHandle(T payload);
+    protected abstract string OnHandle(EventData eventData, T payload);
 }

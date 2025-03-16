@@ -10,9 +10,11 @@ namespace Dzaba.QueueSimulator.Lib.Tests.Integration;
 [TestFixture]
 public class EventHandlersTests : IocTestFixture
 {
+    private static readonly string TestEventName = "TestEvent";
+
     protected override void RegisterServices(IServiceCollection services)
     {
-        services.AddTransient<IEventHandler<TestEventPayload>, TestEventHandler>();
+        services.AddKeyedTransient<IEventHandler<TestEventPayload>, TestEventHandler>(TestEventName);
     }
 
     private IEventHandler<TestEventPayload> GetHandler(IServiceScope scope, SimulationSettings settings)
@@ -24,14 +26,15 @@ public class EventHandlersTests : IocTestFixture
 
         var sut = scope.ServiceProvider.GetRequiredService<IEventHandlers>();
 
-        return sut.GetHandler<TestEventPayload>();
+        return sut.GetHandler<TestEventPayload>(TestEventName);
     }
 
     private void TestScope(IEventHandler<TestEventPayload> handler, SimulationSettings settings)
     {
-        var payload = new TestEventPayload(new EventData("Test", DateTime.Now), settings);
+        var eventData = new EventData("Test", DateTime.Now);
+        var payload = new TestEventPayload(settings);
 
-        handler.Handle(payload);
+        handler.Handle(eventData, payload);
 
         payload.ActualPayload.SimulationSettings.Should().BeSameAs(settings);
         payload.ActualPayload.SimulationSettings.Should().BeSameAs(payload.ExpectedSettings);
@@ -100,10 +103,9 @@ public class EventHandlersTests : IocTestFixture
         TestScope(handler2, settings2);
     }
 
-    private class TestEventPayload : EventDataPayload
+    private class TestEventPayload
     {
-        public TestEventPayload(EventData eventData,
-            SimulationSettings expectedSettings) : base(eventData)
+        public TestEventPayload(SimulationSettings expectedSettings)
         {
             ArgumentNullException.ThrowIfNull(expectedSettings, nameof(expectedSettings));
 
@@ -127,7 +129,7 @@ public class EventHandlersTests : IocTestFixture
             this.simulationContext = simulationContext;
         }
 
-        protected override string OnHandle(TestEventPayload payload)
+        protected override string OnHandle(EventData eventData, TestEventPayload payload)
         {
             payload.ActualPayload = simulationContext.Payload;
 

@@ -29,6 +29,16 @@ public class SimulationTests : IocTestFixture
         actual.Grouped.Should().HaveCount(count);
     }
 
+    private void ValidateLastToBeCompleted(TimeEventData[] events)
+    {
+        var last = events[events.Length - 1];
+        ValidateDataForEmptines(last.RequestsQueue);
+        ValidateDataForEmptines(last.RunningAgents);
+        ValidateDataForEmptines(last.RunningRequests);
+        last.AllAgents.Should().AllSatisfy(a => a.State.Should().Be(AgentState.Finished));
+        last.AllRequests.Should().AllSatisfy(r => r.State.Should().Be(RequestState.Finished));
+    }
+
     [Test]
     public void Run_WhenOneRequest_Then4Events()
     {
@@ -62,6 +72,8 @@ public class SimulationTests : IocTestFixture
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
+        ValidateLastToBeCompleted(result);
+
         result.Should().HaveCount(4);
 
         result[0].Name.Should().Be(EventNames.QueueRequest);
@@ -120,6 +132,8 @@ public class SimulationTests : IocTestFixture
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
+        ValidateLastToBeCompleted(result);
+
         result.Should().HaveCount(5);
 
         result[0].Name.Should().Be(EventNames.QueueRequest);
@@ -185,10 +199,7 @@ public class SimulationTests : IocTestFixture
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
-        var last = result[result.Length - 1];
-        ValidateDataForEmptines(last.RequestsQueue);
-        ValidateDataForEmptines(last.RunningAgents);
-        ValidateDataForEmptines(last.RunningRequests);
+        ValidateLastToBeCompleted(result);
     }
 
     [Test]
@@ -232,6 +243,6 @@ public class SimulationTests : IocTestFixture
         var sut = CreateSut();
 
         var result = sut.Run(settings).ToArray();
-        result.Should().HaveCount(1);
+        ValidateLastToBeCompleted(result);
     }
 }

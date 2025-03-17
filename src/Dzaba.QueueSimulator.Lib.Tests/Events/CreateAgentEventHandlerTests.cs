@@ -28,12 +28,6 @@ public class CreateAgentEventHandlerTests
         return fixture.Create<CreateAgentEventHandler>();
     }
 
-    private void SetupContext(SimulationSettings settings)
-    {
-        fixture.FreezeMock<ISimulationContext>()
-            .Setup(x => x.Payload).Returns(new SimulationPayload(settings));
-    }
-
     [Test]
     public void Handle_WhenAgentCreated_ThenNextInitIt()
     {
@@ -55,7 +49,7 @@ public class CreateAgentEventHandlerTests
             Agents = []
         };
 
-        SetupContext(settings);
+        fixture.SetupSimulationContext(settings);
 
         var agent = new Agent
         {
@@ -98,7 +92,7 @@ public class CreateAgentEventHandlerTests
             Agents = []
         };
 
-        SetupContext(settings);
+        fixture.SetupSimulationContext(settings);
 
         Agent agent = null;
 

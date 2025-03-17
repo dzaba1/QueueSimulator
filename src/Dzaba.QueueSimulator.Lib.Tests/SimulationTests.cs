@@ -54,18 +54,11 @@ public class SimulationTests
         };
     }
 
-    private Mock<ISimulationContext> SetupContext(SimulationSettings settings)
-    {
-        var context = fixture.FreezeMock<ISimulationContext>();
-        context.Setup(x => x.Payload).Returns(new SimulationPayload(settings));
-        return context;
-    }
-
     [Test]
     public void Run_WhenCalled_ThenContextIsSet()
     {
         var settings = GetSomeSettings();
-        var context = SetupContext(settings);
+        var context = fixture.SetupSimulationContext(settings);
 
         var sut = CreateSut();
 
@@ -78,7 +71,7 @@ public class SimulationTests
     public void Run_WhenCalled_ThenEventPumpIsCalled()
     {
         var settings = GetSomeSettings();
-        SetupContext(settings);
+        fixture.SetupSimulationContext(settings);
 
         var eventPump = fixture.FreezeMock<ISimulationEventQueue>();
 
@@ -93,7 +86,7 @@ public class SimulationTests
     public void Run_WhenInitRequests_ThenThoseAreDividedWithConstantInterval()
     {
         var settings = GetSomeSettings();
-        SetupContext(settings);
+        fixture.SetupSimulationContext(settings);
 
         var eventPump = fixture.FreezeMock<ISimulationEventQueue>();
 
@@ -113,7 +106,7 @@ public class SimulationTests
     public void Run_WhenCalled_ThenEventsAreReturned()
     {
         var settings = GetSomeSettings();
-        SetupContext(settings);
+        fixture.SetupSimulationContext(settings);
 
         var events = fixture.FreezeMock<ISimulationEvents>();
 

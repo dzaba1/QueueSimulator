@@ -320,7 +320,7 @@ public class SimulationTests : IocTestFixture
     }
 
     [Test]
-    public void Run_WhenCompositeWithOneDependency_Then10Events()
+    public void Run_WhenCompositeWithOneDependency_Then7Events()
     {
         var settings = new SimulationSettings
         {
@@ -361,7 +361,7 @@ public class SimulationTests : IocTestFixture
         var result = sut.Run(settings).ToArray();
         var last = ValidateLastToBeCompleted(result);
 
-        result.Should().HaveCount(10);
+        result.Should().HaveCount(7);
 
         last.Timestamp.Minute.Should().Be(2);
         last.AllAgents.Should().HaveCount(1);
@@ -369,5 +369,122 @@ public class SimulationTests : IocTestFixture
         last.AllRequests[0].Id.Should().Be(1);
         last.AllRequests[0].Dependencies.Should().BeEquivalentTo([2]);
         last.AllRequests[1].Id.Should().Be(2);
+    }
+
+    [Test]
+    public void Run_WhenCompositeWithCompositeWithOneDependency_Then9Events()
+    {
+        var settings = new SimulationSettings
+        {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "TestAgent1",
+                    InitTime = TimeSpan.FromMinutes(1)
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2"],
+                    IsComposite = true
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2",
+                    RequestDependencies = ["BuildConfig3"],
+                    IsComposite = true
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig3",
+                    CompatibleAgents = ["TestAgent1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1",
+                    NumberToQueue = 1
+                }
+            ]
+        };
+
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).ToArray();
+        var last = ValidateLastToBeCompleted(result);
+
+        result.Should().HaveCount(9);
+
+        last.Timestamp.Minute.Should().Be(2);
+        last.AllAgents.Should().HaveCount(1);
+        last.AllRequests.Should().HaveCount(3);
+    }
+
+    [Test]
+    public void Run_WhenCompositeWitOneDependencyTwoTimes_Then14Events()
+    {
+        var settings = new SimulationSettings
+        {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "TestAgent1",
+                    InitTime = TimeSpan.FromMinutes(1)
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2"],
+                    IsComposite = true
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig3"],
+                    Duration = TimeSpan.FromMinutes(1)
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig3",
+                    RequestDependencies = ["BuildConfig4"],
+                    IsComposite = true
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig4",
+                    CompatibleAgents = ["TestAgent1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1",
+                    NumberToQueue = 1
+                }
+            ]
+        };
+
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).ToArray();
+        var last = ValidateLastToBeCompleted(result);
+
+        result.Should().HaveCount(14);
+
+        last.Timestamp.Minute.Should().Be(4);
+        last.AllAgents.Should().HaveCount(2);
+        last.AllRequests.Should().HaveCount(4);
     }
 }

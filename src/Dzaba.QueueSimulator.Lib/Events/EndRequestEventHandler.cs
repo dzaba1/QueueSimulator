@@ -12,23 +12,27 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
     private readonly IAgentsRepository agentsRepo;
     private readonly IRequestsRepository requestRepo;
     private readonly ISimulationEventQueue eventQueue;
+    private readonly ISimulationContext simulationContext;
 
     public EndRequestEventHandler(ISimulationEvents simulationEvents,
         ILogger<EndRequestEventHandler> logger,
         IAgentsRepository agentsRepo,
         IRequestsRepository requestRepo,
-        ISimulationEventQueue eventQueue)
+        ISimulationEventQueue eventQueue,
+        ISimulationContext simulationContext)
         : base(simulationEvents)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(agentsRepo, nameof(agentsRepo));
         ArgumentNullException.ThrowIfNull(requestRepo, nameof(requestRepo));
         ArgumentNullException.ThrowIfNull(eventQueue, nameof(eventQueue));
+        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
         this.logger = logger;
         this.agentsRepo = agentsRepo;
         this.requestRepo = requestRepo;
         this.eventQueue = eventQueue;
+        this.simulationContext = simulationContext;
     }
 
     protected override string OnHandle(EventData eventData, Request payload)
@@ -41,17 +45,23 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         logger.LogInformation("Start finishing request {RequestdId} [{Request}], Current time: {Time}",
             request.Id, request.RequestConfiguration, eventData.Time);
 
-        var agent = agentsRepo.GetAgent(request.AgentId.Value);
+        var requestConfiguration = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
 
-        agent.State = AgentState.Finished;
-        agent.EndTime = eventData.Time;
         request.EndTime = eventData.Time;
         request.State = RequestState.Finished;
 
-        EnqueueWaitingForAgents(eventData);
+        if (!requestConfiguration.IsComposite)
+        {
+            var agent = agentsRepo.GetAgent(request.AgentId.Value);
+            agent.State = AgentState.Finished;
+            agent.EndTime = eventData.Time;
+
+            EnqueueWaitingForAgents(eventData);
+        }
+        
         EnqueueWaitingForDependencies(request, eventData);
 
-        return $"Finished the request {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
+        return $"Finished the request {request.Id} [{request.RequestConfiguration}].";
     }
 
     private void EnqueueWaitingForDependencies(Request request, EventData eventData)
@@ -66,8 +76,18 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
             if (children.All(r => r.State == RequestState.Finished))
             {
                 logger.LogInformation("All dependencies of request {RequestdId} [{Request}] are finished.", waitingRequest.Id, waitingRequest.RequestConfiguration);
-                waitingRequest.State = RequestState.Scheduled;
-                eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
+
+                var waitingRequestConfiguration = simulationContext.Payload.GetRequestConfiguration(waitingRequest.RequestConfiguration);
+
+                if (waitingRequestConfiguration.IsComposite)
+                {
+                    eventQueue.AddEndRequestQueueEvent(waitingRequest, eventData.Time);
+                }
+                else
+                {
+                    waitingRequest.State = RequestState.Scheduled;
+                    eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
+                }
             }
         }
     }

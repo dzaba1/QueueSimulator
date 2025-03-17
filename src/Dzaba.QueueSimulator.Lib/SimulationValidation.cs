@@ -17,13 +17,16 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         foreach (var request in simulationPayload.RequestConfigurationsCached.Values)
         {
-            foreach (var agentName in request.CompatibleAgents)
+            if (request.CompatibleAgents != null)
             {
-                if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
+                foreach (var agentName in request.CompatibleAgents)
                 {
-                    throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
+                    if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
+                    {
+                        throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
+                    }
                 }
-            }
+            }         
 
             if (request.RequestDependencies != null)
             {
@@ -33,6 +36,24 @@ internal sealed class SimulationValidation : ISimulationValidation
                     {
                         throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}.");
                     }
+                }
+            }
+
+            if (request.IsComposite)
+            {
+                if (request.Duration != null)
+                {
+                    throw new ExitCodeException(ExitCode.CompositeWithDuration, $"The composite request definition {request.Name} has some duration.");
+                }
+
+                if (request.CompatibleAgents != null && request.CompatibleAgents.Length > 0)
+                {
+                    throw new ExitCodeException(ExitCode.CompositeWithAgents, $"The composite request definition {request.Name} has some agents defined.");
+                }
+
+                if (request.RequestDependencies == null || request.RequestDependencies.Length == 0)
+                {
+                    throw new ExitCodeException(ExitCode.CompositeWithoutDependencies, $"The composite request definition {request.Name} doesn't have any dependencies.");
                 }
             }
         }

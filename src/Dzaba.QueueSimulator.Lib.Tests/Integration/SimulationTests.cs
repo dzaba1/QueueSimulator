@@ -318,4 +318,56 @@ public class SimulationTests : IocTestFixture
         last.AllRequests[1].Dependencies.Should().BeEquivalentTo([4]);
         last.AllRequests[2].Dependencies.Should().BeEquivalentTo([4]);
     }
+
+    [Test]
+    public void Run_WhenCompositeWithOneDependency_Then10Events()
+    {
+        var settings = new SimulationSettings
+        {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "TestAgent1",
+                    InitTime = TimeSpan.FromMinutes(1)
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2"],
+                    IsComposite = true
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2",
+                    CompatibleAgents = ["TestAgent1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1",
+                    NumberToQueue = 1
+                }
+            ]
+        };
+
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).ToArray();
+        var last = ValidateLastToBeCompleted(result);
+
+        result.Should().HaveCount(10);
+
+        last.Timestamp.Minute.Should().Be(2);
+        last.AllAgents.Should().HaveCount(1);
+        last.AllRequests.Should().HaveCount(2);
+        last.AllRequests[0].Id.Should().Be(1);
+        last.AllRequests[0].Dependencies.Should().BeEquivalentTo([2]);
+        last.AllRequests[1].Id.Should().Be(2);
+    }
 }

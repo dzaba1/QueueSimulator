@@ -6,5 +6,8 @@ public enum ExitCode
     Unknown = 1,
     AgentNotFound,
     RequestNotFound,
-    RequestCyclicDependency
+    RequestCyclicDependency,
+    CompositeWithDuration,
+    CompositeWithAgents,
+    CompositeWithoutDependencies
 }

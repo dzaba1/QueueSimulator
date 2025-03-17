@@ -9,7 +9,7 @@ namespace Dzaba.QueueSimulator.Lib.Events;
 internal sealed class QueueRequestEventPayload
 {
     public QueueRequestEventPayload(RequestConfiguration requestConfiguration,
-        Pipeline pipeline,
+        IPipeline pipeline,
         Request parent)
     {
         ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
@@ -21,7 +21,7 @@ internal sealed class QueueRequestEventPayload
     }
 
     public RequestConfiguration RequestConfiguration { get; }
-    public Pipeline Pipeline { get; }
+    public IPipeline Pipeline { get; }
     public Request Parent { get; }
 }
 
@@ -56,9 +56,7 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
         logger.LogInformation("Start queuening a new request {Request}, Current time: {Time}",
             requestConfiguration.Name, eventData.Time);
 
-        var request = requestRepo.NewRequest(requestConfiguration, eventData.Time);
-
-        pipeline.SetRequest(requestConfiguration, request);
+        var request = requestRepo.NewRequest(requestConfiguration, pipeline, eventData.Time);
 
         if (payload.Parent != null)
         {
@@ -69,25 +67,44 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
         if (children.Length > 0)
         {
             request.State = RequestState.WaitingForDependencies;
+            var allFinished = true;
 
             foreach (var child in children)
             {
                 if (pipeline.TryGetRequest(child, out var childRequest))
                 {
                     pipeline.SetReference(childRequest, request);
-                    throw new NotImplementedException();
+                    
+                    if (childRequest.State != RequestState.Finished)
+                    {
+                        allFinished = false;
+                    }
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    allFinished = false;
+
+                    var childrenEventPayload = new QueueRequestEventPayload(child, pipeline, request);
+                    eventsQueue.AddQueueRequestQueueEvent(childrenEventPayload, eventData.Time);
                 }
+            }
+
+            if (allFinished)
+            {
+                EnqueueStartRequest(request, eventData.Time);
             }
         }
         else
         {
-            eventsQueue.AddCreateAgentQueueEvent(request, eventData.Time);
+            EnqueueStartRequest(request, eventData.Time);
         }
 
         return $"Queued a new request {request.Id} [{request.RequestConfiguration}].";
+    }
+
+    private void EnqueueStartRequest(Request request, DateTime time)
+    {
+        request.State = RequestState.Created;
+        eventsQueue.AddCreateAgentQueueEvent(request, time);
     }
 }

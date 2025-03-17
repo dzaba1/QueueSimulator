@@ -19,19 +19,15 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     private readonly ILogger<SimulationEventQueue> logger;
     private readonly EventQueue eventsQueue = new();
     private readonly IEventHandlers eventHandlers;
-    private readonly ISimulationContext simulationContext;
 
     public SimulationEventQueue(ILogger<SimulationEventQueue> logger,
-        IEventHandlers eventHandlers,
-        ISimulationContext simulationContext)
+        IEventHandlers eventHandlers)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(eventHandlers, nameof(eventHandlers));
-        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
         this.logger = logger;
         this.eventHandlers = eventHandlers;
-        this.simulationContext = simulationContext;
     }
 
     public void Run()
@@ -74,14 +70,10 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var payload = simulationContext.Payload;
-        var requestConfig = payload.GetRequestConfiguration(request.RequestConfiguration);
-        var requestEndTime = time + requestConfig.Duration.Value;
-
         logger.LogInformation("Adding finishing request {Request} for {Time} to the event queue.",
-            request.RequestConfiguration, requestEndTime);
+            request.RequestConfiguration, time);
 
-        Enqueue(EventNames.FinishRequest, requestEndTime, request);
+        Enqueue(EventNames.FinishRequest, time, request);
     }
 
     public void AddCreateAgentQueueEvent(Request request, DateTime time)

@@ -10,20 +10,24 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
     private readonly ILogger<StartRequestEventHandler> logger;
     private readonly IAgentsRepository agentsRepo;
     private readonly ISimulationEventQueue eventQueue;
+    private readonly ISimulationContext simulationContext;
 
     public StartRequestEventHandler(ISimulationEvents simulationEvents,
         ILogger<StartRequestEventHandler> logger,
         IAgentsRepository agentsRepo,
-        ISimulationEventQueue eventQueue)
+        ISimulationEventQueue eventQueue,
+        ISimulationContext simulationContext)
         : base(simulationEvents)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(agentsRepo, nameof(agentsRepo));
         ArgumentNullException.ThrowIfNull(eventQueue, nameof(eventQueue));
+        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
         this.logger = logger;
         this.agentsRepo = agentsRepo;
         this.eventQueue = eventQueue;
+        this.simulationContext = simulationContext;
     }
 
     protected override string OnHandle(EventData eventData, Request payload)
@@ -43,7 +47,10 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
         request.StartTime = eventData.Time;
         request.State = RequestState.Running;
 
-        eventQueue.AddEndRequestQueueEvent(request, eventData.Time);
+        var requestConfig = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
+        var requestEndTime = eventData.Time + requestConfig.Duration.Value;
+
+        eventQueue.AddEndRequestQueueEvent(request, requestEndTime);
 
         return $"Started the request {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
     }

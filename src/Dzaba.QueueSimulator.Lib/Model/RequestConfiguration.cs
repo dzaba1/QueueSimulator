@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
+[DebuggerDisplay("{Name}")]
 public sealed class RequestConfiguration
 {
     [Required(AllowEmptyStrings = false)]

@@ -253,4 +253,65 @@ public class SimulationTests : IocTestFixture
         last.AllRequests[0].Dependencies.Should().BeEquivalentTo([2]);
         last.AllRequests[1].Id.Should().Be(2);
     }
+
+    [Test]
+    public void Run_When4DiamondConfiguration_Then4Builds()
+    {
+        var settings = new SimulationSettings
+        {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "TestAgent1",
+                    InitTime = TimeSpan.FromMinutes(1)
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig2", "BuildConfig3"],
+                    Duration = TimeSpan.FromMinutes(1)
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig4"],
+                    Duration = TimeSpan.FromMinutes(1)
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig3",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig4"],
+                    Duration = TimeSpan.FromMinutes(1)
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig4",
+                    CompatibleAgents = ["TestAgent1"],
+                    Duration = TimeSpan.FromMinutes(1)
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1",
+                    NumberToQueue = 1
+                }
+            ]
+        };
+
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).ToArray();
+        var last = ValidateLastToBeCompleted(result);
+
+        last.AllAgents.Should().HaveCount(4);
+        last.AllRequests.Should().HaveCount(4);
+    }
 }

@@ -11,6 +11,7 @@ internal interface IPipeline
     RequestConfigurationsGraph RequestConfigurationsGraph { get; }
 
     IEnumerable<Request> GetChildren(Request request);
+    IEnumerable<Request> GetParents(Request request);
     void SetReference(Request currentRequest, Request parent);
     void SetRequest(RequestConfiguration requestConfiguration, Request request);
     bool TryGetRequest(RequestConfiguration requestConfiguration, out Request request);
@@ -84,6 +85,17 @@ internal sealed class Pipeline : IPipeline
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         if (requestChildren.TryGetValue(request, out var list))
+        {
+            return list;
+        }
+        return Enumerable.Empty<Request>();
+    }
+
+    public IEnumerable<Request> GetParents(Request request)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        if (requestParents.TryGetValue(request, out var list))
         {
             return list;
         }

@@ -234,11 +234,12 @@ public class RequestsRepositoryTests
     public void GetPipeline_WhenRequestAdded_ThenPipelineForItCanBeTaken()
     {
         var settings = GetSomeSettings();
-        var pipeline = Mock.Of<IPipeline>();
+        var pipeline = new Mock<IPipeline>();
         var sut = CreateSut();
 
-        var request = sut.NewRequest(settings.RequestConfigurations[0], pipeline, CurrentTime);
+        var request = sut.NewRequest(settings.RequestConfigurations[0], pipeline.Object, CurrentTime);
         var result = sut.GetPipeline(request);
-        result.Should().BeSameAs(pipeline);
+        result.Should().BeSameAs(pipeline.Object);
+        pipeline.Verify(x => x.SetRequest(settings.RequestConfigurations[0], request), Times.Once());
     }
 }

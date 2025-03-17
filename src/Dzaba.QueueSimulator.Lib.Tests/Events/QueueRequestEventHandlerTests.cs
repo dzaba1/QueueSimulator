@@ -3,8 +3,11 @@ using Dzaba.QueueSimulator.Lib.Events;
 using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
 using Dzaba.TestUtils;
+using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using System;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Tests.Events;
 
@@ -41,12 +44,13 @@ public class QueueRequestEventHandlerTests
             ],
         });
         var initRequestConfig = payload.SimulationSettings.RequestConfigurations[0];
-        var eventPayload = new QueueRequestEventPayload(initRequestConfig, new Pipeline(initRequestConfig, payload), null);
+        var pipeline = new Pipeline(initRequestConfig, payload);
+        var eventPayload = new QueueRequestEventPayload(initRequestConfig, pipeline, null);
 
         var request = new Request();
 
         fixture.FreezeMock<IRequestsRepository>()
-            .Setup(x => x.NewRequest(initRequestConfig, eventData.Time))
+            .Setup(x => x.NewRequest(initRequestConfig, pipeline, eventData.Time))
             .Returns(request);
         var eventsQueue = fixture.FreezeMock<ISimulationEventQueue>();
 
@@ -54,6 +58,101 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time));
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
+        request.State.Should().Be(RequestState.Created);
+    }
+
+    [Test]
+    public void Handle_WhenRequestWithDependency_ThenDependencyIsScheduled()
+    {
+        var eventData = new EventData("Test", CurrentTime);
+        var payload = new SimulationPayload(new SimulationSettings
+        {
+            Agents = [],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2"
+                }
+            ],
+        });
+        var initRequestConfig = payload.SimulationSettings.RequestConfigurations[0];
+        var pipeline = new Pipeline(initRequestConfig, payload);
+        var eventPayload = new QueueRequestEventPayload(initRequestConfig, pipeline, null);
+
+        var request = new Request();
+
+        fixture.FreezeMock<IRequestsRepository>()
+            .Setup(x => x.NewRequest(initRequestConfig, pipeline, eventData.Time))
+            .Returns(request);
+        var eventsQueue = fixture.FreezeMock<ISimulationEventQueue>();
+
+        var sut = CreateSut();
+
+        sut.Handle(eventData, eventPayload);
+
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request>(), It.IsAny<DateTime>()), Times.Never());
+        request.State.Should().Be(RequestState.WaitingForDependencies);
+        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => ValidateQueueRequestPayload(p, payload.SimulationSettings.RequestConfigurations[1], request, pipeline)), eventData.Time), Times.Once());
+    }
+
+    private bool ValidateQueueRequestPayload(QueueRequestEventPayload actual,
+        RequestConfiguration requestConfiguration, Request parent, IPipeline pipeline)
+    {
+        return actual.Parent == parent && actual.RequestConfiguration == requestConfiguration && actual.Pipeline == pipeline;
+    }
+
+    [Test]
+    public void Handle_WhenParent_ThenRequestIsScheduled()
+    {
+        var eventData = new EventData("Test", CurrentTime);
+        var payload = new SimulationPayload(new SimulationSettings
+        {
+            Agents = [],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2"
+                }
+            ],
+        });
+
+        var parentRequest = new Request
+        {
+            Id = 1,
+            RequestConfiguration = "BuildConfig1"
+        };
+
+        var initRequestConfig = payload.SimulationSettings.RequestConfigurations[0];
+        var currentRequestConfig = payload.SimulationSettings.RequestConfigurations[1];
+        var pipeline = new Pipeline(initRequestConfig, payload);
+        var eventPayload = new QueueRequestEventPayload(currentRequestConfig, pipeline, parentRequest);
+
+        var request = new Request();
+
+        fixture.FreezeMock<IRequestsRepository>()
+            .Setup(x => x.NewRequest(currentRequestConfig, pipeline, eventData.Time))
+            .Returns(request);
+        var eventsQueue = fixture.FreezeMock<ISimulationEventQueue>();
+
+        var sut = CreateSut();
+
+        sut.Handle(eventData, eventPayload);
+
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
+        request.State.Should().Be(RequestState.Created);
+
+        pipeline.GetChildren(parentRequest).First().Should().BeSameAs(request);
+        pipeline.GetParents(request).First().Should().BeSameAs(parentRequest);
     }
 }

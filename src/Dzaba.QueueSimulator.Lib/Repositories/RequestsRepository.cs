@@ -38,6 +38,7 @@ internal sealed class RequestsRepository : IRequestsRepository
         };
         allRequests.Add(request.Id, request);
         allPipelines.Add(request.Id, pipeline);
+        pipeline.SetRequest(requestConfiguration, request);
 
         return request;
     }

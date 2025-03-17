@@ -3,6 +3,7 @@ using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
 using Dzaba.TestUtils;
 using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -83,7 +84,7 @@ public class RequestsRepositoryTests
         var settings = GetSomeSettings();
         var sut = CreateSut();
 
-        var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+        var request = sut.NewRequest(settings.RequestConfigurations[0], Mock.Of<IPipeline>(), CurrentTime);
         var result = sut.GetRequest(request.Id);
         result.Should().BeSameAs(request);
     }
@@ -94,7 +95,7 @@ public class RequestsRepositoryTests
         var settings = GetSomeSettings();
         var sut = CreateSut();
 
-        var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+        var request = sut.NewRequest(settings.RequestConfigurations[0], Mock.Of<IPipeline>(), CurrentTime);
         request.AgentId.Should().BeNull();
         request.RequestConfiguration.Should().Be(settings.RequestConfigurations[0].Name);
         request.CreatedTime.Should().Be(CurrentTime);
@@ -112,7 +113,7 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
         }
 
         sut.EnumerateRequests().Should().HaveCount(3);
@@ -126,7 +127,7 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            var request = sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
             if (i > 0)
             {
                 request.State = RequestState.WaitingForDependencies;
@@ -143,7 +144,7 @@ public class RequestsRepositoryTests
         var sut = CreateSut();
 
         var requests = Enumerable.Range(0, 6)
-            .Select(i => sut.NewRequest(settings.RequestConfigurations[0], CurrentTime))
+            .Select(i => sut.NewRequest(settings.RequestConfigurations[0], Mock.Of<IPipeline>(), CurrentTime))
             .ToArray();
 
         for (var i = 0; i < 4; i++)
@@ -167,7 +168,7 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            var request = sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
             request.State = RequestState.Running;
         }
 
@@ -187,7 +188,7 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            var request = sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
             request.State = RequestState.Running;
         }
 
@@ -203,7 +204,7 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
         }
 
         var result = sut.GroupQueueByConfiguration();
@@ -222,10 +223,22 @@ public class RequestsRepositoryTests
 
         for (var i = 0; i < 3; i++)
         {
-            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
         }
 
         var result = sut.GetQueueLength();
         result.Should().Be(3);
+    }
+
+    [Test]
+    public void GetPipeline_WhenRequestAdded_ThenPipelineForItCanBeTaken()
+    {
+        var settings = GetSomeSettings();
+        var pipeline = Mock.Of<IPipeline>();
+        var sut = CreateSut();
+
+        var request = sut.NewRequest(settings.RequestConfigurations[0], pipeline, CurrentTime);
+        var result = sut.GetPipeline(request);
+        result.Should().BeSameAs(pipeline);
     }
 }

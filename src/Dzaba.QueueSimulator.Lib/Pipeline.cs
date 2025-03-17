@@ -1,10 +1,22 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib;
 
-internal sealed class Pipeline
+internal interface IPipeline
+{
+    RequestConfiguration InitRequestConfiguration { get; }
+    RequestConfigurationsGraph RequestConfigurationsGraph { get; }
+
+    IEnumerable<Request> GetChildren(Request request);
+    void SetReference(Request currentRequest, Request parent);
+    void SetRequest(RequestConfiguration requestConfiguration, Request request);
+    bool TryGetRequest(RequestConfiguration requestConfiguration, out Request request);
+}
+
+internal sealed class Pipeline : IPipeline
 {
     private readonly OnePropertyComparer<Request, long> requestIdComparer;
     private readonly Dictionary<Request, HashSet<Request>> requestParents;
@@ -65,5 +77,16 @@ internal sealed class Pipeline
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         createdRequests.Add(requestConfiguration, request);
+    }
+
+    public IEnumerable<Request> GetChildren(Request request)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        if (requestChildren.TryGetValue(request, out var list))
+        {
+            return list;
+        }
+        return Enumerable.Empty<Request>();
     }
 }

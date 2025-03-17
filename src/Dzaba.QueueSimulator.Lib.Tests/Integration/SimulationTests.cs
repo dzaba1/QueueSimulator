@@ -34,6 +34,8 @@ public class SimulationTests : IocTestFixture
     {
         var settings = new SimulationSettings
         {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
             Agents = [
                 new AgentConfiguration
                 {
@@ -89,6 +91,8 @@ public class SimulationTests : IocTestFixture
     {
         var settings = new SimulationSettings
         {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
             Agents = [
                 new AgentConfiguration
                 {
@@ -150,6 +154,8 @@ public class SimulationTests : IocTestFixture
     {
         var settings = new SimulationSettings
         {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
             MaxRunningAgents = 120,
             Agents = [
                 new AgentConfiguration
@@ -190,6 +196,8 @@ public class SimulationTests : IocTestFixture
     {
         var settings = new SimulationSettings
         {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
             Agents = [
                 new AgentConfiguration
                 {

@@ -95,10 +95,19 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             timedEvent.AllRequests = requestRepo.EnumerateRequests()
                 .Select(a => a.ShallowCopy())
+                .ForEachLazy(GetAndSetDependencies)
                 .ToArray();
         }
 
         timeEvents.Add(timedEvent);
+    }
+
+    private void GetAndSetDependencies(Request request)
+    {
+        var pipeline = requestRepo.GetPipeline(request);
+        request.Dependencies = pipeline.GetChildren(request)
+            .Select(r => r.Id)
+            .ToArray();
     }
 
     public IEnumerator<TimeEventData> GetEnumerator()

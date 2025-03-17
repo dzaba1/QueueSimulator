@@ -15,17 +15,20 @@ internal interface IRequestsRepository
     IEnumerable<Request> GetWaitingForDependencies();
     IReadOnlyDictionary<string, Request[]> GroupQueueByConfiguration();
     IReadOnlyDictionary<string, Request[]> GroupRunningRequestsByConfiguration();
-    Request NewRequest(RequestConfiguration requestConfiguration, DateTime currentTime);
+    Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTime currentTime);
+    IPipeline GetPipeline(Request request);
 }
 
 internal sealed class RequestsRepository : IRequestsRepository
 {
     private readonly LongSequence idSequence = new();
     private readonly Dictionary<long, Request> allRequests = new();
+    private readonly Dictionary<long, IPipeline> allPipelines = new();
 
-    public Request NewRequest(RequestConfiguration requestConfiguration, DateTime currentTime)
+    public Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTime currentTime)
     {
         ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
+        ArgumentNullException.ThrowIfNull(pipeline, nameof(pipeline));
 
         var request = new Request
         {
@@ -34,6 +37,7 @@ internal sealed class RequestsRepository : IRequestsRepository
             CreatedTime = currentTime,
         };
         allRequests.Add(request.Id, request);
+        allPipelines.Add(request.Id, pipeline);
 
         return request;
     }
@@ -88,5 +92,12 @@ internal sealed class RequestsRepository : IRequestsRepository
     public Request GetRequest(long id)
     {
         return allRequests[id];
+    }
+
+    public IPipeline GetPipeline(Request request)
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        return allPipelines[request.Id];
     }
 }

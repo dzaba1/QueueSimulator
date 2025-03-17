@@ -43,7 +43,8 @@ public class SimulationEventsTests
             Agents = [],
         };
         fixture.FreezeMock<ISimulationContext>()
-            .Setup(x => x.Payload).Returns(new SimulationPayload(settings));
+            .Setup(x => x.Payload)
+            .Returns(new SimulationPayload(settings));
     }
 
     private void SetupRequestsQueue(params Request[] requests)

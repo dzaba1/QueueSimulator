@@ -2,6 +2,7 @@
 using Dzaba.QueueSimulator.Lib.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
@@ -47,11 +48,35 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         request.EndTime = eventData.Time;
         request.State = RequestState.Finished;
 
+        EnqueueWaitingForAgents(eventData);
+        EnqueueWaitingForDependencies(request, eventData);
+
+        return $"Finished the request {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
+    }
+
+    private void EnqueueWaitingForDependencies(Request request, EventData eventData)
+    {
+        var pipeline = requestRepo.GetPipeline(request);
+        var waitingRequests = pipeline.GetParents(request)
+            .Where(r => r.State == RequestState.WaitingForDependencies);
+
+        foreach (var waitingRequest in waitingRequests)
+        {
+            var children = pipeline.GetChildren(waitingRequest);
+            if (children.All(r => r.State == RequestState.Finished))
+            {
+                logger.LogInformation("All dependencies of request {RequestdId} [{Request}] are finished.", waitingRequest.Id, waitingRequest.RequestConfiguration);
+                waitingRequest.State = RequestState.Created;
+                eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
+            }
+        }
+    }
+
+    private void EnqueueWaitingForAgents(EventData eventData)
+    {
         foreach (var scheduledRequest in requestRepo.GetWaitingForAgents())
         {
             eventQueue.AddCreateAgentQueueEvent(scheduledRequest, eventData.Time);
         }
-
-        return $"Finished the request {request.Id} [{request.RequestConfiguration}] on agent {agent.Id} [{agent.AgentConfiguration}].";
     }
 }

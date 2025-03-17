@@ -7,8 +7,7 @@ namespace Dzaba.QueueSimulator.Lib.Tests;
 [TestFixture]
 public class RequestConfigurationsGraphTests
 {
-    [Test]
-    public void AA()
+    private SimulationPayload GetSomePayload()
     {
         var settings = new SimulationSettings
         {
@@ -56,20 +55,34 @@ public class RequestConfigurationsGraphTests
                 }
             ]
         };
-        var payload = new SimulationPayload(settings);
+        return new SimulationPayload(settings);
+    }
 
-        var sut = new RequestConfigurationsGraph(payload, settings.RequestConfigurations[0]);
+    [Test]
+    public void GetChildren_WhenSomeGraph_ThenChildrenCountIsOk()
+    {
+        var payload = GetSomePayload();
 
-        sut.GetChildren(settings.RequestConfigurations[0]).Should().HaveCount(1);
-        sut.GetChildren(settings.RequestConfigurations[1]).Should().HaveCount(2);
-        sut.GetChildren(settings.RequestConfigurations[2]).Should().HaveCount(1);
-        sut.GetChildren(settings.RequestConfigurations[3]).Should().BeEmpty();
-        sut.GetChildren(settings.RequestConfigurations[4]).Should().HaveCount(1);
+        var sut = new RequestConfigurationsGraph(payload, payload.SimulationSettings.RequestConfigurations[0]);
 
-        sut.GetParents(settings.RequestConfigurations[0]).Should().BeEmpty();
-        sut.GetParents(settings.RequestConfigurations[1]).Should().HaveCount(1);
-        sut.GetParents(settings.RequestConfigurations[2]).Should().HaveCount(1);
-        sut.GetParents(settings.RequestConfigurations[3]).Should().HaveCount(2);
-        sut.GetParents(settings.RequestConfigurations[4]).Should().HaveCount(1);
+        sut.GetChildren(payload.SimulationSettings.RequestConfigurations[0]).Should().HaveCount(1);
+        sut.GetChildren(payload.SimulationSettings.RequestConfigurations[1]).Should().HaveCount(2);
+        sut.GetChildren(payload.SimulationSettings.RequestConfigurations[2]).Should().HaveCount(1);
+        sut.GetChildren(payload.SimulationSettings.RequestConfigurations[3]).Should().BeEmpty();
+        sut.GetChildren(payload.SimulationSettings.RequestConfigurations[4]).Should().HaveCount(1);
+    }
+
+    [Test]
+    public void GetParents_WhenSomeGraph_ThenChildrenCountIsOk()
+    {
+        var payload = GetSomePayload();
+
+        var sut = new RequestConfigurationsGraph(payload, payload.SimulationSettings.RequestConfigurations[0]);
+
+        sut.GetParents(payload.SimulationSettings.RequestConfigurations[0]).Should().BeEmpty();
+        sut.GetParents(payload.SimulationSettings.RequestConfigurations[1]).Should().HaveCount(1);
+        sut.GetParents(payload.SimulationSettings.RequestConfigurations[2]).Should().HaveCount(1);
+        sut.GetParents(payload.SimulationSettings.RequestConfigurations[3]).Should().HaveCount(2);
+        sut.GetParents(payload.SimulationSettings.RequestConfigurations[4]).Should().HaveCount(1);
     }
 }

@@ -217,6 +217,81 @@ public class QueueRequestEventHandlerTests
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
         request.State.Should().Be(RequestState.Created);
+        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
+
+        for (int i = 0; i < 3; i++)
+        {
+            pipeline.Verify(x => x.SetReference(childrenRequests[i], request), Times.Once());
+        }
+    }
+
+    [Test]
+    public void Handle_WhenAllChildrenRunning_ThenDontSchedule()
+    {
+        var eventData = new EventData("Test", CurrentTime);
+        var payload = new SimulationPayload(new SimulationSettings
+        {
+            Agents = [],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    RequestDependencies = ["BuildConfig2", "BuildConfig3", "BuildConfig4"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2"
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig3"
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig4"
+                }
+            ],
+        });
+        var initRequestConfig = payload.SimulationSettings.RequestConfigurations[0];
+        var pipeline = new Mock<IPipeline>();
+        pipeline.Setup(x => x.RequestConfigurationsGraph)
+            .Returns(new RequestConfigurationsGraph(payload, initRequestConfig));
+
+        var eventPayload = new QueueRequestEventPayload(initRequestConfig, pipeline.Object, null);
+
+        var request = new Request();
+        var childrenRequests = new List<Request>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            var childRequest = new Request
+            {
+                State = RequestState.Finished,
+                Id = i
+            };
+
+            if (i == 2)
+            {
+                childRequest.State = RequestState.Running;
+            }
+
+            childrenRequests.Add(childRequest);
+            pipeline.Setup(x => x.TryGetRequest(payload.SimulationSettings.RequestConfigurations[i + 1], out childRequest))
+                .Returns(true);
+        }
+
+        fixture.FreezeMock<IRequestsRepository>()
+            .Setup(x => x.NewRequest(initRequestConfig, pipeline.Object, eventData.Time))
+            .Returns(request);
+        var eventsQueue = fixture.FreezeMock<ISimulationEventQueue>();
+
+        var sut = CreateSut();
+
+        sut.Handle(eventData, eventPayload);
+
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request>(), It.IsAny<DateTime>()), Times.Never());
+        request.State.Should().Be(RequestState.WaitingForDependencies);
+        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
 
         for (int i = 0; i < 3; i++)
         {

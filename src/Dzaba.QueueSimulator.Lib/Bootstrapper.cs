@@ -15,6 +15,7 @@ public static class Bootstrapper
         services.AddTransient<ISimulation, Simulation>();
         services.AddTransient<ISimulationValidation, SimulationValidation>();
         services.AddTransient<IEventHandlers, EventHandlers>();
+        services.AddTransient<ICsvSerializer, CsvSerializer>();
 
         services.AddScoped<ISimulationContext, SimulationContext>();
         services.AddScoped<IAgentsRepository, AgentsRepository>();

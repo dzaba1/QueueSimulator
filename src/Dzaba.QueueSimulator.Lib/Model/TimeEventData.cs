@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
@@ -27,4 +29,9 @@ public sealed class ElementsData
 {
     public int Total { get; set; }
     public NamedQueueData[] Grouped { get; set; }
+
+    public IReadOnlyDictionary<string, int> ToDictionary()
+    {
+        return Grouped.ToDictionary(g => g.Name, g => g.Length, StringComparer.OrdinalIgnoreCase);
+    }
 }

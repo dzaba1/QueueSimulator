@@ -14,12 +14,16 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
     public class SimulateController : ControllerBase
     {
         private readonly ISimulation simulation;
+        private readonly ICsvSerializer csvSerializer;
 
-        public SimulateController(ISimulation simulation)
+        public SimulateController(ISimulation simulation,
+            ICsvSerializer csvSerializer)
         {
             ArgumentNullException.ThrowIfNull(simulation, nameof(simulation));
+            ArgumentNullException.ThrowIfNull(csvSerializer, nameof(csvSerializer));
 
             this.simulation = simulation;
+            this.csvSerializer = csvSerializer;
         }
 
         [HttpPost]
@@ -27,6 +31,15 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
         public TimeEventData[] Post([FromBody][Required] SimulationSettings settings)
         {
             return simulation.Run(settings).ToArray();
+        }
+
+        [HttpPost("csv")]
+        [ValidateModel]
+        public string PostCsv([FromBody][Required] SimulationSettings settings)
+        {
+            var events = simulation.Run(settings);
+
+            return csvSerializer.Serialize(events, settings);
         }
     }
 }

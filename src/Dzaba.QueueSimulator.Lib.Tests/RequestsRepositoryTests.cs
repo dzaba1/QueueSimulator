@@ -7,226 +7,225 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 
-namespace Dzaba.QueueSimulator.Lib.Tests
+namespace Dzaba.QueueSimulator.Lib.Tests;
+
+[TestFixture]
+public class RequestsRepositoryTests
 {
-    [TestFixture]
-    public class RequestsRepositoryTests
+    private static readonly DateTime CurrentTime = DateTime.Now;
+
+    private IFixture fixture;
+
+    [SetUp]
+    public void Setup()
     {
-        private static readonly DateTime CurrentTime = DateTime.Now;
+        fixture = TestFixture.Create();
+    }
 
-        private IFixture fixture;
+    private RequestsRepository CreateSut()
+    {
+        return fixture.Create<RequestsRepository>();
+    }
 
-        [SetUp]
-        public void Setup()
+    private SimulationSettings GetSomeSettings()
+    {
+        return new SimulationSettings
         {
-            fixture = TestFixture.Create();
-        }
-
-        private RequestsRepository CreateSut()
-        {
-            return fixture.Create<RequestsRepository>();
-        }
-
-        private SimulationSettings GetSomeSettings()
-        {
-            return new SimulationSettings
-            {
-                Agents = [
-                    new AgentConfiguration
-                    {
-                        Name = "TestAgent1"
-                    }
-                ],
-                RequestConfigurations = [
-                    new RequestConfiguration
-                    {
-                        Name = "BuildConfig1",
-                        CompatibleAgents = ["TestAgent1"],
-                        RequestDependencies = ["BuildConfig2"]
-                    },
-                    new RequestConfiguration
-                    {
-                        Name = "BuildConfig2",
-                        CompatibleAgents = ["TestAgent1"],
-                        RequestDependencies = ["BuildConfig3", "BuildConfig5"]
-                    },
-                    new RequestConfiguration
-                    {
-                        Name = "BuildConfig3",
-                        CompatibleAgents = ["TestAgent1"],
-                        RequestDependencies = ["BuildConfig4"]
-                    },
-                    new RequestConfiguration
-                    {
-                        Name = "BuildConfig4",
-                        CompatibleAgents = ["TestAgent1"]
-                    },
-                    new RequestConfiguration
-                    {
-                        Name = "BuildConfig5",
-                        CompatibleAgents = ["TestAgent1"],
-                        RequestDependencies = ["BuildConfig4"]
-                    }
-                ],
-                InitialRequests = [
-                    new InitialRequest
-                    {
-                        Name = "BuildConfig1"
-                    }
-                ]
-            };
-        }
-
-        [Test]
-        public void GetRequest_WhenRequestAdded_ThenItCanBeTakenById()
-        {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
-            var result = sut.GetRequest(request.Id);
-            result.Should().BeSameAs(request);
-        }
-
-        [Test]
-        public void NewRequest_WhenRequestAdded_ThenItHasCorrectProperties()
-        {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
-            request.AgentId.Should().BeNull();
-            request.RequestConfiguration.Should().Be(settings.RequestConfigurations[0].Name);
-            request.CreatedTime.Should().Be(CurrentTime);
-            request.EndTime.Should().BeNull();
-            request.StartTime.Should().BeNull();
-            request.Id.Should().Be(1);
-            request.State.Should().Be(RequestState.Created);
-        }
-
-        [Test]
-        public void EnumerateRequests_WhenCalled_ThenItReturnsAllRequests()
-        {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
-            {
-                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
-            }
-
-            sut.EnumerateRequests().Should().HaveCount(3);
-        }
-
-        [Test]
-        public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllRequestsWaitingForDependencies()
-        {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
-            {
-                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
-                if (i > 0)
+            Agents = [
+                new AgentConfiguration
                 {
-                    request.State = RequestState.WaitingForDependencies;
+                    Name = "TestAgent1"
                 }
-            }
-
-            sut.GetWaitingForDependencies().Should().HaveCount(2);
-        }
-
-        [Test]
-        public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllRequestWaitingForAgents()
-        {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            var requests = Enumerable.Range(0, 6)
-                .Select(i => sut.NewRequest(settings.RequestConfigurations[0], CurrentTime))
-                .ToArray();
-
-            for (var i = 0; i < 4; i++)
-            {
-                if (i > 1)
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
                 {
-                    requests[i].AgentId = i;
+                    Name = "BuildConfig1",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig2"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig2",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig3", "BuildConfig5"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig3",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig4"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig4",
+                    CompatibleAgents = ["TestAgent1"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig5",
+                    CompatibleAgents = ["TestAgent1"],
+                    RequestDependencies = ["BuildConfig4"]
                 }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1"
+                }
+            ]
+        };
+    }
 
-                requests[i].State = RequestState.WaitingForAgent;
-            }
+    [Test]
+    public void GetRequest_WhenRequestAdded_ThenItCanBeTakenById()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
 
-            sut.GetWaitingForAgents().Should().HaveCount(2);
-        }
+        var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+        var result = sut.GetRequest(request.Id);
+        result.Should().BeSameAs(request);
+    }
 
-        [Test]
-        public void GroupRunningRequestsByConfiguration_WhenCalled_ThenItReturnsAllRequests()
+    [Test]
+    public void NewRequest_WhenRequestAdded_ThenItHasCorrectProperties()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        var request = sut.NewRequest(settings.RequestConfigurations[0], CurrentTime);
+        request.AgentId.Should().BeNull();
+        request.RequestConfiguration.Should().Be(settings.RequestConfigurations[0].Name);
+        request.CreatedTime.Should().Be(CurrentTime);
+        request.EndTime.Should().BeNull();
+        request.StartTime.Should().BeNull();
+        request.Id.Should().Be(1);
+        request.State.Should().Be(RequestState.Created);
+    }
+
+    [Test]
+    public void EnumerateRequests_WhenCalled_ThenItReturnsAllRequests()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
         {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
-            {
-                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
-                request.State = RequestState.Running;
-            }
-
-            var result = sut.GroupRunningRequestsByConfiguration();
-            result.Should().HaveCount(3);
-            for (var i = 0; i < 3; i++)
-            {
-                result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
-            }
+            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
         }
 
-        [Test]
-        public void GetRunningRequestCount_WhenCalled_ThenItCountsAllRunningRequests()
+        sut.EnumerateRequests().Should().HaveCount(3);
+    }
+
+    [Test]
+    public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllRequestsWaitingForDependencies()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
         {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
+            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            if (i > 0)
             {
-                var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
-                request.State = RequestState.Running;
+                request.State = RequestState.WaitingForDependencies;
             }
-
-            var result = sut.GetRunningRequestCount();
-            result.Should().Be(3);
         }
 
-        [Test]
-        public void GroupQueueByConfiguration_WhenCalled_ThenItReturnsAllRequests()
+        sut.GetWaitingForDependencies().Should().HaveCount(2);
+    }
+
+    [Test]
+    public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllRequestWaitingForAgents()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        var requests = Enumerable.Range(0, 6)
+            .Select(i => sut.NewRequest(settings.RequestConfigurations[0], CurrentTime))
+            .ToArray();
+
+        for (var i = 0; i < 4; i++)
         {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
+            if (i > 1)
             {
-                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+                requests[i].AgentId = i;
             }
 
-            var result = sut.GroupQueueByConfiguration();
-            result.Should().HaveCount(3);
-            for (var i = 0; i < 3; i++)
-            {
-                result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
-            }
+            requests[i].State = RequestState.WaitingForAgent;
         }
 
-        [Test]
-        public void GetQueueLengtht_WhenCalled_ThenItCountsAllQueuedRequests()
+        sut.GetWaitingForAgents().Should().HaveCount(2);
+    }
+
+    [Test]
+    public void GroupRunningRequestsByConfiguration_WhenCalled_ThenItReturnsAllRequests()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
         {
-            var settings = GetSomeSettings();
-            var sut = CreateSut();
-
-            for (var i = 0; i < 3; i++)
-            {
-                sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
-            }
-
-            var result = sut.GetQueueLength();
-            result.Should().Be(3);
+            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            request.State = RequestState.Running;
         }
+
+        var result = sut.GroupRunningRequestsByConfiguration();
+        result.Should().HaveCount(3);
+        for (var i = 0; i < 3; i++)
+        {
+            result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
+        }
+    }
+
+    [Test]
+    public void GetRunningRequestCount_WhenCalled_ThenItCountsAllRunningRequests()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
+        {
+            var request = sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+            request.State = RequestState.Running;
+        }
+
+        var result = sut.GetRunningRequestCount();
+        result.Should().Be(3);
+    }
+
+    [Test]
+    public void GroupQueueByConfiguration_WhenCalled_ThenItReturnsAllRequests()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
+        {
+            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+        }
+
+        var result = sut.GroupQueueByConfiguration();
+        result.Should().HaveCount(3);
+        for (var i = 0; i < 3; i++)
+        {
+            result[settings.RequestConfigurations[i].Name].Should().HaveCount(1);
+        }
+    }
+
+    [Test]
+    public void GetQueueLengtht_WhenCalled_ThenItCountsAllQueuedRequests()
+    {
+        var settings = GetSomeSettings();
+        var sut = CreateSut();
+
+        for (var i = 0; i < 3; i++)
+        {
+            sut.NewRequest(settings.RequestConfigurations[i], CurrentTime);
+        }
+
+        var result = sut.GetQueueLength();
+        result.Should().Be(3);
     }
 }

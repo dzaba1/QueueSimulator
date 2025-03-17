@@ -60,7 +60,9 @@ internal sealed class Simulation : ISimulation
             {
                 var requestStartTime = StartTime + waitTime * i;
                 var request = simulationPayload.GetRequestConfiguration(initRequest.Name);
-                eventsQueue.AddQueueRequestQueueEvent(request, requestStartTime);
+                var eventPayload = new QueueRequestEventPayload(request, new Pipeline(request, simulationPayload), null);
+
+                eventsQueue.AddQueueRequestQueueEvent(eventPayload, requestStartTime);
             }
         }
     }

@@ -4,14 +4,14 @@ using System;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-public interface ISimulationEventQueue
+internal interface ISimulationEventQueue
 {
     void Run();
     void AddInitAgentQueueEvent(Request request, DateTime time);
     void AddStartRequestQueueEvent(Request request, DateTime time);
     void AddEndRequestQueueEvent(Request request, DateTime time);
     void AddCreateAgentQueueEvent(Request request, DateTime time);
-    void AddQueueRequestQueueEvent(RequestConfiguration requestConfiguration, DateTime requestStartTime);
+    void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTime requestStartTime);
 }
 
 internal sealed class SimulationEventQueue : ISimulationEventQueue
@@ -86,13 +86,13 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.CreateAgent, time, request);
     }
 
-    public void AddQueueRequestQueueEvent(RequestConfiguration requestConfiguration, DateTime requestStartTime)
+    public void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTime requestStartTime)
     {
-        ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
+        ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
         logger.LogInformation("Adding adding request {Request} for {Time} to the event queue.",
-            requestConfiguration.Name, requestStartTime);
+            payload.RequestConfiguration.Name, requestStartTime);
 
-        Enqueue(EventNames.QueueRequest, requestStartTime, requestConfiguration);
+        Enqueue(EventNames.QueueRequest, requestStartTime, payload);
     }
 }

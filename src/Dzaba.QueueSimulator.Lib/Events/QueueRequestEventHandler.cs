@@ -6,7 +6,26 @@ using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
-internal sealed class QueueRequestEventHandler : EventHandler<RequestConfiguration>
+internal sealed class QueueRequestEventPayload
+{
+    public QueueRequestEventPayload(RequestConfiguration requestConfiguration,
+        Pipeline pipeline,
+        Request parent)
+    {
+        ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
+        ArgumentNullException.ThrowIfNull(pipeline, nameof(pipeline));
+
+        RequestConfiguration = requestConfiguration;
+        Pipeline = pipeline;
+        Parent = parent;
+    }
+
+    public RequestConfiguration RequestConfiguration { get; }
+    public Pipeline Pipeline { get; }
+    public Request Parent { get; }
+}
+
+internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventPayload>
 {
     private readonly ILogger<QueueRequestEventHandler> logger;
     private readonly IRequestsRepository requestRepo;
@@ -27,21 +46,42 @@ internal sealed class QueueRequestEventHandler : EventHandler<RequestConfigurati
         this.eventsQueue = eventsQueue;
     }
 
-    protected override string OnHandle(EventData eventData, RequestConfiguration payload)
+    protected override string OnHandle(EventData eventData, QueueRequestEventPayload payload)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var requestConfiguration = payload;
+        var requestConfiguration = payload.RequestConfiguration;
+        var pipeline = payload.Pipeline;
 
         logger.LogInformation("Start queuening a new request {Request}, Current time: {Time}",
             requestConfiguration.Name, eventData.Time);
 
         var request = requestRepo.NewRequest(requestConfiguration, eventData.Time);
-        if (requestConfiguration.RequestDependencies != null && requestConfiguration.RequestDependencies.Any())
+
+        pipeline.SetRequest(requestConfiguration, request);
+
+        if (payload.Parent != null)
+        {
+            pipeline.SetReference(request, payload.Parent);
+        }
+
+        var children = pipeline.RequestConfigurationsGraph.GetChildren(requestConfiguration).ToArray();
+        if (children.Length > 0)
         {
             request.State = RequestState.WaitingForDependencies;
 
-            throw new NotImplementedException();
+            foreach (var child in children)
+            {
+                if (pipeline.TryGetRequest(child, out var childRequest))
+                {
+                    pipeline.SetReference(childRequest, request);
+                    throw new NotImplementedException();
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
         else
         {

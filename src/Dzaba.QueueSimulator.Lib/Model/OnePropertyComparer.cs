@@ -9,6 +9,12 @@ public class OnePropertyComparer<T, TKey> : IEqualityComparer<T>
     private readonly IEqualityComparer<TKey> keyComparer;
     private readonly Func<T, TKey> keySelector;
 
+    public OnePropertyComparer(Func<T, TKey> keySelector)
+        : this(keySelector, EqualityComparer<TKey>.Default)
+    {
+        
+    }
+
     public OnePropertyComparer(Func<T, TKey> keySelector,
         IEqualityComparer<TKey> keyComparer)
     {

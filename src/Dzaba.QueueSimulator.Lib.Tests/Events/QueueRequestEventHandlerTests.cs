@@ -30,18 +30,29 @@ public class QueueRequestEventHandlerTests
     public void Handle_WhenRequestConfigProvided_ThenCreateAgentEventIsMade()
     {
         var eventData = new EventData("Test", CurrentTime);
-        var requestConfiguration = new RequestConfiguration();
+        var payload = new SimulationPayload(new SimulationSettings
+        {
+            Agents = [],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1"
+                }
+            ],
+        });
+        var initRequestConfig = payload.SimulationSettings.RequestConfigurations[0];
+        var eventPayload = new QueueRequestEventPayload(initRequestConfig, new Pipeline(initRequestConfig, payload), null);
 
         var request = new Request();
 
         fixture.FreezeMock<IRequestsRepository>()
-            .Setup(x => x.NewRequest(requestConfiguration, eventData.Time))
+            .Setup(x => x.NewRequest(initRequestConfig, eventData.Time))
             .Returns(request);
         var eventsQueue = fixture.FreezeMock<ISimulationEventQueue>();
 
         var sut = CreateSut();
 
-        sut.Handle(eventData, requestConfiguration);
+        sut.Handle(eventData, eventPayload);
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time));
     }

@@ -82,6 +82,11 @@ public class SimulationTests
         eventPump.Verify(x => x.Run(), Times.Once());
     }
 
+    private bool VerifyPayload(QueueRequestEventPayload actual, RequestConfiguration expected)
+    {
+        return actual.RequestConfiguration == expected && actual.Parent == null;
+    }
+
     [Test]
     public void Run_WhenInitRequests_ThenThoseAreDividedWithConstantInterval()
     {
@@ -94,11 +99,14 @@ public class SimulationTests
 
         sut.Run(settings);
 
-        eventPump.Verify(x => x.AddQueueRequestQueueEvent(settings.RequestConfigurations[0], It.IsAny<DateTime>()), Times.Exactly(8));
+        eventPump.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => VerifyPayload(p, settings.RequestConfigurations[0])),
+            It.IsAny<DateTime>()), Times.Exactly(8));
+
         for (int i = 0; i < 8; i++)
         {
             var expected = Simulation.StartTime.AddHours(1 * i);
-            eventPump.Verify(x => x.AddQueueRequestQueueEvent(settings.RequestConfigurations[0], expected), Times.Once());
+            eventPump.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => VerifyPayload(p, settings.RequestConfigurations[0])),
+                expected), Times.Once());
         }
     }
 

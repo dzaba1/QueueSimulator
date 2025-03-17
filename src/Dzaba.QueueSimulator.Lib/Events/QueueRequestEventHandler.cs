@@ -56,14 +56,45 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
         logger.LogInformation("Start queuening a new request {Request}, Current time: {Time}",
             requestConfiguration.Name, eventData.Time);
 
-        var request = requestRepo.NewRequest(requestConfiguration, pipeline, eventData.Time);
+        var request = GetOrCreateRequest(payload, eventData, out var created);
+
+        if (created)
+        {
+            return EnqueueNew(request, payload, eventData);
+        }
+
+        return $"Skipping making a new request. There's an existing one {request.Id} [{requestConfiguration.Name}].";
+    }
+
+    private Request GetOrCreateRequest(QueueRequestEventPayload payload, EventData eventData, out bool created)
+    {
+        if (payload.Pipeline.TryGetRequest(payload.RequestConfiguration, out var request))
+        {
+            created = false;
+        }
+        else
+        {
+            request = requestRepo.NewRequest(payload.RequestConfiguration, payload.Pipeline, eventData.Time);
+            created = true;
+        }
 
         if (payload.Parent != null)
         {
-            pipeline.SetReference(request, payload.Parent);
+            payload.Pipeline.SetReference(request, payload.Parent);
         }
 
-        var children = pipeline.RequestConfigurationsGraph.GetChildren(requestConfiguration).ToArray();
+        return request;
+    }
+
+    private void EnqueueStartRequest(Request request, DateTime time)
+    {
+        request.State = RequestState.Scheduled;
+        eventsQueue.AddCreateAgentQueueEvent(request, time);
+    }
+
+    private string EnqueueNew(Request request, QueueRequestEventPayload payload, EventData eventData)
+    {
+        var children = payload.Pipeline.RequestConfigurationsGraph.GetChildren(payload.RequestConfiguration).ToArray();
         if (children.Length > 0)
         {
             request.State = RequestState.WaitingForDependencies;
@@ -71,10 +102,10 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
 
             foreach (var child in children)
             {
-                if (pipeline.TryGetRequest(child, out var childRequest))
+                if (payload.Pipeline.TryGetRequest(child, out var childRequest))
                 {
-                    pipeline.SetReference(childRequest, request);
-                    
+                    payload.Pipeline.SetReference(childRequest, request);
+
                     if (childRequest.State != RequestState.Finished)
                     {
                         allFinished = false;
@@ -84,7 +115,7 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
                 {
                     allFinished = false;
 
-                    var childrenEventPayload = new QueueRequestEventPayload(child, pipeline, request);
+                    var childrenEventPayload = new QueueRequestEventPayload(child, payload.Pipeline, request);
                     eventsQueue.AddQueueRequestQueueEvent(childrenEventPayload, eventData.Time);
                 }
             }
@@ -100,11 +131,5 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
         }
 
         return $"Queued a new request {request.Id} [{request.RequestConfiguration}].";
-    }
-
-    private void EnqueueStartRequest(Request request, DateTime time)
-    {
-        request.State = RequestState.Created;
-        eventsQueue.AddCreateAgentQueueEvent(request, time);
     }
 }

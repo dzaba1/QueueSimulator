@@ -60,7 +60,7 @@ public class QueueRequestEventHandlerTests
         sut.Handle(eventData, eventPayload);
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
-        request.State.Should().Be(RequestState.Created);
+        request.State.Should().Be(RequestState.Scheduled);
     }
 
     [Test]
@@ -151,7 +151,7 @@ public class QueueRequestEventHandlerTests
         sut.Handle(eventData, eventPayload);
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
-        request.State.Should().Be(RequestState.Created);
+        request.State.Should().Be(RequestState.Scheduled);
 
         pipeline.GetChildren(parentRequest).First().Should().BeSameAs(request);
         pipeline.GetParents(request).First().Should().BeSameAs(parentRequest);
@@ -216,7 +216,7 @@ public class QueueRequestEventHandlerTests
         sut.Handle(eventData, eventPayload);
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
-        request.State.Should().Be(RequestState.Created);
+        request.State.Should().Be(RequestState.Scheduled);
         eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
 
         for (int i = 0; i < 3; i++)

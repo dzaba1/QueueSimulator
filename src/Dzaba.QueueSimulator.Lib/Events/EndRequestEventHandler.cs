@@ -66,7 +66,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
             if (children.All(r => r.State == RequestState.Finished))
             {
                 logger.LogInformation("All dependencies of request {RequestdId} [{Request}] are finished.", waitingRequest.Id, waitingRequest.RequestConfiguration);
-                waitingRequest.State = RequestState.Created;
+                waitingRequest.State = RequestState.Scheduled;
                 eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
             }
         }

@@ -311,7 +311,11 @@ public class SimulationTests : IocTestFixture
         var result = sut.Run(settings).ToArray();
         var last = ValidateLastToBeCompleted(result);
 
+        last.Timestamp.Minute.Should().Be(6);
         last.AllAgents.Should().HaveCount(4);
         last.AllRequests.Should().HaveCount(4);
+        last.AllRequests[0].Dependencies.Should().BeEquivalentTo([2,3]);
+        last.AllRequests[1].Dependencies.Should().BeEquivalentTo([4]);
+        last.AllRequests[2].Dependencies.Should().BeEquivalentTo([4]);
     }
 }

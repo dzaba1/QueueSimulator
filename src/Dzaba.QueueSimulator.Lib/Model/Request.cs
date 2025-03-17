@@ -25,6 +25,7 @@ public enum RequestState
 {
     Created,
     WaitingForDependencies,
+    Scheduled,
     WaitingForAgent,
     Running,
     Finished

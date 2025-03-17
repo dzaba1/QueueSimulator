@@ -14,8 +14,6 @@ public sealed class RequestConfiguration
 
     public TimeSpan? Duration { get; set; }
 
-    [Required]
-    [MinLength(1)]
     public string[] CompatibleAgents { get; set; }
 
     public string[] RequestDependencies { get; set; }

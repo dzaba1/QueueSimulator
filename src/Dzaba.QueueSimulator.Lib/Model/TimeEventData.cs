@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
+[DebuggerDisplay("{Timestamp} [{Name}] - {Message}")]
 public sealed class TimeEventData
 {
     public DateTime Timestamp { get; set; }
@@ -14,6 +16,7 @@ public sealed class TimeEventData
     public Request[] AllRequests { get; set; }
 }
 
+[DebuggerDisplay("{Name}: {Length}")]
 public sealed class NamedQueueData
 {
     public string Name { get; set; }

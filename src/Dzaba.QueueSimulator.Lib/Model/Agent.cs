@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
+[DebuggerDisplay("{Id} [{AgentConfiguration}]")]
 public sealed class Agent
 {
     public long Id { get; set; }

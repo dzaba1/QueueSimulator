@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
+[DebuggerDisplay("{Id} [{RequestConfiguration}]")]
 public sealed class Request
 {
     public long Id { get; set; }

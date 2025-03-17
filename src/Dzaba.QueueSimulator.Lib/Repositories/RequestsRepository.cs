@@ -16,21 +16,12 @@ internal interface IRequestsRepository
     IReadOnlyDictionary<string, Request[]> GroupQueueByConfiguration();
     IReadOnlyDictionary<string, Request[]> GroupRunningRequestsByConfiguration();
     Request NewRequest(RequestConfiguration requestConfiguration, DateTime currentTime);
-    IEnumerable<RequestConfiguration> ResolveRequestConfigurationDependencies(RequestConfiguration requestConfiguration, bool recursive);
 }
 
 internal sealed class RequestsRepository : IRequestsRepository
 {
-    private readonly ISimulationContext simulationContext;
     private readonly LongSequence idSequence = new();
     private readonly Dictionary<long, Request> allRequests = new();
-
-    public RequestsRepository(ISimulationContext simulationContext)
-    {
-        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
-
-        this.simulationContext = simulationContext;
-    }
 
     public Request NewRequest(RequestConfiguration requestConfiguration, DateTime currentTime)
     {
@@ -97,40 +88,5 @@ internal sealed class RequestsRepository : IRequestsRepository
     public Request GetRequest(long id)
     {
         return allRequests[id];
-    }
-
-    public IEnumerable<RequestConfiguration> ResolveRequestConfigurationDependencies(RequestConfiguration requestConfiguration, bool recursive)
-    {
-        ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
-
-        var comparer = new StringPropertyEqualityComparer<RequestConfiguration>(r => r.Name, StringComparer.OrdinalIgnoreCase);
-
-        return ResolveRequestConfigurationDependenciesInternal(requestConfiguration, recursive)
-            .Distinct(comparer);
-    }
-
-    private IEnumerable<RequestConfiguration> ResolveRequestConfigurationDependenciesInternal(RequestConfiguration requestConfiguration, bool recursive)
-    {
-        if (requestConfiguration.RequestDependencies == null)
-        {
-            yield break;
-        }
-
-        var current = requestConfiguration.RequestDependencies
-                .Select(simulationContext.Payload.GetRequestConfiguration);
-
-        foreach (var dep in current)
-        {
-            yield return dep;
-
-            if (recursive)
-            {
-                var subDeps = ResolveRequestConfigurationDependenciesInternal(dep, true);
-                foreach (var subDep in subDeps)
-                {
-                    yield return subDep;
-                }
-            }
-        }
     }
 }

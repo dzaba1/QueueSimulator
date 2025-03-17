@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib;
 
-internal sealed class SimulationPayload
+public sealed class SimulationPayload
 {
     public SimulationPayload(SimulationSettings simulationSettings)
     {

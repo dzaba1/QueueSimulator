@@ -77,13 +77,6 @@ namespace Dzaba.QueueSimulator.Lib.Tests
             };
         }
 
-        private void SetupSettings(SimulationSettings settings)
-        {
-            var context = fixture.FreezeMock<ISimulationContext>();
-            var payload = new SimulationPayload(settings);
-            context.Setup(x => x.Payload).Returns(payload);
-        }
-
         [Test]
         public void GetRequest_WhenRequestAdded_ThenItCanBeTakenById()
         {
@@ -234,36 +227,6 @@ namespace Dzaba.QueueSimulator.Lib.Tests
 
             var result = sut.GetQueueLength();
             result.Should().Be(3);
-        }
-
-        [Test]
-        public void ResolveRequestConfigurationDependencies_WhenCalledWithoutRecursion_ThenItReturnsDistinctValues()
-        {
-            var settings = GetSomeSettings();
-            SetupSettings(settings);
-            var sut = CreateSut();
-
-            var result = sut.ResolveRequestConfigurationDependencies(settings.RequestConfigurations[1], false)
-                .ToArray();
-
-            result.Should().NotContain(settings.RequestConfigurations[1]);
-            result.Should().OnlyHaveUniqueItems(s => s.Name);
-            result.Should().HaveCount(2);
-        }
-
-        [Test]
-        public void ResolveRequestConfigurationDependencies_WhenCalledWithRecursion_ThenItReturnsDistinctValues()
-        {
-            var settings = GetSomeSettings();
-            SetupSettings(settings);
-            var sut = CreateSut();
-
-            var result = sut.ResolveRequestConfigurationDependencies(settings.RequestConfigurations[0], true)
-                .ToArray();
-
-            result.Should().NotContain(settings.RequestConfigurations[0]);
-            result.Should().OnlyHaveUniqueItems(s => s.Name);
-            result.Should().HaveCount(4);
         }
     }
 }

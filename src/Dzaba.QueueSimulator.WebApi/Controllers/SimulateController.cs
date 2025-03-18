@@ -39,7 +39,7 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
         {
             var events = simulation.Run(settings);
 
-            return csvSerializer.Serialize(events, settings);
+            return csvSerializer.Serialize(events, settings).Trim();
         }
     }
 }

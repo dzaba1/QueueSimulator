@@ -1,4 +1,5 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using Dzaba.QueueSimulator.Lib.Model;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,12 @@ internal sealed class CsvSerializer : ICsvSerializer
 
         using var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
-        var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        var headersSaved = false;
+        var csvOptions = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            ShouldQuote = x => ShouldQuote(x, headersSaved)
+        };
+        var csv = new CsvWriter(writer, csvOptions);
 
         var headers = GetHeaders(simulationSettings);
 
@@ -37,6 +43,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         }
 
         csv.NextRecord();
+        headersSaved = true;
 
         foreach (var item in filtered)
         {
@@ -58,6 +65,21 @@ internal sealed class CsvSerializer : ICsvSerializer
         return reader.ReadToEnd();
     }
 
+    private bool ShouldQuote(ShouldQuoteArgs quoteArgs, bool headersSaved)
+    {
+        if (!headersSaved)
+        {
+            return false;
+        }
+
+        if (quoteArgs.FieldType == typeof(string) || quoteArgs.FieldType == typeof(DateTime))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private IEnumerable<string> GetHeaders(SimulationSettings simulationSettings)
     {
         yield return "Timestamp";
@@ -70,13 +92,13 @@ internal sealed class CsvSerializer : ICsvSerializer
 
         foreach (var agent in simulationSettings.Agents)
         {
-            yield return $"RunningAgent_{agent.Name}";
+            yield return $"RunningAgent_{agent.Name}".Replace(' ', '_');
         }
 
         foreach (var request in simulationSettings.RequestConfigurations)
         {
-            yield return $"RunningRequests_{request.Name}";
-            yield return $"RequestsQueue_{request.Name}";
+            yield return $"RunningRequests_{request.Name}".Replace(' ', '_');
+            yield return $"RequestsQueue_{request.Name}".Replace(' ', '_');
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
+using FluentAssertions;
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
@@ -62,6 +63,7 @@ public class SimulateControllerTests : ControllerTestFixture
 
         using var resp = await client.PostAsync("/simulate/csv", body);
         var result = await ReadFullStringAsync(resp);
-   
+        result.Should().StartWith("Timestamp,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline,RunningRequests_Build,RequestsQueue_Build,RunningRequests_Tests,RequestsQueue_Tests,RunningRequests_Publish,RequestsQueue_Publish");
+        result.Should().EndWith("\"01/01/2025 07:41:00\",\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,0,0,0,0,0,0,0,0,0");
     }
 }

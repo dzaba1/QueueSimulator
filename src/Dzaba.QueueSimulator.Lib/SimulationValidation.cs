@@ -44,7 +44,7 @@ internal sealed class SimulationValidation : ISimulationValidation
             if (!simulationPayload.RequestConfigurationsCached.ContainsKey(queuedRequest.Name))
             {
                 errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find request configuration {queuedRequest.Name}."));
-                return;
+                continue;
             }
 
             Stack<CyclicChain> toCheck = new Stack<CyclicChain>();
@@ -58,23 +58,27 @@ internal sealed class SimulationValidation : ISimulationValidation
                 if (chainSet.Contains(requestChain.RequestName))
                 {
                     errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestCyclicDependency, $"Detected request cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}."));
-                    return;
+                    break;
                 }
 
                 chainSet.Add(requestChain.RequestName);
-                var request = simulationPayload.GetRequestConfiguration(requestChain.RequestName);
-                if (request.RequestDependencies != null)
+                if (simulationPayload.RequestConfigurationsCached.TryGetValue(requestChain.RequestName, out var request))
                 {
-                    foreach (var requestDep in request.RequestDependencies)
+                    if (request.RequestDependencies != null)
                     {
-                        toCheck.Push(new CyclicChain(requestDep, chainSet));
+                        foreach (var requestDep in request.RequestDependencies)
+                        {
+                            toCheck.Push(new CyclicChain(requestDep, chainSet));
+                        }
                     }
                 }
             }
         }
     }
 
-    private void ValidateRequestDependencies(RequestConfiguration request, SimulationPayload simulationPayload, IList<KeyValuePair<ExitCode, string>> errors)
+    private void ValidateRequestDependencies(RequestConfiguration request,
+        SimulationPayload simulationPayload,
+        IList<KeyValuePair<ExitCode, string>> errors)
     {
         if (request.IsComposite && (request.RequestDependencies == null || request.RequestDependencies.Length == 0))
         {
@@ -93,7 +97,9 @@ internal sealed class SimulationValidation : ISimulationValidation
         }
     }
 
-    private void ValidateCompatibleAgents(RequestConfiguration request, SimulationPayload simulationPayload, IList<KeyValuePair<ExitCode, string>> errors)
+    private void ValidateCompatibleAgents(RequestConfiguration request,
+        SimulationPayload simulationPayload,
+        IList<KeyValuePair<ExitCode, string>> errors)
     {
         if (request.CompatibleAgents != null && request.CompatibleAgents.Length > 0)
         {

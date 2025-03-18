@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dzaba.QueueSimulator.Lib.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,47 +18,20 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         foreach (var request in simulationPayload.RequestConfigurationsCached.Values)
         {
-            if (request.CompatibleAgents != null)
+            ValidateCompatibleAgents(request, simulationPayload);
+            ValidateRequestDependencies(request, simulationPayload); 
+          
+            if (request.IsComposite && request.Duration != null)
             {
-                foreach (var agentName in request.CompatibleAgents)
-                {
-                    if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
-                    {
-                        throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
-                    }
-                }
-            }         
-
-            if (request.RequestDependencies != null)
-            {
-                foreach (var requestName in request.RequestDependencies)
-                {
-                    if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
-                    {
-                        throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}.");
-                    }
-                }
-            }
-
-            if (request.IsComposite)
-            {
-                if (request.Duration != null)
-                {
-                    throw new ExitCodeException(ExitCode.CompositeWithDuration, $"The composite request definition {request.Name} has some duration.");
-                }
-
-                if (request.CompatibleAgents != null && request.CompatibleAgents.Length > 0)
-                {
-                    throw new ExitCodeException(ExitCode.CompositeWithAgents, $"The composite request definition {request.Name} has some agents defined.");
-                }
-
-                if (request.RequestDependencies == null || request.RequestDependencies.Length == 0)
-                {
-                    throw new ExitCodeException(ExitCode.CompositeWithoutDependencies, $"The composite request definition {request.Name} doesn't have any dependencies.");
-                }
+                throw new ExitCodeException(ExitCode.CompositeWithDuration, $"The composite request definition {request.Name} has some duration.");
             }
         }
 
+        ValidateCyclicDependency(simulationPayload);
+    }
+
+    private void ValidateCyclicDependency(SimulationPayload simulationPayload)
+    {
         foreach (var queuedRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
             if (!simulationPayload.RequestConfigurationsCached.ContainsKey(queuedRequest.Name))
@@ -88,6 +62,48 @@ internal sealed class SimulationValidation : ISimulationValidation
                     }
                 }
             }
+        }
+    }
+
+    private void ValidateRequestDependencies(RequestConfiguration request, SimulationPayload simulationPayload)
+    {
+        if (request.IsComposite && (request.RequestDependencies == null || request.RequestDependencies.Length == 0))
+        {
+            throw new ExitCodeException(ExitCode.CompositeWithoutDependencies, $"The composite request definition {request.Name} doesn't have any dependencies.");
+        }
+
+        if (request.RequestDependencies != null)
+        {
+            foreach (var requestName in request.RequestDependencies)
+            {
+                if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
+                {
+                    throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}.");
+                }
+            }
+        }
+    }
+
+    private void ValidateCompatibleAgents(RequestConfiguration request, SimulationPayload simulationPayload)
+    {
+        if (request.CompatibleAgents != null && request.CompatibleAgents.Length > 0)
+        {
+            if (request.IsComposite)
+            {
+                throw new ExitCodeException(ExitCode.CompositeWithAgents, $"The composite request definition {request.Name} has some agents defined.");
+            }
+
+            foreach (var agentName in request.CompatibleAgents)
+            {
+                if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
+                {
+                    throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
+                }
+            }
+        }
+        else if (!request.IsComposite)
+        {
+            throw new ExitCodeException(ExitCode.RequestWithoutAgents, $"The request definition {request.Name} doesn't have agents defined.");
         }
     }
 

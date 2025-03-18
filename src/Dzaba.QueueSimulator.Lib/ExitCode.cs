@@ -9,5 +9,6 @@ public enum ExitCode
     RequestCyclicDependency,
     CompositeWithDuration,
     CompositeWithAgents,
-    CompositeWithoutDependencies
+    CompositeWithoutDependencies,
+    RequestWithoutAgents
 }

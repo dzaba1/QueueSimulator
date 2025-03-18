@@ -25,7 +25,7 @@ public class OnePropertyComparer<T, TKey> : IEqualityComparer<T>
         this.keyComparer = keyComparer;
     }
 
-    public bool Equals(T? x, T? y)
+    public bool Equals(T x, T y)
     {
         if (ReferenceEquals(x, y))
         {

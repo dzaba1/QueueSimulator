@@ -65,7 +65,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         return reader.ReadToEnd();
     }
 
-    private bool ShouldQuote(ShouldQuoteArgs quoteArgs, bool headersSaved)
+    private static bool ShouldQuote(ShouldQuoteArgs quoteArgs, bool headersSaved)
     {
         if (!headersSaved)
         {
@@ -80,7 +80,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         return false;
     }
 
-    private IEnumerable<string> GetHeaders(SimulationSettings simulationSettings)
+    private static IEnumerable<string> GetHeaders(SimulationSettings simulationSettings)
     {
         yield return "Timestamp";
         yield return "Name";
@@ -102,7 +102,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         }
     }
 
-    private IEnumerable<object> GetValues(TimeEventData timeEvent, SimulationSettings simulationSettings)
+    private static IEnumerable<object> GetValues(TimeEventData timeEvent, SimulationSettings simulationSettings)
     {
         yield return timeEvent.Timestamp;
         yield return timeEvent.Name;

@@ -26,29 +26,27 @@ internal sealed class CsvSerializer : ICsvSerializer
             .Select(g => g.Last());
 
         using var stream = new MemoryStream();
-        using (var writer = new StreamWriter(stream))
+        var writer = new StreamWriter(stream);
+        var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+        var headers = GetHeaders(simulationSettings);
+
+        foreach (var heading in headers)
         {
-            using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            csv.WriteField(heading);
+        }
 
-            var headers = GetHeaders(simulationSettings);
+        csv.NextRecord();
 
-            foreach (var heading in headers)
+        foreach (var item in filtered)
+        {
+            var values = GetValues(item, simulationSettings);
+            foreach (var value in values)
             {
-                csv.WriteField(heading);
+                csv.WriteField(value);
             }
 
             csv.NextRecord();
-
-            foreach (var item in filtered)
-            {
-                var values = GetValues(item, simulationSettings);
-                foreach (var value in values)
-                {
-                    csv.WriteField(value);
-                }
-
-                csv.NextRecord();
-            }
         }
 
         stream.Flush();

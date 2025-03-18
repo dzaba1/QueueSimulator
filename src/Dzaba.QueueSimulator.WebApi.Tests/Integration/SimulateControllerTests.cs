@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
-using System.Net.Http;
-using System.Text;
+﻿using Dzaba.QueueSimulator.Lib.Model;
+using NUnit.Framework;
+using System;
 using System.Threading.Tasks;
 
 namespace Dzaba.QueueSimulator.WebApi.Tests.Integration;
@@ -13,14 +13,55 @@ public class SimulateControllerTests : ControllerTestFixture
     {
         var client = CreateClient();
 
-        var json = @"{
-}";
+        var settings = new SimulationSettings
+        {
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "Agent1"
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "Full pipeline",
+                    RequestDependencies = ["Build", "Tests", "Publish"],
+                    IsComposite = true,
+                },
+                new RequestConfiguration
+                {
+                    Name = "Build",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = TimeSpan.FromMinutes(3),
+                },
+                new RequestConfiguration
+                {
+                    Name = "Tests",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = TimeSpan.FromMinutes(1),
+                    RequestDependencies = ["Build"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "Publish",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = TimeSpan.FromMinutes(1),
+                    RequestDependencies = ["Tests"]
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "Full pipeline",
+                    NumberToQueue = 20
+                }
+            ]
+        };
 
-        using var body = new StringContent(json, Encoding.UTF8, "application/json");
+        using var body = SerializeJsonBody(settings);
 
         using var resp = await client.PostAsync("/simulate/csv", body);
-        resp.EnsureSuccessStatusCode();
-
-        var result = await resp.Content.ReadAsStringAsync();
+        var result = await ReadFullStringAsync(resp);
+   
     }
 }

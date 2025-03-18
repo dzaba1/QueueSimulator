@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Dzaba.QueueSimulator.Lib;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dzaba.QueueSimulator.WebApi.ActionFilters;
 
@@ -17,14 +18,15 @@ public class HandleErrorsAttribute : ActionFilterAttribute, IExceptionFilter
 
         if (context.Exception is ExitCodeException exitEx)
         {
-            logger.LogWarning(exitEx, "Exit code response error. Code {StatusCode}", exitEx.ExitCode);
+            logger.LogWarning(exitEx, "Exit code response error.");
 
-            var body = new
+            var modelState = new ModelStateDictionary();
+            foreach (var error in exitEx.Errors)
             {
-                exitEx.Message,
-                exitEx.ExitCode
-            };
-            context.Result = new BadRequestObjectResult(body);
+                modelState.AddModelError(error.Key.ToString(), error.Value);
+            }
+
+            context.Result = new BadRequestObjectResult(modelState);
             return;
         }
     }

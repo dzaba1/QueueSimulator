@@ -16,27 +16,35 @@ internal sealed class SimulationValidation : ISimulationValidation
     {
         ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
+        var errors = new List<KeyValuePair<ExitCode, string>>();
+
         foreach (var request in simulationPayload.RequestConfigurationsCached.Values)
         {
-            ValidateCompatibleAgents(request, simulationPayload);
-            ValidateRequestDependencies(request, simulationPayload); 
+            ValidateCompatibleAgents(request, simulationPayload, errors);
+            ValidateRequestDependencies(request, simulationPayload, errors); 
           
             if (request.IsComposite && request.Duration != null)
             {
-                throw new ExitCodeException(ExitCode.CompositeWithDuration, $"The composite request definition {request.Name} has some duration.");
+                errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.CompositeWithDuration, $"The composite request definition {request.Name} has some duration."));
             }
         }
 
-        ValidateCyclicDependency(simulationPayload);
+        ValidateCyclicDependency(simulationPayload, errors);
+
+        if (errors.Any())
+        {
+            throw new ExitCodeException(errors);
+        }
     }
 
-    private void ValidateCyclicDependency(SimulationPayload simulationPayload)
+    private void ValidateCyclicDependency(SimulationPayload simulationPayload, IList<KeyValuePair<ExitCode, string>> errors)
     {
         foreach (var queuedRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
             if (!simulationPayload.RequestConfigurationsCached.ContainsKey(queuedRequest.Name))
             {
-                throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find request configuration {queuedRequest.Name}.");
+                errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find request configuration {queuedRequest.Name}."));
+                return;
             }
 
             Stack<CyclicChain> toCheck = new Stack<CyclicChain>();
@@ -49,7 +57,8 @@ internal sealed class SimulationValidation : ISimulationValidation
                 var chainSet = new HashSet<string>(requestChain.Chain, StringComparer.OrdinalIgnoreCase);
                 if (chainSet.Contains(requestChain.RequestName))
                 {
-                    throw new ExitCodeException(ExitCode.RequestCyclicDependency, $"Detected request cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}.");
+                    errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestCyclicDependency, $"Detected request cyclic dependnecy on {requestChain.RequestName} starting from {queuedRequest.Name}."));
+                    return;
                 }
 
                 chainSet.Add(requestChain.RequestName);
@@ -65,11 +74,11 @@ internal sealed class SimulationValidation : ISimulationValidation
         }
     }
 
-    private void ValidateRequestDependencies(RequestConfiguration request, SimulationPayload simulationPayload)
+    private void ValidateRequestDependencies(RequestConfiguration request, SimulationPayload simulationPayload, IList<KeyValuePair<ExitCode, string>> errors)
     {
         if (request.IsComposite && (request.RequestDependencies == null || request.RequestDependencies.Length == 0))
         {
-            throw new ExitCodeException(ExitCode.CompositeWithoutDependencies, $"The composite request definition {request.Name} doesn't have any dependencies.");
+            errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.CompositeWithoutDependencies, $"The composite request definition {request.Name} doesn't have any dependencies."));
         }
 
         if (request.RequestDependencies != null)
@@ -78,32 +87,33 @@ internal sealed class SimulationValidation : ISimulationValidation
             {
                 if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
                 {
-                    throw new ExitCodeException(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}.");
+                    errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}."));
                 }
             }
         }
     }
 
-    private void ValidateCompatibleAgents(RequestConfiguration request, SimulationPayload simulationPayload)
+    private void ValidateCompatibleAgents(RequestConfiguration request, SimulationPayload simulationPayload, IList<KeyValuePair<ExitCode, string>> errors)
     {
         if (request.CompatibleAgents != null && request.CompatibleAgents.Length > 0)
         {
             if (request.IsComposite)
             {
-                throw new ExitCodeException(ExitCode.CompositeWithAgents, $"The composite request definition {request.Name} has some agents defined.");
+                errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.CompositeWithAgents, $"The composite request definition {request.Name} has some agents defined."));
+                return;
             }
 
             foreach (var agentName in request.CompatibleAgents)
             {
                 if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
                 {
-                    throw new ExitCodeException(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}.");
+                    errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}."));
                 }
             }
         }
         else if (!request.IsComposite)
         {
-            throw new ExitCodeException(ExitCode.RequestWithoutAgents, $"The request definition {request.Name} doesn't have agents defined.");
+            errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestWithoutAgents, $"The request definition {request.Name} doesn't have agents defined."));
         }
     }
 

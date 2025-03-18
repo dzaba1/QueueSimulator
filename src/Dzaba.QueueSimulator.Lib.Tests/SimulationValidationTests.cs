@@ -47,7 +47,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.AgentNotFound);
+            .Should().Throw<ExitCodeException>().Which.Errors.Should().HaveCount(1).And.Satisfy(e => e.Key == ExitCode.AgentNotFound);
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestNotFound);
+            .Should().Throw<ExitCodeException>().Which.Errors.Should().HaveCount(1).And.Satisfy(e => e.Key == ExitCode.RequestNotFound);
     }
 
     [Test]
@@ -109,7 +109,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestNotFound);
+            .Should().Throw<ExitCodeException>().Which.Errors.Should().HaveCount(1).And.Satisfy(e => e.Key == ExitCode.RequestNotFound);
     }
 
     [Test]
@@ -143,7 +143,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestCyclicDependency);
+            .Should().Throw<ExitCodeException>().Which.Errors.Should().HaveCount(1).And.Satisfy(e => e.Key == ExitCode.RequestCyclicDependency);
     }
 
     [Test]
@@ -189,7 +189,7 @@ public class SimulationValidationTests
         var sut = CreateSut();
 
         this.Invoking(_ => sut.Validate(payload))
-            .Should().Throw<ExitCodeException>().Which.ExitCode.Should().Be(ExitCode.RequestCyclicDependency);
+            .Should().Throw<ExitCodeException>().Which.Errors.Should().HaveCount(1).And.Satisfy(e => e.Key == ExitCode.RequestCyclicDependency);
     }
 
     [Test]

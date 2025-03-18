@@ -1,24 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib;
 
 [Serializable]
 public class ExitCodeException : Exception
 {
-    public ExitCode ExitCode { get; }
+    public KeyValuePair<ExitCode, string>[] Errors { get; }
 
-    public ExitCodeException(ExitCode exitCode)
+    public ExitCodeException(IEnumerable<KeyValuePair<ExitCode, string>> errors)
     {
-        ExitCode = exitCode;
+        ArgumentNullException.ThrowIfNull(errors, nameof(errors));
+
+        Errors = errors.ToArray();
     }
 
-    public ExitCodeException(ExitCode exitCode, string message) : base(message)
+    public ExitCodeException(string message, IEnumerable<KeyValuePair<ExitCode, string>> errors)
+        : base(message)
     {
-        ExitCode = exitCode;
+        ArgumentNullException.ThrowIfNull(errors, nameof(errors));
+
+        Errors = errors.ToArray();
     }
 
-    public ExitCodeException(ExitCode exitCode, string message, Exception inner) : base(message, inner)
+    public ExitCodeException(string message, IEnumerable<KeyValuePair<ExitCode, string>> errors, Exception inner)
+        : base(message, inner)
     {
-        ExitCode = exitCode;
+        ArgumentNullException.ThrowIfNull(errors, nameof(errors));
+
+        Errors = errors.ToArray();
     }
 }

@@ -49,6 +49,8 @@ internal sealed class CsvSerializer : ICsvSerializer
             csv.NextRecord();
         }
 
+        csv.Flush();
+        writer.Flush();
         stream.Flush();
         stream.Seek(0, SeekOrigin.Begin);
 

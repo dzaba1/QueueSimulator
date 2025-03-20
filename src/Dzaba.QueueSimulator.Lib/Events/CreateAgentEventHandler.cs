@@ -3,6 +3,7 @@ using Dzaba.QueueSimulator.Lib.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
 
@@ -36,7 +37,8 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request[]>
         ArgumentNullException.ThrowIfNull(eventData, nameof(eventData));
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
-        var filtered = Filter(payload, eventData);
+        var filtered = Filter(payload, eventData)
+            .OrderBy(r => r.Request.Id);
 
         foreach (var request in filtered)
         {

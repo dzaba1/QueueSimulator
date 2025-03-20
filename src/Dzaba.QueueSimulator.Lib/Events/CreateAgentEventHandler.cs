@@ -1,5 +1,6 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Utils;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -45,9 +46,11 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request[]>
         var filtered = Filter(payload, eventData)
             .OrderBy(r => r.Request.Id);
 
+        var fullAgents = new HashSet<string[]>(new StringArrayComparer(StringComparer.OrdinalIgnoreCase));
+
         foreach (var request in filtered)
         {
-            if (agentsRepo.MaxAgentsReached())
+            if (agentsRepo.MaxAgentsReached() || fullAgents.Contains(request.RequestConfiguration.CompatibleAgents))
             {
                 break;
             }
@@ -65,6 +68,8 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request[]>
             }
             else
             {
+                fullAgents.Add(request.RequestConfiguration.CompatibleAgents);
+
                 logger.LogInformation("There aren't any agents available for request {RequestdId} [{Request}].",
                     request.Request.Id, request.Request.RequestConfiguration);
             }

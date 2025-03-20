@@ -11,14 +11,11 @@ public sealed class SimulationSettings
     public bool IncludeAllAgents { get; set; }
 
     [Required]
-    [MinLength(1)]
     public AgentConfiguration[] Agents { get; set; }
 
     [Required]
-    [MinLength(1)]
     public RequestConfiguration[] RequestConfigurations { get; set; }
 
     [Required]
-    [MinLength(1)]
     public InitialRequest[] InitialRequests { get; set; }
 }

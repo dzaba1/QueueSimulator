@@ -12,6 +12,7 @@ namespace Dzaba.QueueSimulator.Lib;
 public interface ICsvSerializer
 {
     string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings);
+    void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings);
 }
 
 internal sealed class CsvSerializer : ICsvSerializer
@@ -21,12 +22,27 @@ internal sealed class CsvSerializer : ICsvSerializer
         ArgumentNullException.ThrowIfNull(timedEvents, nameof(timedEvents));
         ArgumentNullException.ThrowIfNull(simulationSettings, nameof(simulationSettings));
 
+        using var stream = new MemoryStream();
+        
+        Serialize(stream, timedEvents, simulationSettings);
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    public void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings)
+    {
+        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(timedEvents, nameof(timedEvents));
+        ArgumentNullException.ThrowIfNull(simulationSettings, nameof(simulationSettings));
+
         var filtered = timedEvents
             .GroupBy(e => e.Timestamp)
             .OrderBy(g => g.Key)
             .Select(g => g.Last());
 
-        using var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
         var headersSaved = false;
         var csvOptions = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -54,15 +70,10 @@ internal sealed class CsvSerializer : ICsvSerializer
             }
 
             csv.NextRecord();
+            csv.Flush();
+            writer.Flush();
+            stream.Flush();
         }
-
-        csv.Flush();
-        writer.Flush();
-        stream.Flush();
-        stream.Seek(0, SeekOrigin.Begin);
-
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
     }
 
     private static bool ShouldQuote(ShouldQuoteArgs quoteArgs, bool headersSaved)

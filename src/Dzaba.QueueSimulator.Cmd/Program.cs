@@ -17,13 +17,15 @@ internal static class Program
         {
             var services = new ServiceCollection();
 
-            var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"logs\QueueSimulator.log");
+            var dateTimePart = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"logs\QueueSimulator_{dateTimePart}.log");
             var outputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] ({SourceContext}) [{ThreadId}] {Message:lj}{NewLine}{Exception}";
             var logger = new LoggerConfiguration()
                 .Enrich.WithThreadId()
                 .MinimumLevel.Debug()
                 .WriteTo.Console(LogEventLevel.Information, outputTemplate: outputTemplate)
-                .WriteTo.File(logFile, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, outputTemplate: outputTemplate)
+                .WriteTo.File(logFile, rollOnFileSizeLimit: true, fileSizeLimitBytes: 8*1024*1024,
+                    outputTemplate: outputTemplate)
                 .CreateLogger();
             services.AddLogging(l => l.AddSerilog(logger, true));
 

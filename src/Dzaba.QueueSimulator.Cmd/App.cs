@@ -70,11 +70,7 @@ internal sealed class App : IApp
                 JsonSerializer.Serialize(result.ToArray(), jsonOptions);
                 break;
             case Format.Csv:
-                var csv = csvSerializer.Serialize(result, simulationSettings);
-                using (var writer = new StreamWriter(stream))
-                {
-                    writer.WriteLine(csv);
-                }
+                csvSerializer.Serialize(stream, result, simulationSettings);
                 break;
             default: throw new ArgumentOutOfRangeException("format", $"Unknown format: {format}");
         }

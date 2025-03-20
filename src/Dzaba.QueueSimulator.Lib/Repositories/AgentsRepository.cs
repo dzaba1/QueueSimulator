@@ -13,6 +13,8 @@ internal interface IAgentsRepository
     int GetActiveAgentsCount();
     Agent GetAgent(long id);
     bool TryCreateAgent(IEnumerable<string> compatibleAgents, DateTime currentTime, out Agent agent);
+    bool MaxAgentsReached();
+    bool CanAgentBeCreated(IEnumerable<string> compatibleAgents);
 }
 
 internal sealed class AgentsRepository : IAgentsRepository
@@ -51,33 +53,14 @@ internal sealed class AgentsRepository : IAgentsRepository
 
         var simulationPayload = simulationContext.Payload;
 
-        if (simulationPayload.SimulationSettings.MaxRunningAgents != null && GetActiveAgentsCount() == simulationPayload.SimulationSettings.MaxRunningAgents.Value)
+        if (MaxAgentsReached())
         {
             logger.LogDebug("Max total active agents reached: {MaxRunningAgents}", simulationPayload.SimulationSettings.MaxRunningAgents.Value);
             agent = null;
             return false;
         }
 
-        var tempSet = new HashSet<string>(compatibleAgents, StringComparer.OrdinalIgnoreCase);
-
-        var ordered = agentsConfigurationIndex.Value
-            .Where(a => tempSet.Contains(a.Key))
-            .Select(a => new
-            {
-                AgentConfiguration = simulationPayload.GetAgentConfiguration(a.Key),
-                Agents = a.Value,
-                ActiveAgentsCount = GetActiveAgentsCount(a.Value)
-            })
-            .OrderBy(a => a.ActiveAgentsCount);
-
-        var list = ordered.FirstOrDefault(a =>
-        {
-            if (a.AgentConfiguration.MaxInstances != null)
-            {
-                return a.ActiveAgentsCount < a.AgentConfiguration.MaxInstances.Value;
-            }
-            return true;
-        });
+        var list = GetAgentList(compatibleAgents);
 
         if (list != null)
         {
@@ -125,5 +108,54 @@ internal sealed class AgentsRepository : IAgentsRepository
     public IEnumerable<Agent> EnumerateAgents()
     {
         return allAgents.Values;
+    }
+
+    public bool MaxAgentsReached()
+    {
+        var maxAgents = simulationContext.Payload.SimulationSettings.MaxRunningAgents;
+        return maxAgents != null && GetActiveAgentsCount() == maxAgents.Value;
+    }
+
+    private AgentList GetAgentList(IEnumerable<string> compatibleAgents)
+    {
+        var tempSet = new HashSet<string>(compatibleAgents, StringComparer.OrdinalIgnoreCase);
+
+        var ordered = agentsConfigurationIndex.Value
+            .Where(a => tempSet.Contains(a.Key))
+            .Select(a => new AgentList
+            {
+                AgentConfiguration = simulationContext.Payload.GetAgentConfiguration(a.Key),
+                Agents = a.Value,
+                ActiveAgentsCount = GetActiveAgentsCount(a.Value)
+            })
+            .OrderBy(a => a.ActiveAgentsCount);
+
+        return ordered.FirstOrDefault(a =>
+        {
+            if (a.AgentConfiguration.MaxInstances != null)
+            {
+                return a.ActiveAgentsCount < a.AgentConfiguration.MaxInstances.Value;
+            }
+            return true;
+        });
+    }
+
+    public bool CanAgentBeCreated(IEnumerable<string> compatibleAgents)
+    {
+        ArgumentNullException.ThrowIfNull(compatibleAgents, nameof(compatibleAgents));
+
+        if (MaxAgentsReached())
+        {
+            return false;
+        }
+
+        return GetAgentList(compatibleAgents) != null;
+    }
+
+    private class AgentList
+    {
+        public AgentConfiguration AgentConfiguration { get; init; }
+        public int ActiveAgentsCount { get; init; }
+        public List<Agent> Agents { get; init; }
     }
 }

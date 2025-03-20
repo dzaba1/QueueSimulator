@@ -1,7 +1,9 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Utils;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Events;
@@ -50,21 +52,25 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         request.EndTime = eventData.Time;
         request.State = RequestState.Finished;
 
+        var toEnqueue = new HashSet<Request>(new OnePropertyComparer<Request, long>(r => r.Id));
+
         if (!requestConfiguration.IsComposite)
         {
             var agent = agentsRepo.GetAgent(request.AgentId.Value);
             agent.State = AgentState.Finished;
             agent.EndTime = eventData.Time;
 
-            EnqueueWaitingForAgents(eventData);
+            EnqueueWaitingForAgents(eventData, toEnqueue);
         }
 
-        EnqueueWaitingForDependencies(request, eventData);
+        EnqueueWaitingForDependencies(request, eventData, toEnqueue);
+
+        ReEnqueueAll(toEnqueue, eventData);
 
         return $"Finished the request {request.Id} [{request.RequestConfiguration}].";
     }
 
-    private void EnqueueWaitingForDependencies(Request request, EventData eventData)
+    private void EnqueueWaitingForDependencies(Request request, EventData eventData, HashSet<Request> toEnqueue)
     {
         var pipeline = requestRepo.GetPipeline(request);
         var waitingRequests = pipeline.GetParents(request)
@@ -86,15 +92,29 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
                 else
                 {
                     waitingRequest.State = RequestState.WaitingForAgent;
-                    eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
+                    toEnqueue.Add(waitingRequest);
                 }
             }
         }
     }
 
-    private void EnqueueWaitingForAgents(EventData eventData)
+    private void EnqueueWaitingForAgents(EventData eventData, HashSet<Request> toEnqueue)
     {
-        foreach (var scheduledRequest in requestRepo.GetWaitingForAgents().OrderBy(b => b.Id))
+        foreach (var scheduledRequest in requestRepo.GetWaitingForAgents())
+        {
+            toEnqueue.Add(scheduledRequest);
+        }
+    }
+
+    private void ReEnqueueAll(IEnumerable<Request> requests, EventData eventData)
+    {
+        if (agentsRepo.MaxAgentsReached())
+        {
+            logger.LogInformation("Max agents reached. Skipping re-enqueue all.");
+            return;
+        }
+
+        foreach (var scheduledRequest in requests.OrderBy(b => b.Id))
         {
             eventQueue.AddCreateAgentQueueEvent(scheduledRequest, eventData.Time);
         }

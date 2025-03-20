@@ -202,7 +202,7 @@ public class SimulationTests : IocTestFixture
     }
 
     [Test]
-    public void Run_WhenOneRequestWithDependency_Then13Events()
+    public void Run_WhenOneRequestWithDependency_Then12Events()
     {
         var settings = new SimulationSettings
         {
@@ -244,7 +244,7 @@ public class SimulationTests : IocTestFixture
         var result = sut.Run(settings).ToArray();
         var last = ValidateLastToBeCompleted(result);
 
-        result.Should().HaveCount(13);
+        result.Should().HaveCount(12);
 
         last.Timestamp.Minute.Should().Be(32);
         last.AllAgents.Should().HaveCount(2);

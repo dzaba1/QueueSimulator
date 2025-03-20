@@ -47,6 +47,11 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request>
             throw new InvalidOperationException($"Request {request.Id} [{requestConfig.Name}] is composite. It can't be ran on agent.");
         }
 
+        if (request.State != RequestState.WaitingForAgent)
+        {
+            throw new InvalidOperationException($"Request {request.Id} [{request.RequestConfiguration}] is in {request.State} state.");
+        }
+
         if (request.AgentId != null)
         {
             throw new InvalidOperationException($"Agent with ID {request.AgentId} was already assigned to request with ID {request.Id}.");

@@ -34,7 +34,8 @@ public class CreateAgentEventHandlerTests
         var eventData = new EventData("TestEvent", CurrentTime);
         var request = new Request
         {
-            RequestConfiguration = "BuildConfig1"
+            RequestConfiguration = "BuildConfig1",
+            State = RequestState.WaitingForAgent
         };
 
         var settings = new SimulationSettings
@@ -77,7 +78,8 @@ public class CreateAgentEventHandlerTests
         var eventData = new EventData("TestEvent", CurrentTime);
         var request = new Request
         {
-            RequestConfiguration = "BuildConfig1"
+            RequestConfiguration = "BuildConfig1",
+            State = RequestState.WaitingForAgent
         };
 
         var settings = new SimulationSettings

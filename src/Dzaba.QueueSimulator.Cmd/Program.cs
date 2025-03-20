@@ -4,19 +4,13 @@ using Serilog;
 using System;
 using System.IO;
 using Dzaba.QueueSimulator.Lib;
-using Dzaba.QueueSimulator.Lib.Model;
-using System.Text.Json;
 using System.CommandLine;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Dzaba.QueueSimulator.Cmd;
 
 internal static class Program
 {
-    private static ServiceProvider Container { get; set; }
-
     public static async Task<int> Main(string[] args)
     {
         try
@@ -34,9 +28,9 @@ internal static class Program
             services.AddLogging(l => l.AddSerilog(logger, true));
 
             services.RegisterDzabaQueueSimulatorLib();
+            services.AddTransient<IApp, App>();
 
             using var container = services.BuildServiceProvider();
-            Container = container;
 
             var inputOption = new Option<FileInfo>(["--input", "-i"], "JSON simulation settings model.")
             {
@@ -56,61 +50,22 @@ internal static class Program
             rootCommand.AddOption(outputOption);
             rootCommand.AddOption(formatOption);
 
+            var exitCode = ExitCode.Ok;
+
             rootCommand.SetHandler((i, o, f) =>
             {
-                var settings = FromJsonFile(i);
-                var simulation = container.GetRequiredService<ISimulation>();
-                var result = simulation.Run(settings);
-                SaveResult(result, settings, o, f);
+                var app = container.GetRequiredService<IApp>();
+                exitCode = app.Run(i, o, f);
             }, inputOption, outputOption, formatOption);
 
-            return await rootCommand.InvokeAsync(args);
+            await rootCommand.InvokeAsync(args);
+
+            return (int)exitCode;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.ToString());
             return 1;
         }
-    }
-
-    private static void SaveResult(IEnumerable<TimeEventData> result,
-        SimulationSettings simulationSettings,
-        FileInfo output,
-        Format format)
-    {
-        using var stream = output.OpenWrite();
-
-        switch (format)
-        {
-            case Format.Json:
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = true,
-                };
-                JsonSerializer.Serialize(result.ToArray(), jsonOptions);
-                break;
-            case Format.Csv:
-                var serializer = Container.GetRequiredService<ICsvSerializer>();
-                var csv = serializer.Serialize(result, simulationSettings);
-                using (var writer = new StreamWriter(stream))
-                {
-                    writer.WriteLine(csv);
-                }
-                break;
-            default: throw new ArgumentOutOfRangeException("format", $"Unknown format: {format}");
-        }
-    }
-
-    private static SimulationSettings FromJsonFile(FileInfo inputJson)
-    {
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        using var stream = inputJson.OpenRead();
-
-        return JsonSerializer.Deserialize<SimulationSettings>(stream, jsonOptions);
     }
 }

@@ -61,7 +61,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding start request {Request} for {Time} to the event queue.", request.RequestConfiguration, time);
+        logger.LogInformation("Adding start request {RequestId} [{Request}] for {Time} to the event queue.", request.Id, request.RequestConfiguration, time);
 
         Enqueue(EventNames.StartRequest, time, request);
     }
@@ -70,8 +70,8 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding finishing request {Request} for {Time} to the event queue.",
-            request.RequestConfiguration, time);
+        logger.LogInformation("Adding finishing request {RequestId} [{Request}] for {Time} to the event queue.",
+            request.Id, request.RequestConfiguration, time);
 
         Enqueue(EventNames.FinishRequest, time, request);
     }
@@ -80,8 +80,8 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding create agent for request {Request} for {Time} to the event queue.",
-            request.RequestConfiguration, time);
+        logger.LogInformation("Adding create agent for request {RequestId} [{Request}] for {Time} to the event queue.",
+            request.Id, request.RequestConfiguration, time);
 
         Enqueue(EventNames.CreateAgent, time, request);
     }

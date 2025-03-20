@@ -70,6 +70,7 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
     {
         if (payload.Pipeline.TryGetRequest(payload.RequestConfiguration, out var request))
         {
+            logger.LogDebug("Request for configuration {Request} already exists with ID {RequestId}", payload.RequestConfiguration.Name, request.Id);
             created = false;
         }
         else

@@ -81,6 +81,11 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
+        if (request.Length == 0)
+        {
+            return;
+        }
+
         logger.LogInformation("Adding create agent for requests for {Time} to the event queue.", time);
 
         Enqueue(EventNames.CreateAgent, time, request);

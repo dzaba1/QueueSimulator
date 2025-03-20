@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Dzaba.QueueSimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Utils;
 
 public class StringPropertyEqualityComparer<T> : OnePropertyComparer<T, string>
 {
@@ -14,6 +14,6 @@ public class StringPropertyEqualityComparer<T> : OnePropertyComparer<T, string>
         StringComparer stringComparer)
         : base(keySelector, stringComparer)
     {
-        
+
     }
 }

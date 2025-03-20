@@ -1,8 +1,8 @@
-﻿using Dzaba.QueueSimulator.Lib.Model;
+﻿using Dzaba.QueueSimulator.Lib.Utils;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace Dzaba.QueueSimulator.Lib.Tests;
+namespace Dzaba.QueueSimulator.Lib.Tests.Utils;
 
 [TestFixture]
 public class OnePropertyComparerTests

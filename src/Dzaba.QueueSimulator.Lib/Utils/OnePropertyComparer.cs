@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Dzaba.QueueSimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Utils;
 
 public class OnePropertyComparer<T, TKey> : IEqualityComparer<T>
 {
@@ -12,7 +12,7 @@ public class OnePropertyComparer<T, TKey> : IEqualityComparer<T>
     public OnePropertyComparer(Func<T, TKey> keySelector)
         : this(keySelector, EqualityComparer<TKey>.Default)
     {
-        
+
     }
 
     public OnePropertyComparer(Func<T, TKey> keySelector,

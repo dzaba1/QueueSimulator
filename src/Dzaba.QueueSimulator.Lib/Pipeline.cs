@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;

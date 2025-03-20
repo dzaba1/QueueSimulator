@@ -122,10 +122,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         {
             if (agentsRepo.CanAgentBeCreated(group.Key))
             {
-                foreach (var scheduledRequest in group.OrderBy(b => b.Request.Id))
-                {
-                    eventQueue.AddCreateAgentQueueEvent(scheduledRequest.Request, eventData.Time);
-                }
+                eventQueue.AddCreateAgentQueueEvent(group.Select(r => r.Request).ToArray(), eventData.Time);
             }
             else
             {

@@ -133,6 +133,6 @@ public class EndRequestEventHandlerTests
 
         sut.Handle(eventData, request);
 
-        eventsPump.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request>(r => watingRequests.Contains(r)), CurrentTime), Times.Exactly(3));
+        eventsPump.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request[]>(r => watingRequests.Length == r.Length), CurrentTime), Times.Exactly(1));
     }
 }

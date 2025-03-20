@@ -26,7 +26,7 @@ public static class Bootstrapper
         services.AddKeyedTransient<IEventHandler<Request>, InitAgentEventHandler>(EventNames.InitAgent);
         services.AddKeyedTransient<IEventHandler<Request>, StartRequestEventHandler>(EventNames.StartRequest);
         services.AddKeyedTransient<IEventHandler<Request>, EndRequestEventHandler>(EventNames.FinishRequest);
-        services.AddKeyedTransient<IEventHandler<Request>, CreateAgentEventHandler>(EventNames.CreateAgent);
+        services.AddKeyedTransient<IEventHandler<Request[]>, CreateAgentEventHandler>(EventNames.CreateAgent);
         services.AddKeyedTransient<IEventHandler<Request>, AgentInitiatedEventHandler>(EventNames.AgentInitiated);
         services.AddKeyedTransient<IEventHandler<QueueRequestEventPayload>, QueueRequestEventHandler>(EventNames.QueueRequest);
     }

@@ -90,7 +90,7 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
     private void EnqueueStartRequest(Request request, DateTime time)
     {
         request.State = RequestState.WaitingForAgent;
-        eventsQueue.AddCreateAgentQueueEvent(request, time);
+        eventsQueue.AddCreateAgentQueueEvent([request], time);
     }
 
     private string EnqueueNew(Request request, QueueRequestEventPayload payload, EventData eventData)

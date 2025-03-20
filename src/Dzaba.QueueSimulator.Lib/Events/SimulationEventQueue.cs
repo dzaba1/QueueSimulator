@@ -11,7 +11,7 @@ internal interface ISimulationEventQueue
     void AddAgentInitedQueueEvent(Request request, DateTime time);
     void AddStartRequestQueueEvent(Request request, DateTime time);
     void AddEndRequestQueueEvent(Request request, DateTime time);
-    void AddCreateAgentQueueEvent(Request request, DateTime time);
+    void AddCreateAgentQueueEvent(Request[] request, DateTime time);
     void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTime requestStartTime);
 }
 
@@ -77,12 +77,11 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.FinishRequest, time, request);
     }
 
-    public void AddCreateAgentQueueEvent(Request request, DateTime time)
+    public void AddCreateAgentQueueEvent(Request[] request, DateTime time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        logger.LogInformation("Adding create agent for request {RequestId} [{Request}] for {Time} to the event queue.",
-            request.Id, request.RequestConfiguration, time);
+        logger.LogInformation("Adding create agent for requests for {Time} to the event queue.", time);
 
         Enqueue(EventNames.CreateAgent, time, request);
     }

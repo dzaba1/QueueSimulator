@@ -59,7 +59,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request[]>(r => r.First() == request), eventData.Time), Times.Once());
         request.State.Should().Be(RequestState.WaitingForAgent);
     }
 
@@ -97,7 +97,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTime>()), Times.Never());
         request.State.Should().Be(RequestState.WaitingForDependencies);
         eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => ValidateQueueRequestPayload(p, payload.SimulationSettings.RequestConfigurations[1], request, pipeline)), eventData.Time), Times.Once());
     }
@@ -150,7 +150,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request[]>(r => r.First() == request), eventData.Time), Times.Once());
         request.State.Should().Be(RequestState.WaitingForAgent);
 
         pipeline.GetChildren(parentRequest).First().Should().BeSameAs(request);
@@ -215,7 +215,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(request, eventData.Time), Times.Once());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request[]>(r => r.First() == request), eventData.Time), Times.Once());
         request.State.Should().Be(RequestState.WaitingForAgent);
         eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
 
@@ -289,7 +289,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTime>()), Times.Never());
         request.State.Should().Be(RequestState.WaitingForDependencies);
         eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
 

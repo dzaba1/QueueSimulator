@@ -65,7 +65,7 @@ public class CreateAgentEventHandlerTests
 
         var sut = CreateSut();
 
-        sut.Handle(eventData, request);
+        sut.Handle(eventData, [request]);
 
         request.State.Should().Be(RequestState.WaitingForAgentStart);
         request.AgentId.Should().Be(agent.Id);
@@ -104,7 +104,7 @@ public class CreateAgentEventHandlerTests
 
         var sut = CreateSut();
 
-        sut.Handle(eventData, request);
+        sut.Handle(eventData, [request]);
 
         request.State.Should().Be(RequestState.WaitingForAgent);
         request.AgentId.Should().BeNull();
@@ -147,7 +147,7 @@ public class CreateAgentEventHandlerTests
 
         var sut = CreateSut();
 
-        sut.Handle(eventData, request);
+        sut.Handle(eventData, [request]);
 
         request.State.Should().Be(RequestState.Running);
     }

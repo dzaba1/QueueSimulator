@@ -22,6 +22,7 @@ public enum AgentState
 {
     Created,
     Initiating,
+    Initiated,
     Running,
     Finished
 }

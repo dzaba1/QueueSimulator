@@ -32,17 +32,21 @@ internal sealed class InitAgentEventHandler : EventHandler<Request>
 
     protected override string OnHandle(EventData eventData, Request payload)
     {
+        ArgumentNullException.ThrowIfNull(eventData, nameof(eventData));
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
         var request = payload;
 
-        logger.LogInformation("Adding agent init for request {RequestdId} [{Request}] for {Time} to the event queue.",
-            request.Id,
-            request.RequestConfiguration, eventData.Time);
-
         var agent = agentsRepo.GetAgent(request.AgentId.Value);
 
         agent.State = AgentState.Initiating;
+
+        logger.LogInformation("Start agent {AgentId} [{Agent}] init for request {RequestdId} [{Request}] for {Time}.",
+            agent.Id,
+            agent.AgentConfiguration,
+            request.Id,
+            request.RequestConfiguration,
+            eventData.Time);
 
         var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);
 
@@ -52,7 +56,7 @@ internal sealed class InitAgentEventHandler : EventHandler<Request>
             endTime = eventData.Time + agentConfig.InitTime.Value;
         }
 
-        eventQueue.AddStartRequestQueueEvent(request, endTime);
+        eventQueue.AddAgentInitedQueueEvent(request, endTime);
 
         return $"Start initiating agent {agent.Id} [{agent.AgentConfiguration}].";
     }

@@ -67,7 +67,7 @@ public class InitAgentEventHandlerTests
         sut.Handle(eventData, request);
 
         agent.State.Should().Be(AgentState.Initiating);
-        eventsPump.Verify(x => x.AddStartRequestQueueEvent(request, CurrentTime), Times.Once());
+        eventsPump.Verify(x => x.AddAgentInitedQueueEvent(request, CurrentTime), Times.Once());
     }
 
     [Test]
@@ -110,6 +110,6 @@ public class InitAgentEventHandlerTests
         sut.Handle(eventData, request);
 
         agent.State.Should().Be(AgentState.Initiating);
-        eventsPump.Verify(x => x.AddStartRequestQueueEvent(request, CurrentTime + settings.Agents[0].InitTime.Value), Times.Once());
+        eventsPump.Verify(x => x.AddAgentInitedQueueEvent(request, CurrentTime + settings.Agents[0].InitTime.Value), Times.Once());
     }
 }

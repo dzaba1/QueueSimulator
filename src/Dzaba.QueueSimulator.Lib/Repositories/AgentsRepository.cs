@@ -53,6 +53,7 @@ internal sealed class AgentsRepository : IAgentsRepository
 
         if (simulationPayload.SimulationSettings.MaxRunningAgents != null && GetActiveAgentsCount() == simulationPayload.SimulationSettings.MaxRunningAgents.Value)
         {
+            logger.LogDebug("Max total active agents reached: {MaxRunningAgents}", simulationPayload.SimulationSettings.MaxRunningAgents.Value);
             agent = null;
             return false;
         }

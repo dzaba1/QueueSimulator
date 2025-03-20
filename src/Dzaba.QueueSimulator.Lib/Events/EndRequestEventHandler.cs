@@ -50,8 +50,6 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         request.EndTime = eventData.Time;
         request.State = RequestState.Finished;
 
-        EnqueueWaitingForDependencies(request, eventData);
-
         if (!requestConfiguration.IsComposite)
         {
             var agent = agentsRepo.GetAgent(request.AgentId.Value);
@@ -60,6 +58,8 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
 
             EnqueueWaitingForAgents(eventData);
         }
+
+        EnqueueWaitingForDependencies(request, eventData);
 
         return $"Finished the request {request.Id} [{request.RequestConfiguration}].";
     }
@@ -94,7 +94,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
 
     private void EnqueueWaitingForAgents(EventData eventData)
     {
-        foreach (var scheduledRequest in requestRepo.GetWaitingForAgents())
+        foreach (var scheduledRequest in requestRepo.GetWaitingForAgents().OrderBy(b => b.Id))
         {
             eventQueue.AddCreateAgentQueueEvent(scheduledRequest, eventData.Time);
         }

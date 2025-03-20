@@ -120,24 +120,6 @@ public class RequestsRepositoryTests
     }
 
     [Test]
-    public void GetWaitingForDependencies_WhenCalled_ThenItReturnsAllRequestsWaitingForDependencies()
-    {
-        var settings = GetSomeSettings();
-        var sut = CreateSut();
-
-        for (var i = 0; i < 3; i++)
-        {
-            var request = sut.NewRequest(settings.RequestConfigurations[i], Mock.Of<IPipeline>(), CurrentTime);
-            if (i > 0)
-            {
-                request.State = RequestState.WaitingForDependencies;
-            }
-        }
-
-        sut.GetWaitingForDependencies().Should().HaveCount(2);
-    }
-
-    [Test]
     public void GetWaitingForAgents_WhenCalled_ThenItReturnsAllRequestWaitingForAgents()
     {
         var settings = GetSomeSettings();

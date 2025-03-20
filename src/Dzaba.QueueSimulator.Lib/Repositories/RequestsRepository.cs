@@ -13,7 +13,6 @@ internal interface IRequestsRepository
     int GetQueueLength();
     int GetRunningRequestCount();
     IEnumerable<Request> GetWaitingForAgents();
-    IEnumerable<Request> GetWaitingForDependencies();
     IReadOnlyDictionary<string, Request[]> GroupQueueByConfiguration();
     IReadOnlyDictionary<string, Request[]> GroupRunningRequestsByConfiguration();
     Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTime currentTime);
@@ -87,12 +86,6 @@ internal sealed class RequestsRepository : IRequestsRepository
     {
         return EnumerateRequests()
             .Where(b => b.State == RequestState.WaitingForAgent);
-    }
-
-    public IEnumerable<Request> GetWaitingForDependencies()
-    {
-        return EnumerateRequests()
-            .Where(b => b.State == RequestState.WaitingForDependencies);
     }
 
     public IEnumerable<Request> EnumerateRequests()

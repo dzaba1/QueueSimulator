@@ -57,8 +57,6 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request>
             throw new InvalidOperationException($"Agent with ID {request.AgentId} was already assigned to request with ID {request.Id}.");
         }
 
-        request.State = RequestState.WaitingForAgent;
-
         if (agentsRepo.TryCreateAgent(requestConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             request.AgentId = agent.Id;

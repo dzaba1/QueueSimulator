@@ -37,6 +37,11 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request[]>
         ArgumentNullException.ThrowIfNull(eventData, nameof(eventData));
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
+        if (agentsRepo.MaxAgentsReached())
+        {
+            return "Max running agents reached.";
+        }
+
         var filtered = Filter(payload, eventData)
             .OrderBy(r => r.Request.Id);
 

@@ -94,7 +94,8 @@ public class EndRequestEventHandlerTests
                 new RequestConfiguration
                 {
                     Name = "BuildConfig",
-                    Duration = TimeSpan.FromHours(1)
+                    Duration = TimeSpan.FromHours(1),
+                    CompatibleAgents = ["Agent1"]
                 }
             ],
         };
@@ -113,11 +114,15 @@ public class EndRequestEventHandlerTests
             RequestConfiguration = settings.RequestConfigurations[0].Name
         };
 
-        fixture.FreezeMock<IAgentsRepository>()
-            .Setup(x => x.GetAgent(agent.Id))
+        var agentsRepo = fixture.FreezeMock<IAgentsRepository>();
+        agentsRepo.Setup(x => x.GetAgent(agent.Id))
             .Returns(agent);
+        agentsRepo.Setup(x => x.CanAgentBeCreated(settings.RequestConfigurations[0].CompatibleAgents))
+            .Returns(true);
 
-        var watingRequests = fixture.CreateMany<Request>(3).ToArray();
+        var watingRequests = fixture.CreateMany<Request>(3)
+            .ForEachLazy(r => r.RequestConfiguration = "BuildConfig")
+            .ToArray();
         fixture.FreezeMock<IRequestsRepository>()
             .Setup(x => x.GetWaitingForAgents())
             .Returns(watingRequests);

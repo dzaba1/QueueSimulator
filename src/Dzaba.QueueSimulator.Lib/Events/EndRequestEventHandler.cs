@@ -114,9 +114,23 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
             return;
         }
 
-        foreach (var scheduledRequest in requests.OrderBy(b => b.Id))
+        var groupedByAgents = requests
+            .Select(r => new { Request = r, RequestConfiguration = simulationContext.Payload.GetRequestConfiguration(r.RequestConfiguration) })
+            .GroupBy(r => r.RequestConfiguration.CompatibleAgents, new StringArrayComparer(StringComparer.OrdinalIgnoreCase));
+
+        foreach (var group in groupedByAgents)
         {
-            eventQueue.AddCreateAgentQueueEvent(scheduledRequest, eventData.Time);
+            if (agentsRepo.CanAgentBeCreated(group.Key))
+            {
+                foreach (var scheduledRequest in group.OrderBy(b => b.Request.Id))
+                {
+                    eventQueue.AddCreateAgentQueueEvent(scheduledRequest.Request, eventData.Time);
+                }
+            }
+            else
+            {
+                logger.LogInformation("Can't create agents for {Agents}. Skipping re-enqueue all.", group.Key);
+            }
         }
     }
 }

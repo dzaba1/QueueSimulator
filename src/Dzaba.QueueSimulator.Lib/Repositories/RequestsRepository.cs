@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,8 +25,16 @@ internal sealed class RequestsRepository : IRequestsRepository
     private readonly LongSequence idSequence = new();
     private readonly Dictionary<long, Request> allRequests = new();
     private readonly Dictionary<long, IPipeline> allPipelines = new();
+    private readonly ILogger<RequestsRepository> logger;
 
-    public Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTime currentTime)
+    public RequestsRepository(ILogger<RequestsRepository> logger)
+    {
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+
+        this.logger = logger;
+    }
+
+    public Request NewRequest(RequestConfiguration requestConfiguration,IPipeline pipeline, DateTime currentTime)
     {
         ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
         ArgumentNullException.ThrowIfNull(pipeline, nameof(pipeline));
@@ -39,6 +48,8 @@ internal sealed class RequestsRepository : IRequestsRepository
         allRequests.Add(request.Id, request);
         allPipelines.Add(request.Id, pipeline);
         pipeline.SetRequest(requestConfiguration, request);
+
+        logger.LogDebug("Created a new requst with ID {RequestId} from configuration {Request}.", request.Id, requestConfiguration.Name);
 
         return request;
     }

@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,12 +21,16 @@ internal sealed class AgentsRepository : IAgentsRepository
     private readonly Lazy<Dictionary<string, List<Agent>>> agentsConfigurationIndex;
     private readonly Dictionary<long, Agent> allAgents = new Dictionary<long, Agent>();
     private readonly ISimulationContext simulationContext;
+    private readonly ILogger<AgentsRepository> logger;
 
-    public AgentsRepository(ISimulationContext simulationContext)
+    public AgentsRepository(ISimulationContext simulationContext,
+        ILogger<AgentsRepository> logger)
     {
         ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
+        ArgumentNullException.ThrowIfNull(logger, nameof(logger));
 
         this.simulationContext = simulationContext;
+        this.logger = logger;
 
         agentsConfigurationIndex = new Lazy<Dictionary<string, List<Agent>>>(InitAgentsConfigurationIndex);
     }
@@ -83,6 +88,9 @@ internal sealed class AgentsRepository : IAgentsRepository
             };
             list.Agents.Add(agent);
             allAgents.Add(agent.Id, agent);
+
+            logger.LogDebug("Created a new agent with ID {AgentId} from configuration {Agent}.", agent.Id, agent.AgentConfiguration);
+
             return true;
         }
 

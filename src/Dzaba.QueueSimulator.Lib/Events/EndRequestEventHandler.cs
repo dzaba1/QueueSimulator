@@ -86,6 +86,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
                 else
                 {
                     waitingRequest.State = RequestState.WaitingForAgent;
+                    eventQueue.AddCreateAgentQueueEvent(waitingRequest, eventData.Time);
                 }
             }
         }

@@ -47,9 +47,16 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request>
             throw new InvalidOperationException($"Request {request.Id} [{requestConfig.Name}] is composite. It can't be ran on agent.");
         }
 
-        if (request.State != RequestState.WaitingForAgent)
+        if (request.State < RequestState.WaitingForDependencies)
         {
             throw new InvalidOperationException($"Request {request.Id} [{request.RequestConfiguration}] is in {request.State} state.");
+        }
+
+        if (IsRunningOrFinished(request))
+        {
+            logger.LogInformation("Request {RequestdId} [{Request}] is already in {RequestState} state.",
+                request.Id, request.RequestConfiguration, request.State);
+            return $"Request {request.Id} [{request.RequestConfiguration}] is already in {request.State} state.";
         }
 
         if (request.AgentId != null)
@@ -71,5 +78,10 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request>
             logger.LogInformation("There aren't any agents available for request {RequestdId} [{Request}].", request.Id, request.RequestConfiguration);
             return $"There aren't any agents available for request {request.Id} [{request.RequestConfiguration}].";
         }
+    }
+
+    private bool IsRunningOrFinished(Request request)
+    {
+        return request.State >= RequestState.WaitingForAgentStart;
     }
 }

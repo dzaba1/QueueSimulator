@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Dzaba.QueueSimulator.Cmd": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

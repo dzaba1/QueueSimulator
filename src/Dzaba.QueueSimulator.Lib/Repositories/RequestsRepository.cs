@@ -86,8 +86,7 @@ internal sealed class RequestsRepository : IRequestsRepository
     public IEnumerable<Request> GetWaitingForAgents()
     {
         return EnumerateRequests()
-            .Where(b => b.State == RequestState.WaitingForAgent)
-            .Where(b => b.AgentId == null);
+            .Where(b => b.State == RequestState.WaitingForAgent);
     }
 
     public IEnumerable<Request> GetWaitingForDependencies()

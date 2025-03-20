@@ -57,6 +57,7 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request>
         if (agentsRepo.TryCreateAgent(requestConfig.CompatibleAgents, eventData.Time, out var agent))
         {
             request.AgentId = agent.Id;
+            request.State = RequestState.WaitingForAgentStart;
 
             eventsQueue.AddInitAgentQueueEvent(request, eventData.Time);
 

@@ -157,7 +157,7 @@ public class RequestsRepositoryTests
             requests[i].State = RequestState.WaitingForAgent;
         }
 
-        sut.GetWaitingForAgents().Should().HaveCount(2);
+        sut.GetWaitingForAgents().Should().HaveCount(4);
     }
 
     [Test]

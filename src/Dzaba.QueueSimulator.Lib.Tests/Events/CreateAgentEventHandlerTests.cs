@@ -66,7 +66,7 @@ public class CreateAgentEventHandlerTests
 
         sut.Handle(eventData, request);
 
-        request.State.Should().Be(RequestState.WaitingForAgent);
+        request.State.Should().Be(RequestState.WaitingForAgentStart);
         request.AgentId.Should().Be(agent.Id);
         eventsPump.Verify(x => x.AddInitAgentQueueEvent(request, CurrentTime), Times.Once());
     }

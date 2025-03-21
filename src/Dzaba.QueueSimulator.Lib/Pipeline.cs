@@ -12,7 +12,7 @@ internal interface IPipeline
     RequestConfigurationsGraph RequestConfigurationsGraph { get; }
 
     IEnumerable<Request> GetChildren(Request request);
-    IEnumerable<Request> GetParents(Request request);
+    IEnumerable<Request> GetParents(Request request, bool recursive);
     void SetReference(Request currentRequest, Request parent);
     void SetRequest(RequestConfiguration requestConfiguration, Request request);
     bool TryGetRequest(RequestConfiguration requestConfiguration, out Request request);
@@ -92,14 +92,27 @@ internal sealed class Pipeline : IPipeline
         return Enumerable.Empty<Request>();
     }
 
-    public IEnumerable<Request> GetParents(Request request)
+    public IEnumerable<Request> GetParents(Request request, bool recursive)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        if (requestParents.TryGetValue(request, out var list))
+        if (!requestParents.TryGetValue(request, out var list))
         {
-            return list;
+            yield break;
         }
-        return Enumerable.Empty<Request>();
+
+        foreach (var item in list)
+        {
+            yield return item;
+
+            if (recursive)
+            {
+                var nextParents = GetParents(item, true);
+                foreach (var nextItem in nextParents)
+                {
+                    yield return item;
+                }
+            }
+        }
     }
 }

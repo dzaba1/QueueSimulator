@@ -154,7 +154,7 @@ public class QueueRequestEventHandlerTests
         request.State.Should().Be(RequestState.WaitingForAgent);
 
         pipeline.GetChildren(parentRequest).First().Should().BeSameAs(request);
-        pipeline.GetParents(request).First().Should().BeSameAs(parentRequest);
+        pipeline.GetParents(request, false).First().Should().BeSameAs(parentRequest);
     }
 
     [Test]

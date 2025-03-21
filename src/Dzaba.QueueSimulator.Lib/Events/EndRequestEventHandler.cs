@@ -73,26 +73,33 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
     private void EnqueueWaitingForDependencies(Request request, EventData eventData, HashSet<Request> toEnqueue)
     {
         var pipeline = requestRepo.GetPipeline(request);
-        var waitingRequests = pipeline.GetParents(request)
-            .Where(r => r.State == RequestState.WaitingForDependencies);
+        var waitingRequests = pipeline.GetParents(request, false)
+            .Select(r => new RequestWithConfiguration
+            {
+                Request = r,
+                RequestConfiguration = simulationContext.Payload.GetRequestConfiguration(r.RequestConfiguration)
+            })
+            .Where(r => {
+                return r.Request.State == RequestState.WaitingForDependencies ||
+                    (r.RequestConfiguration.IsComposite && r.Request.State == RequestState.Running);
+            });
 
         foreach (var waitingRequest in waitingRequests)
         {
-            var children = pipeline.GetChildren(waitingRequest);
+            var children = pipeline.GetChildren(waitingRequest.Request);
             if (children.All(r => r.State == RequestState.Finished))
             {
-                logger.LogInformation("All dependencies of request {RequestdId} [{Request}] are finished.", waitingRequest.Id, waitingRequest.RequestConfiguration);
+                logger.LogInformation("All dependencies of request {RequestdId} [{Request}] are finished.",
+                    waitingRequest.Request.Id, waitingRequest.RequestConfiguration.Name);
 
-                var waitingRequestConfiguration = simulationContext.Payload.GetRequestConfiguration(waitingRequest.RequestConfiguration);
-
-                if (waitingRequestConfiguration.IsComposite)
+                if (waitingRequest.RequestConfiguration.IsComposite)
                 {
-                    eventQueue.AddEndRequestQueueEvent(waitingRequest, eventData.Time);
+                    eventQueue.AddEndRequestQueueEvent(waitingRequest.Request, eventData.Time);
                 }
                 else
                 {
-                    waitingRequest.State = RequestState.WaitingForAgent;
-                    toEnqueue.Add(waitingRequest);
+                    waitingRequest.Request.State = RequestState.WaitingForAgent;
+                    toEnqueue.Add(waitingRequest.Request);
                 }
             }
         }

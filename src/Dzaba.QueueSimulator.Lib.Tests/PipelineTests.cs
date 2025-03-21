@@ -78,8 +78,8 @@ public class PipelineTests
 
         sut.SetReference(request2, request1);
 
-        sut.GetParents(request2).Should().HaveCount(1);
-        sut.GetParents(request1).Should().BeEmpty();
+        sut.GetParents(request2, false).Should().HaveCount(1);
+        sut.GetParents(request1, false).Should().BeEmpty();
     }
 
     [Test]

@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Dzaba.QueueSimulator.Cmd": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-i \"C:\\temp\\currentOneOrion.json\" -o \"sim.csv\" -f Csv"
     },
     "Container (Dockerfile)": {
       "commandName": "Docker"

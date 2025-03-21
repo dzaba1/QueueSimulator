@@ -12,6 +12,8 @@ namespace Dzaba.QueueSimulator.Cmd;
 
 internal static class Program
 {
+    private static readonly string LoggingOutputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] ({SourceContext}) [{ThreadId}] {Message:lj}{NewLine}{Exception}";
+
     public static async Task<int> Main(string[] args)
     {
         try
@@ -77,15 +79,38 @@ internal static class Program
 
     private static void SetupLogging(IServiceCollection services, IConfiguration configuration)
     {
-        var dateTimePart = DateTime.Now.ToString("yyyyMMddHHmmss");
-        var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"logs\QueueSimulator_{dateTimePart}.log");
-        var outputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] ({SourceContext}) [{ThreadId}] {Message:lj}{NewLine}{Exception}";
-        var logger = new LoggerConfiguration()
-            .Enrich.WithThreadId()
-            .MinimumLevel.Debug()
-            .WriteTo.Async(a => a.Console(LogEventLevel.Information, outputTemplate: outputTemplate))
-            .WriteTo.Async(a => a.File(logFile, rollOnFileSizeLimit: true, fileSizeLimitBytes: 8 * 1024 * 1024, outputTemplate: outputTemplate))
-            .CreateLogger();
+        var customLoggingOptions = configuration.GetSection("CustomLogging").Get<CustomLoggingOptions>();
+
+        var loggerConfig = new LoggerConfiguration()
+            .Enrich.WithThreadId();
+
+        loggerConfig.MinimumLevel.Is(customLoggingOptions.MinimumLevel);
+        SetupConsoleLogging(loggerConfig, customLoggingOptions);
+        SetupFileLogging(loggerConfig, customLoggingOptions);
+
+        var logger = loggerConfig.CreateLogger();
         services.AddLogging(l => l.AddSerilog(logger, true));
+    }
+
+    private static void SetupFileLogging(LoggerConfiguration loggerConfig, CustomLoggingOptions customLoggingOptions)
+    {
+        if (customLoggingOptions.FileLevel != null)
+        {
+            var dateTimePart = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var logFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $@"logs\QueueSimulator_{dateTimePart}.log");
+
+            loggerConfig.WriteTo.Async(a => a.File(logFile,
+                rollOnFileSizeLimit: true, fileSizeLimitBytes: 8 * 1024 * 1024,
+                restrictedToMinimumLevel: customLoggingOptions.FileLevel.Value,
+                outputTemplate: LoggingOutputTemplate));
+        }
+    }
+
+    private static void SetupConsoleLogging(LoggerConfiguration loggerConfig, CustomLoggingOptions customLoggingOptions)
+    {
+        if (customLoggingOptions.ConsoleLevel != null)
+        {
+            loggerConfig.WriteTo.Async(a => a.Console(customLoggingOptions.ConsoleLevel.Value, outputTemplate: LoggingOutputTemplate));
+        }
     }
 }

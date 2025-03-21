@@ -44,7 +44,10 @@ public class SimulationTests
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [

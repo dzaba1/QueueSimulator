@@ -32,6 +32,7 @@ public class StartRequestEventHandlerTests
     public void Handle_WhenHandled_ThenAgentAndRequestsAreRunningAndEndRequestEventIsScheduled()
     {
         var eventData = new EventData("Test", CurrentTime);
+        var buildDuration = TimeSpan.FromHours(1);
         var settings = new SimulationSettings
         {
             Agents = [
@@ -44,7 +45,10 @@ public class StartRequestEventHandlerTests
                 new RequestConfiguration
                 {
                     Name = "BuildConfig",
-                    Duration = TimeSpan.FromHours(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = buildDuration
+                    }
                 }
             ],
         };
@@ -77,6 +81,6 @@ public class StartRequestEventHandlerTests
         request.State.Should().Be(RequestState.Running);
         request.StartTime.Should().Be(CurrentTime);
 
-        eventsPump.Verify(x => x.AddEndRequestQueueEvent(request, CurrentTime + settings.RequestConfigurations[0].Duration.Value), Times.Once());
+        eventsPump.Verify(x => x.AddEndRequestQueueEvent(request, CurrentTime + buildDuration), Times.Once());
     }
 }

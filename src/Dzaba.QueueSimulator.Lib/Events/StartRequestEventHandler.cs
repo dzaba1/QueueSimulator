@@ -14,13 +14,15 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
     private readonly ISimulationEventQueue eventQueue;
     private readonly ISimulationContext simulationContext;
     private readonly IRequestsRepository requestsRepo;
+    private readonly IRand rand;
 
     public StartRequestEventHandler(ISimulationEvents simulationEvents,
         ILogger<StartRequestEventHandler> logger,
         IAgentsRepository agentsRepo,
         ISimulationEventQueue eventQueue,
         ISimulationContext simulationContext,
-        IRequestsRepository requestsRepo)
+        IRequestsRepository requestsRepo,
+        IRand rand)
         : base(simulationEvents)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
@@ -28,12 +30,14 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
         ArgumentNullException.ThrowIfNull(eventQueue, nameof(eventQueue));
         ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
         ArgumentNullException.ThrowIfNull(requestsRepo, nameof(requestsRepo));
+        ArgumentNullException.ThrowIfNull(rand, nameof(rand));
 
         this.logger = logger;
         this.agentsRepo = agentsRepo;
         this.eventQueue = eventQueue;
         this.simulationContext = simulationContext;
         this.requestsRepo = requestsRepo;
+        this.rand = rand;
     }
 
     protected override string OnHandle(EventData eventData, Request payload)
@@ -56,7 +60,7 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
         SetCompositeStart(request, eventData);
 
         var requestConfig = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
-        var requestEndTime = eventData.Time + requestConfig.Duration.Value;
+        var requestEndTime = eventData.Time + requestConfig.Duration.Get(rand);
 
         eventQueue.AddEndRequestQueueEvent(request, requestEndTime);
 

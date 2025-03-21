@@ -56,7 +56,10 @@ public class EventHandlersTests : IocTestFixture
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -81,7 +84,10 @@ public class EventHandlersTests : IocTestFixture
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent2"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [

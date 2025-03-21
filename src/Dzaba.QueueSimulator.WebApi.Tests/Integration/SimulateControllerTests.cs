@@ -39,20 +39,29 @@ public class SimulateControllerTests : ControllerTestFixture
                 {
                     Name = "Build",
                     CompatibleAgents = ["Agent1"],
-                    Duration = TimeSpan.FromMinutes(3),
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(3)
+                    },
                 },
                 new RequestConfiguration
                 {
                     Name = "Tests",
                     CompatibleAgents = ["Agent1"],
-                    Duration = TimeSpan.FromMinutes(1),
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    },
                     RequestDependencies = ["Build"]
                 },
                 new RequestConfiguration
                 {
                     Name = "Publish",
                     CompatibleAgents = ["Agent1"],
-                    Duration = TimeSpan.FromMinutes(1),
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    },
                     RequestDependencies = ["Tests"]
                 }
             ],

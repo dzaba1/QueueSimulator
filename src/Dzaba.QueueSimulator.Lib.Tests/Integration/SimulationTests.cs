@@ -59,7 +59,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -123,7 +126,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -189,7 +195,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromHours(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromHours(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -229,14 +238,20 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 },
                 new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
                     RequestDependencies = ["BuildConfig1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -286,27 +301,39 @@ public class SimulationTests : IocTestFixture
                     Name = "BuildConfig1",
                     CompatibleAgents = ["TestAgent1"],
                     RequestDependencies = ["BuildConfig2", "BuildConfig3"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 },
                 new RequestConfiguration
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
                     RequestDependencies = ["BuildConfig4"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 },
                 new RequestConfiguration
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
                     RequestDependencies = ["BuildConfig4"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 },
                 new RequestConfiguration
                 {
                     Name = "BuildConfig4",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -359,7 +386,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -420,7 +450,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig3",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [
@@ -473,7 +506,10 @@ public class SimulationTests : IocTestFixture
                     Name = "BuildConfig2",
                     CompatibleAgents = ["TestAgent1"],
                     RequestDependencies = ["BuildConfig3"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 },
                 new RequestConfiguration
                 {
@@ -485,7 +521,10 @@ public class SimulationTests : IocTestFixture
                 {
                     Name = "BuildConfig4",
                     CompatibleAgents = ["TestAgent1"],
-                    Duration = TimeSpan.FromMinutes(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             InitialRequests = [

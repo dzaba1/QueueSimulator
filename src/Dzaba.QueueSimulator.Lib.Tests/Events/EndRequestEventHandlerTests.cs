@@ -45,7 +45,10 @@ public class EndRequestEventHandlerTests
                 new RequestConfiguration
                 {
                     Name = "BuildConfig",
-                    Duration = TimeSpan.FromHours(1)
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromHours(1)
+                    }
                 }
             ],
         };
@@ -94,7 +97,10 @@ public class EndRequestEventHandlerTests
                 new RequestConfiguration
                 {
                     Name = "BuildConfig",
-                    Duration = TimeSpan.FromHours(1),
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromHours(1)
+                    },
                     CompatibleAgents = ["Agent1"]
                 }
             ],

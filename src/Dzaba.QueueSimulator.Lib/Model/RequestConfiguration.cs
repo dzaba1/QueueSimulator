@@ -13,7 +13,7 @@ public sealed class RequestConfiguration
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; }
 
-    public TimeSpan? Duration { get; set; }
+    public IDuration Duration { get; set; }
 
     public string[] CompatibleAgents { get; set; }
 

@@ -37,7 +37,7 @@ public sealed class Request
             return null;
         }
 
-        return CreatedTime - StartTime.Value;
+        return StartTime.Value - CreatedTime;
     }
 
     public TimeSpan? TotalDuration()
@@ -47,7 +47,7 @@ public sealed class Request
             return null;
         }
 
-        return CreatedTime - StartTime.Value;
+        return EndTime.Value - CreatedTime;
     }
 }
 

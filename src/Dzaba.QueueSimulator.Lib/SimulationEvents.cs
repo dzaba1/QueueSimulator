@@ -38,38 +38,38 @@ internal sealed class SimulationEvents : ISimulationEvents
         ArgumentNullException.ThrowIfNull(data, nameof(data));
         ArgumentException.ThrowIfNullOrWhiteSpace(message, nameof(message));
 
-        var requestsQueueData = new ElementsData
+        var requestsQueueData = new ElementsData<int>
         {
             Total = requestRepo.GetQueueLength(),
             Grouped = requestRepo.GroupQueueByConfiguration()
-                .Select(g => new NamedQueueData
+                .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
-                    Length = g.Value.Length,
+                    Value = g.Value.Length,
                 })
                 .ToArray()
         };
 
-        var runningAgents = new ElementsData
+        var runningAgents = new ElementsData<int>
         {
             Total = agentsRepo.GetActiveAgentsCount(),
             Grouped = agentsRepo.GetActiveAgentsByConfigurationCount()
-                .Select(g => new NamedQueueData
+                .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
-                    Length = g.Value,
+                    Value = g.Value,
                 })
                 .ToArray()
         };
 
-        var runningRequests = new ElementsData
+        var runningRequests = new ElementsData<int>
         {
             Total = requestRepo.GetRunningRequestCount(),
             Grouped = requestRepo.GroupRunningRequestsByConfiguration()
-                .Select(g => new NamedQueueData
+                .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
-                    Length = g.Value.Length,
+                    Value = g.Value.Length,
                 })
                 .ToArray()
         };

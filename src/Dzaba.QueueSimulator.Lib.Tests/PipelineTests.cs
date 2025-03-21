@@ -105,4 +105,33 @@ public class PipelineTests
         sut.GetChildren(request1).Should().HaveCount(1);
         sut.GetChildren(request2).Should().BeEmpty();
     }
+
+    [Test]
+    public void SetReference_WhenReference_ThenYouCanGetParentsRecurse()
+    {
+        var payload = GetSomePayload();
+
+        var request1 = new Request
+        {
+            Id = 1,
+            RequestConfiguration = "BuildConfig1"
+        };
+        var request2 = new Request
+        {
+            Id = 2,
+            RequestConfiguration = "BuildConfig2"
+        };
+        var request3 = new Request
+        {
+            Id = 3,
+            RequestConfiguration = "BuildConfig3"
+        };
+
+        var sut = new Pipeline(payload.SimulationSettings.RequestConfigurations[0], payload);
+
+        sut.SetReference(request2, request1);
+        sut.SetReference(request3, request2);
+
+        sut.GetParents(request3, true).Should().HaveCount(2);
+    }
 }

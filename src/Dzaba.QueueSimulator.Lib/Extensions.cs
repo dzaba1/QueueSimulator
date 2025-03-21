@@ -41,6 +41,11 @@ public static class Extensions
             sum += selector(item);
             count++;
         }
-        return sum / count;
+
+        if (count > 0)
+        {
+            return sum / count;
+        }
+        return TimeSpan.Zero;
     }
 }

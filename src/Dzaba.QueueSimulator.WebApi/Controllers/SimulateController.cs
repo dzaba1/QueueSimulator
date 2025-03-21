@@ -28,18 +28,18 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
 
         [HttpPost]
         [ValidateModel]
-        public TimeEventData[] Post([FromBody][Required] SimulationSettings settings)
+        public SimulationReport Post([FromBody][Required] SimulationSettings settings)
         {
-            return simulation.Run(settings).ToArray();
+            return simulation.Run(settings);
         }
 
         [HttpPost("csv")]
         [ValidateModel]
         public string PostCsv([FromBody][Required] SimulationSettings settings)
         {
-            var events = simulation.Run(settings);
+            var report = simulation.Run(settings);
 
-            return csvSerializer.Serialize(events, settings).Trim();
+            return csvSerializer.Serialize(report.Events, settings).Trim();
         }
     }
 }

@@ -17,13 +17,13 @@ public class SimulationTests : IocTestFixture
         return Container.GetRequiredService<ISimulation>();
     }
 
-    private void ValidateDataForEmptines(ElementsData actual)
+    private void ValidateDataForEmptines(ElementsData<int> actual)
     {
         actual.Total.Should().Be(0);
         actual.Grouped.Should().BeEmpty();
     }
 
-    private void ValidateDataForCount(ElementsData actual, int count)
+    private void ValidateDataForCount(ElementsData<int> actual, int count)
     {
         actual.Total.Should().Be(count);
         actual.Grouped.Should().HaveCount(count);
@@ -73,8 +73,8 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
-        var last =ValidateLastToBeCompleted(result);
+        var result = sut.Run(settings).Events;
+        var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(6);
 
@@ -134,7 +134,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(6);
@@ -197,7 +197,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         ValidateLastToBeCompleted(result);
     }
 
@@ -241,7 +241,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(12);
@@ -308,7 +308,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         last.Timestamp.Minute.Should().Be(6);
@@ -358,7 +358,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(8);
@@ -388,13 +388,13 @@ public class SimulationTests : IocTestFixture
             RequestConfigurations = [
                 new RequestConfiguration
                 {
-                    Name = "BuildConfig1",
-                    RequestDependencies = ["BuildConfig2"],
+                    Name = "Composite1",
+                    RequestDependencies = ["Composite2"],
                     IsComposite = true
                 },
                 new RequestConfiguration
                 {
-                    Name = "BuildConfig2",
+                    Name = "Composite2",
                     RequestDependencies = ["BuildConfig3"],
                     IsComposite = true
                 },
@@ -408,7 +408,7 @@ public class SimulationTests : IocTestFixture
             InitialRequests = [
                 new InitialRequest
                 {
-                    Name = "BuildConfig1",
+                    Name = "Composite1",
                     NumberToQueue = 1
                 }
             ]
@@ -416,7 +416,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(10);
@@ -478,7 +478,7 @@ public class SimulationTests : IocTestFixture
 
         var sut = CreateSut();
 
-        var result = sut.Run(settings).ToArray();
+        var result = sut.Run(settings).Events;
         var last = ValidateLastToBeCompleted(result);
 
         result.Should().HaveCount(16);

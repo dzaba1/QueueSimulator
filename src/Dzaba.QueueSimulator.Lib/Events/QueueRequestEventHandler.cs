@@ -111,6 +111,12 @@ internal sealed class QueueRequestEventHandler : EventHandler<QueueRequestEventP
                     {
                         allFinished = false;
                     }
+
+                    if (payload.RequestConfiguration.IsComposite && childRequest.State == RequestState.Running)
+                    {
+                        request.State = RequestState.Running;
+                        request.StartTime = eventData.Time;
+                    }
                 }
                 else
                 {

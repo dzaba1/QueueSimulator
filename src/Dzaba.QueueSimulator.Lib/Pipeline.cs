@@ -110,7 +110,7 @@ internal sealed class Pipeline : IPipeline
                 var nextParents = GetParents(item, true);
                 foreach (var nextItem in nextParents)
                 {
-                    yield return item;
+                    yield return nextItem;
                 }
             }
         }

@@ -122,6 +122,6 @@ public class SimulationTests
 
         var result = sut.Run(settings);
 
-        result.Should().BeSameAs(events.Object);
+        result.Events.Should().BeEquivalentTo(events.Object);
     }
 }

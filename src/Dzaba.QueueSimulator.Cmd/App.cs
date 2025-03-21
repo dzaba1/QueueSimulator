@@ -52,7 +52,7 @@ internal sealed class App : IApp
         }
     }
 
-    private void SaveResult(IEnumerable<TimeEventData> result,
+    private void SaveResult(SimulationReport result,
         SimulationSettings simulationSettings,
         FileInfo output,
         Format format)
@@ -67,10 +67,10 @@ internal sealed class App : IApp
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     WriteIndented = true,
                 };
-                JsonSerializer.Serialize(result.ToArray(), jsonOptions);
+                JsonSerializer.Serialize(result, jsonOptions);
                 break;
             case Format.Csv:
-                csvSerializer.Serialize(stream, result, simulationSettings);
+                csvSerializer.Serialize(stream, result.Events, simulationSettings);
                 break;
             default: throw new ArgumentOutOfRangeException("format", $"Unknown format: {format}");
         }

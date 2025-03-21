@@ -63,6 +63,7 @@ internal sealed class Simulation : ISimulation
     private IEnumerable<RequestConfigurationStatistics> GetRequestDurationStats()
     {
         return requestsRepo.EnumerateRequests()
+            .Where(r => context.Payload.ShouldObserve(r.RequestConfiguration))
             .Where(r => r.State == RequestState.Finished)
             .GroupBy(r => r.RequestConfiguration, StringComparer.OrdinalIgnoreCase)
             .Select(g =>

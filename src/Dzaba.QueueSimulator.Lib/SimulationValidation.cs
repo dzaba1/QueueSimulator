@@ -31,6 +31,11 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         ValidateCyclicDependency(simulationPayload, errors);
 
+        if (simulationPayload.SimulationSettings.RequestConfigurationsToObserve != null)
+        {
+            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.RequestConfigurationsToObserve, errors);
+        }
+
         if (errors.Any())
         {
             throw new ExitCodeException(errors);
@@ -76,6 +81,19 @@ internal sealed class SimulationValidation : ISimulationValidation
         }
     }
 
+    private void ValidateRequestsExist(SimulationPayload simulationPayload,
+        IEnumerable<string> requests,
+        IList<KeyValuePair<ExitCode, string>> errors)
+    {
+        foreach (var requestName in requests)
+        {
+            if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
+            {
+                errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find request configuration {requestName}."));
+            }
+        }
+    }
+
     private void ValidateRequestDependencies(RequestConfiguration request,
         SimulationPayload simulationPayload,
         IList<KeyValuePair<ExitCode, string>> errors)
@@ -87,13 +105,7 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         if (request.RequestDependencies != null)
         {
-            foreach (var requestName in request.RequestDependencies)
-            {
-                if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
-                {
-                    errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find dependent request configuration {requestName} for request configuration {request.Name}."));
-                }
-            }
+            ValidateRequestsExist(simulationPayload, request.RequestDependencies, errors);
         }
     }
 

@@ -18,4 +18,6 @@ public sealed class SimulationSettings
 
     [Required]
     public InitialRequest[] InitialRequests { get; set; }
+
+    public string[] RequestConfigurationsToObserve { get; set; }
 }

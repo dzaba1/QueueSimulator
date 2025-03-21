@@ -11,5 +11,5 @@ public sealed class AgentConfiguration
     public string Name { get; set; }
 
     public ushort? MaxInstances { get; set; }
-    public TimeSpan? InitTime { get; set; }
+    public IDuration InitTime { get; set; }
 }

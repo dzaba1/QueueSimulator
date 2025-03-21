@@ -27,7 +27,7 @@ public class ControllerTestFixture
     {
         var jsonOptions = new JsonSerializerOptions
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
         string json = JsonSerializer.Serialize(obj, jsonOptions);
         return new StringContent(json, Encoding.UTF8, "application/json");

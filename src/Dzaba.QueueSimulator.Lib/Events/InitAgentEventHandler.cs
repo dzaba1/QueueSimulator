@@ -1,5 +1,6 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Utils;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -11,23 +12,27 @@ internal sealed class InitAgentEventHandler : EventHandler<Request>
     private readonly ISimulationContext simulationContext;
     private readonly ISimulationEventQueue eventQueue;
     private readonly ILogger<InitAgentEventHandler> logger;
+    private readonly IRand rand;
 
     public InitAgentEventHandler(ISimulationEvents simulationEvents,
         IAgentsRepository agentsRepo,
         ISimulationContext simulationContext,
         ISimulationEventQueue eventQueue,
-        ILogger<InitAgentEventHandler> logger)
+        ILogger<InitAgentEventHandler> logger,
+        IRand rand)
         : base(simulationEvents)
     {
         ArgumentNullException.ThrowIfNull(agentsRepo, nameof(agentsRepo));
         ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
         ArgumentNullException.ThrowIfNull(eventQueue, nameof(eventQueue));
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+        ArgumentNullException.ThrowIfNull(rand, nameof(rand));
 
         this.agentsRepo = agentsRepo;
         this.simulationContext = simulationContext;
         this.eventQueue = eventQueue;
         this.logger = logger;
+        this.rand = rand;
     }
 
     protected override string OnHandle(EventData eventData, Request payload)
@@ -53,7 +58,7 @@ internal sealed class InitAgentEventHandler : EventHandler<Request>
         var endTime = eventData.Time;
         if (agentConfig.InitTime != null)
         {
-            endTime = eventData.Time + agentConfig.InitTime.Value;
+            endTime = eventData.Time + agentConfig.InitTime.Get(rand);
         }
 
         eventQueue.AddAgentInitedQueueEvent(request, endTime);

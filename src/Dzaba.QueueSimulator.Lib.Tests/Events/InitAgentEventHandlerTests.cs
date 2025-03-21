@@ -74,13 +74,17 @@ public class InitAgentEventHandlerTests
     public void OnHandle_WhenInitTime_ThenAgentIsCreatedAfterSomeTime()
     {
         var eventData = new EventData("Test", CurrentTime);
+        var initTime = TimeSpan.FromMinutes(1);
         var settings = new SimulationSettings
         {
             Agents = [
                 new AgentConfiguration
                 {
                     Name = "Agent1",
-                    InitTime = TimeSpan.FromMinutes(1)
+                    InitTime = new StaticDuration
+                    {
+                        Value = initTime
+                    }
                 }
             ],
             RequestConfigurations = [],
@@ -110,6 +114,6 @@ public class InitAgentEventHandlerTests
         sut.Handle(eventData, request);
 
         agent.State.Should().Be(AgentState.Initiating);
-        eventsPump.Verify(x => x.AddAgentInitedQueueEvent(request, CurrentTime + settings.Agents[0].InitTime.Value), Times.Once());
+        eventsPump.Verify(x => x.AddAgentInitedQueueEvent(request, CurrentTime + initTime), Times.Once());
     }
 }

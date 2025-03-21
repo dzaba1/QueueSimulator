@@ -112,7 +112,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(15)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(15)
+                    }
                 }
             ],
             RequestConfigurations = [
@@ -174,7 +177,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(15),
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(15)
+                    },
                     MaxInstances = 20
                 }
             ],
@@ -212,7 +218,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(15)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(15)
+                    }
                 }
             ],
             RequestConfigurations = [
@@ -265,7 +274,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(1)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             RequestConfigurations = [
@@ -330,7 +342,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(1)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             RequestConfigurations = [
@@ -382,7 +397,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(1)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             RequestConfigurations = [
@@ -437,7 +455,10 @@ public class SimulationTests : IocTestFixture
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(1)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
                 }
             ],
             RequestConfigurations = [

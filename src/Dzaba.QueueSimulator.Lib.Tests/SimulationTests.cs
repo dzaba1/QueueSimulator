@@ -33,7 +33,10 @@ public class SimulationTests
                 new AgentConfiguration
                 {
                     Name = "TestAgent1",
-                    InitTime = TimeSpan.FromMinutes(15)
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(15)
+                    }
                 }
             ],
             RequestConfigurations = [

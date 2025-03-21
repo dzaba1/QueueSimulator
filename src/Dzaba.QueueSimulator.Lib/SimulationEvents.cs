@@ -76,7 +76,7 @@ internal sealed class SimulationEvents : ISimulationEvents
 
         var timedEvent = new TimeEventData
         {
-            Timestamp = data.Time,
+            Timestamp = data.Time.DateTime,
             Name = data.Name,
             Message = message,
             RequestsQueue = requestsQueueData,

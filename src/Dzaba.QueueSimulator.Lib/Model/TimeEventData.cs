@@ -8,7 +8,7 @@ namespace Dzaba.QueueSimulator.Lib.Model;
 [DebuggerDisplay("{Timestamp} [{Name}] - {Message}")]
 public sealed class TimeEventData
 {
-    public DateTimeOffset Timestamp { get; set; }
+    public DateTime Timestamp { get; set; }
     public string Name { get; set; }
     public string Message { get; set; }
     public ElementsData RequestsQueue { get; set; }

@@ -1,7 +1,7 @@
 ﻿using Dzaba.QueueSimulator.Lib.Utils;
 using System;
 
-namespace Dzaba.QueueSimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Model.Distribution;
 
 public sealed class StaticDuration : IDuration
 {

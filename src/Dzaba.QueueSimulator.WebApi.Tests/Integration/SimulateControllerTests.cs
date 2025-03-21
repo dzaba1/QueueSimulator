@@ -1,4 +1,5 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Model.Distribution;
 using FluentAssertions;
 using NUnit.Framework;
 using System;

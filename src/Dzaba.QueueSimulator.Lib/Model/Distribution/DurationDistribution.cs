@@ -2,18 +2,19 @@
 using System;
 using System.Collections.Generic;
 
-namespace Dzaba.QueueSimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Model.Distribution;
 
-public sealed class IntervalInitialDistribution : IInitialDistribution
+public sealed class DurationDistribution : IInitialDistribution
 {
-    public IDuration Interval { get; set; }
+    public IDuration Duration { get; set; }
     public ushort NumberToQueue { get; set; }
 
     public IEnumerable<DateTimeOffset> GetInitTimes(DateTime simulationStartTime, IRand rand)
     {
+        var waitTime = Duration.Get(rand) / NumberToQueue;
         for (var i = 0; i < NumberToQueue; i++)
         {
-            yield return simulationStartTime + Interval.Get(rand) * i;
+            yield return simulationStartTime + waitTime * i;
         }
     }
 }

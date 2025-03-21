@@ -1,5 +1,6 @@
 ﻿using Dzaba.QueueSimulator.Lib.Events;
 using Dzaba.QueueSimulator.Lib.Model;
+using Dzaba.QueueSimulator.Lib.Model.Distribution;
 using Dzaba.TestUtils;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

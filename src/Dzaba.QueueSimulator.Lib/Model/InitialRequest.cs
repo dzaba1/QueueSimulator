@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Dzaba.QueueSimulator.Lib.Model.Distribution;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
 namespace Dzaba.QueueSimulator.Lib.Model;

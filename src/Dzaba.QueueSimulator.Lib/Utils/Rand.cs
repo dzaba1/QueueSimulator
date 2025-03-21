@@ -7,6 +7,9 @@ public interface IRand
     int Next();
     int Next(int max);
     int Next(int min, int max);
+    long NextLong();
+    long NextLong(long max);
+    long NextLong(long min, long max);
     double NextDouble();
 }
 
@@ -32,5 +35,20 @@ internal sealed class Rand : IRand
     public double NextDouble()
     {
         return random.NextDouble();
+    }
+
+    public long NextLong()
+    {
+        return random.NextInt64();
+    }
+
+    public long NextLong(long max)
+    {
+        return random.NextInt64(max);
+    }
+
+    public long NextLong(long min, long max)
+    {
+        return random.NextInt64(min, max);
     }
 }

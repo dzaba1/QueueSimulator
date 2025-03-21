@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Dzaba.QueueSimulator.Lib.Model;
+namespace Dzaba.QueueSimulator.Lib.Model.Distribution;
 
 [JsonDerivedType(typeof(IntervalInitialDistribution), "interval")]
 [JsonDerivedType(typeof(DurationDistribution), "duration")]

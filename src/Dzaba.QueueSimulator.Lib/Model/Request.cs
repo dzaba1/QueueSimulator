@@ -29,6 +29,26 @@ public sealed class Request
 
         return EndTime.Value - StartTime.Value;
     }
+
+    public TimeSpan? QueueDuration()
+    {
+        if (State < RequestState.Running)
+        {
+            return null;
+        }
+
+        return CreatedTime - StartTime.Value;
+    }
+
+    public TimeSpan? TotalDuration()
+    {
+        if (State != RequestState.Finished)
+        {
+            return null;
+        }
+
+        return CreatedTime - StartTime.Value;
+    }
 }
 
 public enum RequestState

@@ -53,57 +53,36 @@ internal sealed class Simulation : ISimulation
 
         eventsQueue.Run();
 
-        var report = new SimulationReport
+        return new SimulationReport
         {
-            Events = simulationEvents.ToArray()
+            Events = simulationEvents.ToArray(),
+            RequestDurationStatistics = GetRequestDurationStats().ToArray()
         };
-        SetAvgValues(report);
-        return report;
     }
 
-    private void SetAvgValues(SimulationReport report)
+    private IEnumerable<RequestConfigurationStatistics> GetRequestDurationStats()
     {
-        var requests = requestsRepo.EnumerateRequests()
+        return requestsRepo.EnumerateRequests()
             .Where(r => r.State == RequestState.Finished)
             .GroupBy(r => r.RequestConfiguration, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        var avg = requests.Select(g => new NamedQueueData<TimeSpan>
-        {
-            Name = g.Key,
-            Value = g.Average(r => r.RunningDuration().Value)
-        }).ToArray();
-
-        var min = requests.Select(g => new NamedQueueData<TimeSpan>
-        {
-            Name = g.Key,
-            Value = g.Min(r => r.RunningDuration().Value)
-        }).ToArray();
-
-        var max = requests.Select(g => new NamedQueueData<TimeSpan>
-        {
-            Name = g.Key,
-            Value = g.Max(r => r.RunningDuration().Value)
-        }).ToArray();
-
-        report.RequestDurationStatistics = new RequestDurationStatistics
-        {
-            AvgRequestDuration = new ElementsData<TimeSpan>
+            .Select(g =>
             {
-                Grouped = avg,
-                Total = avg.Average(g => g.Value)
-            },
-            MaxRequestDuration = new ElementsData<TimeSpan>
-            {
-                Grouped = max,
-                Total = max.Average(g => g.Value)
-            },
-            MinRequestDuration = new ElementsData<TimeSpan>
-            {
-                Grouped = min,
-                Total = min.Average(g => g.Value)
-            },
-        };
+                var allItems = g.ToArray();
+
+                return new RequestConfigurationStatistics
+                {
+                    Name = g.Key,
+                    AvgDuration = allItems.Average(r => r.RunningDuration().Value),
+                    MaxDuration = allItems.Max(r => r.RunningDuration().Value),
+                    MinDuration = allItems.Min(r => r.RunningDuration().Value),
+                    AvgQueueTime = allItems.Average(r => r.QueueDuration().Value),
+                    MaxQueueTime = allItems.Max(r => r.QueueDuration().Value),
+                    MinQueueTime = allItems.Min(r => r.QueueDuration().Value),
+                    AvgTotalDuration = allItems.Average(r => r.TotalDuration().Value),
+                    MaxTotalDuration = allItems.Max(r => r.TotalDuration().Value),
+                    MinTotalDuration = allItems.Min(r => r.TotalDuration().Value)
+                };
+            });
     }
 
     private void InitRequests()

@@ -17,6 +17,11 @@ public interface ICsvSerializer
 
 internal sealed class CsvSerializer : ICsvSerializer
 {
+    private static readonly HashSet<Type> QuoteTypes = new HashSet<Type>
+    {
+        typeof(string), typeof(DateTime), typeof(TimeSpan), typeof(DateTimeOffset)
+    };
+
     public string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings)
     {
         ArgumentNullException.ThrowIfNull(timedEvents, nameof(timedEvents));
@@ -83,7 +88,7 @@ internal sealed class CsvSerializer : ICsvSerializer
             return false;
         }
 
-        if (quoteArgs.FieldType == typeof(string) || quoteArgs.FieldType == typeof(DateTime))
+        if (QuoteTypes.Contains(quoteArgs.FieldType))
         {
             return true;
         }
@@ -100,6 +105,14 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return "TotalRunningAgents";
         yield return "TotalRunningRequests";
         yield return "TotalRequestsQueue";
+
+        if (simulationSettings.IncludeAllRequests)
+        {
+            foreach (var request in simulationSettings.InitialRequests)
+            {
+                yield return $"AvgFinishedRequestDuration_{request.Name}".Replace(' ', '_');
+            }
+        }
 
         foreach (var agent in simulationSettings.Agents)
         {
@@ -122,6 +135,26 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return timeEvent.RunningAgents.Total;
         yield return timeEvent.RunningRequests.Total;
         yield return timeEvent.RequestsQueue.Total;
+
+        if (simulationSettings.IncludeAllRequests)
+        {
+            var avgDict = timeEvent.AllRequests
+                .Where(r => r.State == RequestState.Finished)
+                .GroupBy(r => r.RequestConfiguration, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Average(r => r.RunningDuration().Value));
+
+            foreach (var request in simulationSettings.InitialRequests)
+            {
+                if (avgDict.TryGetValue(request.Name, out var value))
+                {
+                    yield return value;
+                }
+                else
+                {
+                    yield return TimeSpan.Zero;
+                }
+            }
+        }
 
         var runningAgentDict = timeEvent.RunningAgents.ToDictionary();
         foreach (var agent in simulationSettings.Agents)

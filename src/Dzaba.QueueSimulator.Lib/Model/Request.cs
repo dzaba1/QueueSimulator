@@ -9,15 +9,25 @@ public sealed class Request
     public long Id { get; set; }
     public string RequestConfiguration { get; set; }
     public RequestState State { get; set; }
-    public DateTime CreatedTime { get; set; }
-    public DateTime? StartTime { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset? StartTime { get; set; }
     public long? AgentId { get; set; }
-    public DateTime? EndTime { get; set; }
+    public DateTimeOffset? EndTime { get; set; }
     public long[] Dependencies { get; set; }
 
     public Request ShallowCopy()
     {
         return (Request)MemberwiseClone();
+    }
+
+    public TimeSpan? RunningDuration()
+    {
+        if (State != RequestState.Finished)
+        {
+            return null;
+        }
+
+        return EndTime.Value - StartTime.Value;
     }
 }
 

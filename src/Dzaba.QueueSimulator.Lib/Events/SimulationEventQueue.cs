@@ -7,12 +7,12 @@ namespace Dzaba.QueueSimulator.Lib.Events;
 internal interface ISimulationEventQueue
 {
     void Run();
-    void AddInitAgentQueueEvent(Request request, DateTime time);
-    void AddAgentInitedQueueEvent(Request request, DateTime time);
-    void AddStartRequestQueueEvent(Request request, DateTime time);
-    void AddEndRequestQueueEvent(Request request, DateTime time);
-    void AddCreateAgentQueueEvent(Request[] request, DateTime time);
-    void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTime requestStartTime);
+    void AddInitAgentQueueEvent(Request request, DateTimeOffset time);
+    void AddAgentInitedQueueEvent(Request request, DateTimeOffset time);
+    void AddStartRequestQueueEvent(Request request, DateTimeOffset time);
+    void AddEndRequestQueueEvent(Request request, DateTimeOffset time);
+    void AddCreateAgentQueueEvent(Request[] request, DateTimeOffset time);
+    void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTimeOffset requestStartTime);
 }
 
 internal sealed class SimulationEventQueue : ISimulationEventQueue
@@ -39,7 +39,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         }
     }
 
-    private void Enqueue<T>(string eventName, DateTime time, T payload)
+    private void Enqueue<T>(string eventName, DateTimeOffset time, T payload)
     {
         eventsQueue.Enqueue(eventName, time, e =>
         {
@@ -48,7 +48,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         });
     }
 
-    public void AddInitAgentQueueEvent(Request request, DateTime time)
+    public void AddInitAgentQueueEvent(Request request, DateTimeOffset time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -58,7 +58,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.InitAgent, time, request);
     }
 
-    public void AddStartRequestQueueEvent(Request request, DateTime time)
+    public void AddStartRequestQueueEvent(Request request, DateTimeOffset time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -67,7 +67,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.StartRequest, time, request);
     }
 
-    public void AddEndRequestQueueEvent(Request request, DateTime time)
+    public void AddEndRequestQueueEvent(Request request, DateTimeOffset time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -77,7 +77,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.FinishRequest, time, request);
     }
 
-    public void AddCreateAgentQueueEvent(Request[] request, DateTime time)
+    public void AddCreateAgentQueueEvent(Request[] request, DateTimeOffset time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -91,7 +91,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.CreateAgent, time, request);
     }
 
-    public void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTime requestStartTime)
+    public void AddQueueRequestQueueEvent(QueueRequestEventPayload payload, DateTimeOffset requestStartTime)
     {
         ArgumentNullException.ThrowIfNull(payload, nameof(payload));
 
@@ -101,7 +101,7 @@ internal sealed class SimulationEventQueue : ISimulationEventQueue
         Enqueue(EventNames.QueueRequest, requestStartTime, payload);
     }
 
-    public void AddAgentInitedQueueEvent(Request request, DateTime time)
+    public void AddAgentInitedQueueEvent(Request request, DateTimeOffset time)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 

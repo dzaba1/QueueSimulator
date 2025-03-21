@@ -12,7 +12,7 @@ public interface ISimulation
 
 internal sealed class Simulation : ISimulation
 {
-    public static readonly DateTime StartTime = new DateTime(2025, 1, 1);
+    public static readonly DateTimeOffset StartTime = new DateTime(2025, 1, 1).ToUniversalTime().Date;
 
     private readonly ISimulationValidation simulationValidation;
     private readonly ISimulationContext context;

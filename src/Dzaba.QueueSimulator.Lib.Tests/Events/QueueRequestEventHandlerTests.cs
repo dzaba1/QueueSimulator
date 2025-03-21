@@ -15,7 +15,7 @@ namespace Dzaba.QueueSimulator.Lib.Tests.Events;
 [TestFixture]
 public class QueueRequestEventHandlerTests
 {
-    private static readonly DateTime CurrentTime = DateTime.Now;
+    private static readonly DateTimeOffset CurrentTime = DateTime.Now;
 
     private IFixture fixture;
 
@@ -97,7 +97,7 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTimeOffset>()), Times.Never());
         request.State.Should().Be(RequestState.WaitingForDependencies);
         eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => ValidateQueueRequestPayload(p, payload.SimulationSettings.RequestConfigurations[1], request, pipeline)), eventData.Time), Times.Once());
     }
@@ -217,7 +217,7 @@ public class QueueRequestEventHandlerTests
 
         eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.Is<Request[]>(r => r.First() == request), eventData.Time), Times.Once());
         request.State.Should().Be(RequestState.WaitingForAgent);
-        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTimeOffset>()), Times.Never());
 
         for (int i = 0; i < 3; i++)
         {
@@ -289,9 +289,9 @@ public class QueueRequestEventHandlerTests
 
         sut.Handle(eventData, eventPayload);
 
-        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddCreateAgentQueueEvent(It.IsAny<Request[]>(), It.IsAny<DateTimeOffset>()), Times.Never());
         request.State.Should().Be(RequestState.WaitingForDependencies);
-        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTime>()), Times.Never());
+        eventsQueue.Verify(x => x.AddQueueRequestQueueEvent(It.IsAny<QueueRequestEventPayload>(), It.IsAny<DateTimeOffset>()), Times.Never());
 
         for (int i = 0; i < 3; i++)
         {

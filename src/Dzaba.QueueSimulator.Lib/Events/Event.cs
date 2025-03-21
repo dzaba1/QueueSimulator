@@ -4,7 +4,7 @@ namespace Dzaba.QueueSimulator.Lib.Events;
 
 public sealed class Event
 {
-    public Event(string name, DateTime time, Action<EventData> action)
+    public Event(string name, DateTimeOffset time, Action<EventData> action)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
         ArgumentNullException.ThrowIfNull(action, nameof(action));

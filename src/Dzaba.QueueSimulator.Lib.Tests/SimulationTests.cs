@@ -100,7 +100,7 @@ public class SimulationTests
         sut.Run(settings);
 
         eventPump.Verify(x => x.AddQueueRequestQueueEvent(It.Is<QueueRequestEventPayload>(p => VerifyPayload(p, settings.RequestConfigurations[0])),
-            It.IsAny<DateTime>()), Times.Exactly(8));
+            It.IsAny<DateTimeOffset>()), Times.Exactly(8));
 
         for (int i = 0; i < 8; i++)
         {

@@ -9,8 +9,8 @@ public sealed class Agent
     public long Id { get; set; }
     public string AgentConfiguration { get; set; }
     public AgentState State { get; set; }
-    public DateTime CreatedTime { get; set; }
-    public DateTime? EndTime { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset? EndTime { get; set; }
 
     public Agent ShallowCopy()
     {

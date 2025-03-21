@@ -28,4 +28,19 @@ public static class Extensions
             return o;
         });
     }
+
+    public static TimeSpan Average<T>(this IEnumerable<T> collection, Func<T, TimeSpan> selector)
+    {
+        ArgumentNullException.ThrowIfNull(collection, nameof(collection));
+        ArgumentNullException.ThrowIfNull(selector, nameof(selector));
+
+        var sum = TimeSpan.Zero;
+        var count = 0;
+        foreach (var item in collection)
+        {
+            sum += selector(item);
+            count++;
+        }
+        return sum / count;
+    }
 }

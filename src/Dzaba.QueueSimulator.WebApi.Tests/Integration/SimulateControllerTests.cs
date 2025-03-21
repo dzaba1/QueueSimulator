@@ -16,6 +16,8 @@ public class SimulateControllerTests : ControllerTestFixture
 
         var settings = new SimulationSettings
         {
+            IncludeAllAgents = true,
+            IncludeAllRequests = true,
             Agents = [
                 new AgentConfiguration
                 {

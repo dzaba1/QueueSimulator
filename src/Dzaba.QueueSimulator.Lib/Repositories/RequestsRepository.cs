@@ -15,7 +15,7 @@ internal interface IRequestsRepository
     IEnumerable<Request> GetWaitingForAgents();
     IReadOnlyDictionary<string, Request[]> GroupQueueByConfiguration();
     IReadOnlyDictionary<string, Request[]> GroupRunningRequestsByConfiguration();
-    Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTime currentTime);
+    Request NewRequest(RequestConfiguration requestConfiguration, IPipeline pipeline, DateTimeOffset currentTime);
     IPipeline GetPipeline(Request request);
 }
 
@@ -33,7 +33,7 @@ internal sealed class RequestsRepository : IRequestsRepository
         this.logger = logger;
     }
 
-    public Request NewRequest(RequestConfiguration requestConfiguration,IPipeline pipeline, DateTime currentTime)
+    public Request NewRequest(RequestConfiguration requestConfiguration,IPipeline pipeline, DateTimeOffset currentTime)
     {
         ArgumentNullException.ThrowIfNull(requestConfiguration, nameof(requestConfiguration));
         ArgumentNullException.ThrowIfNull(pipeline, nameof(pipeline));

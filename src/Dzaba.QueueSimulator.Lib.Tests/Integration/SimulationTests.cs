@@ -70,7 +70,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -144,7 +144,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -220,7 +220,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -280,7 +280,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig2",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -369,7 +369,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -432,7 +432,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -503,7 +503,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "Composite1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -581,7 +581,7 @@ public class SimulationTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {

@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 namespace Dzaba.QueueSimulator.Lib.Model.Distribution;
 
 [JsonDerivedType(typeof(IntervalInitialDistribution), "interval")]
-[JsonDerivedType(typeof(DurationDistribution), "duration")]
+[JsonDerivedType(typeof(DurationInitialDistribution), "duration")]
 public interface IInitialDistribution
 {
     IEnumerable<DateTimeOffset> GetInitTimes(DateTime simulationStartTime, IRand rand);

@@ -70,7 +70,7 @@ public class SimulateControllerTests : ControllerTestFixture
                 new InitialRequest
                 {
                     Name = "Full pipeline",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {

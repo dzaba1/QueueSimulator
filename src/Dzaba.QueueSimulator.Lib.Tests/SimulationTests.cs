@@ -55,7 +55,7 @@ public class SimulationTests
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {

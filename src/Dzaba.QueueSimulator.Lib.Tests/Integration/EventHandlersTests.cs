@@ -67,7 +67,7 @@ public class EventHandlersTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {
@@ -102,7 +102,7 @@ public class EventHandlersTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig2",
-                    Distribution = new DurationDistribution
+                    Distribution = new DurationInitialDistribution
                     {
                         Duration = new StaticDuration
                         {

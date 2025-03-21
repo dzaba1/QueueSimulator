@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Dzaba.QueueSimulator.Lib.Model.Distribution;
 
-public sealed class DurationDistribution : IInitialDistribution
+public sealed class DurationInitialDistribution : IInitialDistribution
 {
     public IDuration Duration { get; set; }
     public ushort NumberToQueue { get; set; }

@@ -1,6 +1,7 @@
 ﻿using Dzaba.QueueSimulator.Lib.Events;
 using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,24 +22,28 @@ internal sealed class Simulation : ISimulation
     private readonly ISimulationEventQueue eventsQueue;
     private readonly ISimulationEvents simulationEvents;
     private readonly IRequestsRepository requestsRepo;
+    private readonly IRand rand;
 
     public Simulation(ISimulationValidation simulationValidation,
         ISimulationContext context,
         ISimulationEventQueue eventsQueue,
         ISimulationEvents simulationEvents,
-        IRequestsRepository requestsRepo)
+        IRequestsRepository requestsRepo,
+        IRand rand)
     {
         ArgumentNullException.ThrowIfNull(simulationValidation, nameof(simulationValidation));
         ArgumentNullException.ThrowIfNull(context, nameof(context));
         ArgumentNullException.ThrowIfNull(eventsQueue, nameof(eventsQueue));
         ArgumentNullException.ThrowIfNull(simulationEvents, nameof(simulationEvents));
         ArgumentNullException.ThrowIfNull(requestsRepo, nameof(requestsRepo));
+        ArgumentNullException.ThrowIfNull(rand, nameof(rand));
 
         this.simulationValidation = simulationValidation;
         this.context = context;
         this.eventsQueue = eventsQueue;
         this.simulationEvents = simulationEvents;
         this.requestsRepo = requestsRepo;
+        this.rand = rand;
     }
 
     public SimulationReport Run(SimulationSettings settings)
@@ -92,14 +97,12 @@ internal sealed class Simulation : ISimulation
 
         foreach (var initRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
-            var waitTime = simulationPayload.SimulationSettings.SimulationDuration / initRequest.NumberToQueue;
-            for (var i = 0; i < initRequest.NumberToQueue; i++)
+            var initTimes = initRequest.Distribution.GetInitTimes(StartTime, rand);
+            foreach (var initTime in initTimes)
             {
-                var requestStartTime = StartTime + waitTime * i;
                 var request = simulationPayload.GetRequestConfiguration(initRequest.Name);
                 var eventPayload = new QueueRequestEventPayload(request, new Pipeline(request, simulationPayload), null);
-
-                eventsQueue.AddQueueRequestQueueEvent(eventPayload, requestStartTime);
+                eventsQueue.AddQueueRequestQueueEvent(eventPayload, initTime);
             }
         }
     }

@@ -9,5 +9,6 @@ public sealed class InitialRequest
     [Required(AllowEmptyStrings = false)]
     public string Name { get; set; }
 
-    public ushort NumberToQueue { get; set; }
+    [Required]
+    public IInitialDistribution Distribution { get; set; }
 }

@@ -1,12 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Dzaba.QueueSimulator.Lib.Model;
 
 public sealed class SimulationSettings
 {
     public int? MaxRunningAgents { get; set; }
-    public TimeSpan SimulationDuration { get; set; } = TimeSpan.FromHours(8);
     public bool IncludeAllRequests { get; set; }
     public bool IncludeAllAgents { get; set; }
 

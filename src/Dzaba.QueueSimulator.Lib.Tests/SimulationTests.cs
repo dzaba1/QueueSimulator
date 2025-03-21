@@ -54,7 +54,14 @@ public class SimulationTests
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    NumberToQueue = 8
+                    Distribution = new DurationDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(8)
+                        },
+                        NumberToQueue = 8
+                    }
                 }
             ]
         };

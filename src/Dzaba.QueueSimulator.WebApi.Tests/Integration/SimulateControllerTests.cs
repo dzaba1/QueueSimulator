@@ -69,7 +69,14 @@ public class SimulateControllerTests : ControllerTestFixture
                 new InitialRequest
                 {
                     Name = "Full pipeline",
-                    NumberToQueue = 20
+                    Distribution = new DurationDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(8)
+                        },
+                        NumberToQueue = 20
+                    }
                 }
             ]
         };

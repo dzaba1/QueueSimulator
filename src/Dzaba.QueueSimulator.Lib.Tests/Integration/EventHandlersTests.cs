@@ -66,7 +66,14 @@ public class EventHandlersTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig1",
-                    NumberToQueue = 1
+                    Distribution = new DurationDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(8)
+                        },
+                        NumberToQueue = 1
+                    }
                 }
             ]
         };
@@ -94,7 +101,14 @@ public class EventHandlersTests : IocTestFixture
                 new InitialRequest
                 {
                     Name = "BuildConfig2",
-                    NumberToQueue = 1
+                    Distribution = new DurationDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(8)
+                        },
+                        NumberToQueue = 1
+                    }
                 }
             ]
         };

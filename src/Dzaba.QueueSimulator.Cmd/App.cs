@@ -18,6 +18,12 @@ internal interface IApp
 
 internal sealed class App : IApp
 {
+    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+
     private readonly ILogger<App> logger;
     private readonly ISimulation simulation;
     private readonly ICsvSerializer csvSerializer;
@@ -62,15 +68,19 @@ internal sealed class App : IApp
         switch (format)
         {
             case Format.Json:
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = true,
-                };
-                JsonSerializer.Serialize(result, jsonOptions);
+                var json = JsonSerializer.Serialize(result, JsonOptions);
+                var writer = new StreamWriter(stream);
+                writer.WriteLine(json);
+                writer.Flush();
                 break;
             case Format.Csv:
                 csvSerializer.Serialize(stream, result.Events, simulationSettings);
+                using (var statsStream = new FileStream(output.FullName + ".stats.json", FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    var statsJson = JsonSerializer.Serialize(result.RequestDurationStatistics, JsonOptions);
+                    using var statsWriter = new StreamWriter(statsStream);
+                    statsWriter.WriteLine(statsJson);
+                }
                 break;
             default: throw new ArgumentOutOfRangeException("format", $"Unknown format: {format}");
         }

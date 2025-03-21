@@ -1,6 +1,7 @@
 ﻿using Dzaba.QueueSimulator.Lib.Events;
 using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib.Repositories;
+using Dzaba.QueueSimulator.Lib.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -16,6 +17,8 @@ public static class Bootstrapper
         services.AddTransient<ISimulationValidation, SimulationValidation>();
         services.AddTransient<IEventHandlers, EventHandlers>();
         services.AddTransient<ICsvSerializer, CsvSerializer>();
+
+        services.AddSingleton<IRand, Rand>();
 
         services.AddScoped<ISimulationContext, SimulationContext>();
         services.AddScoped<IAgentsRepository, AgentsRepository>();

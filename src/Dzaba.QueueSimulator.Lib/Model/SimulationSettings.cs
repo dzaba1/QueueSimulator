@@ -18,4 +18,5 @@ public sealed class SimulationSettings
     public InitialRequest[] InitialRequests { get; set; }
 
     public string[] RequestConfigurationsToObserve { get; set; }
+    public string[] AgentConfigurationsToObserve { get; set; }
 }

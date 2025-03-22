@@ -36,6 +36,11 @@ internal sealed class SimulationValidation : ISimulationValidation
             ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.RequestConfigurationsToObserve, errors);
         }
 
+        if (simulationPayload.SimulationSettings.AgentConfigurationsToObserve != null)
+        {
+            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.AgentConfigurationsToObserve, errors);
+        }
+
         if (errors.Any())
         {
             throw new ExitCodeException(errors);
@@ -109,6 +114,19 @@ internal sealed class SimulationValidation : ISimulationValidation
         }
     }
 
+    private void ValidateAgentsExist(SimulationPayload simulationPayload,
+        IEnumerable<string> agents,
+        IList<KeyValuePair<ExitCode, string>> errors)
+    {
+        foreach (var agentName in agents)
+        {
+            if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
+            {
+                errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.AgentNotFound, $"Couldn't find agent {agentName}."));
+            }
+        }
+    }
+
     private void ValidateCompatibleAgents(RequestConfiguration request,
         SimulationPayload simulationPayload,
         IList<KeyValuePair<ExitCode, string>> errors)
@@ -121,13 +139,7 @@ internal sealed class SimulationValidation : ISimulationValidation
                 return;
             }
 
-            foreach (var agentName in request.CompatibleAgents)
-            {
-                if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
-                {
-                    errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.AgentNotFound, $"Couldn't find agent {agentName} for request configuration {request.Name}."));
-                }
-            }
+            ValidateAgentsExist(simulationPayload, request.CompatibleAgents, errors);
         }
         else if (!request.IsComposite)
         {

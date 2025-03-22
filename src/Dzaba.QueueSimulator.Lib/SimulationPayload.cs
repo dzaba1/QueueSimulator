@@ -19,12 +19,18 @@ public sealed class SimulationPayload
         {
             RequestConfigurationsToObserve = new HashSet<string>(simulationSettings.RequestConfigurationsToObserve, StringComparer.OrdinalIgnoreCase);
         }
+
+        if (simulationSettings.AgentConfigurationsToObserve != null)
+        {
+            AgentConfigurationsToObserve = new HashSet<string>(simulationSettings.AgentConfigurationsToObserve, StringComparer.OrdinalIgnoreCase);
+        }
     }
 
     public SimulationSettings SimulationSettings { get; }
     public IReadOnlyDictionary<string, RequestConfiguration> RequestConfigurationsCached { get; }
     public IReadOnlyDictionary<string, AgentConfiguration> AgentConfigurationsCached { get; }
     public HashSet<string> RequestConfigurationsToObserve { get; }
+    public HashSet<string> AgentConfigurationsToObserve { get; }
 
     public RequestConfiguration GetRequestConfiguration(string name)
     {
@@ -40,7 +46,7 @@ public sealed class SimulationPayload
         return AgentConfigurationsCached[name];
     }
 
-    public bool ShouldObserve(string requestConfigurationName)
+    public bool ShouldObserveRequest(string requestConfigurationName)
     {
         if (RequestConfigurationsToObserve == null)
         {
@@ -48,5 +54,15 @@ public sealed class SimulationPayload
         }
 
         return RequestConfigurationsToObserve.Contains(requestConfigurationName);
+    }
+
+    public bool ShouldObserveAgent(string agentConfigurationName)
+    {
+        if (AgentConfigurationsToObserve == null)
+        {
+            return true;
+        }
+
+        return AgentConfigurationsToObserve.Contains(agentConfigurationName);
     }
 }

@@ -42,7 +42,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = requestRepo.GetQueueLength(),
             Grouped = requestRepo.GroupQueueByConfiguration()
-                .Where(g => context.Payload.ShouldObserve(g.Key))
+                .Where(g => context.Payload.ShouldObserveRequest(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
@@ -55,6 +55,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = agentsRepo.GetActiveAgentsCount(),
             Grouped = agentsRepo.GetActiveAgentsByConfigurationCount()
+                .Where(g => context.Payload.ShouldObserveAgent(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
@@ -67,7 +68,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = requestRepo.GetRunningRequestCount(),
             Grouped = requestRepo.GroupRunningRequestsByConfiguration()
-                .Where(g => context.Payload.ShouldObserve(g.Key))
+                .Where(g => context.Payload.ShouldObserveRequest(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,

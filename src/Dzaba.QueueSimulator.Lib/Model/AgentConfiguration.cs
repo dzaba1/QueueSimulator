@@ -1,5 +1,4 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model.Distribution;
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 
@@ -13,4 +12,6 @@ public sealed class AgentConfiguration
 
     public ushort? MaxInstances { get; set; }
     public IDuration InitTime { get; set; }
+
+    public bool IsExternal { get; set; }
 }

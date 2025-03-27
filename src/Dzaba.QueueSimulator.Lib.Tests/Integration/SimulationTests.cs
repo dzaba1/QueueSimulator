@@ -635,4 +635,58 @@ public class SimulationTests : IocTestFixture
         last.AllAgents.Should().HaveCount(2);
         last.AllRequests.Should().HaveCount(4);
     }
+
+    [Test]
+    public void Run_WhenAgentIsExternal_ThenDontCheckTotalLimit()
+    {
+        var settings = new SimulationSettings
+        {
+            MaxRunningAgents = 1,
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "Agent1",
+                    IsExternal = true,
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "BuildConfig1",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromHours(1)
+                    }
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "BuildConfig1",
+                    Distribution = new DurationInitialDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(1)
+                        },
+                        NumberToQueue = 60
+                    }
+                }
+            ],
+            ReportSettings = new ReportSettings
+            {
+                IncludeAllAgents = true,
+                IncludeAllRequests = true
+            }
+        };
+
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
+        var sut = CreateSut();
+
+        var result = sut.Run(settings).Events;
+        var last = ValidateLastToBeCompleted(result);
+
+        last.Timestamp.Should().Be(Simulation.StartTime + TimeSpan.FromHours(2) - TimeSpan.FromMinutes(1));
+    }
 }

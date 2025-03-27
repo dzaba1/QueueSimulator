@@ -84,18 +84,26 @@ internal sealed class AgentsRepository : IAgentsRepository
 
     public int GetActiveAgentsCount()
     {
-        return GetActiveAgentsCount(EnumerateAgents());
+        return GetActiveAgentsCount(EnumerateAgents(), false);
     }
 
-    private int GetActiveAgentsCount(IEnumerable<Agent> agents)
+    private int GetActiveAgentsCount(IEnumerable<Agent> agents, bool includeExternal)
     {
-        return agents.Count(a => a.State != AgentState.Finished);
+        var all = agents
+            .Select(a => new { Agent = a, Configuration = simulationContext.Payload.AgentConfigurations.GetEntity(a.AgentConfiguration) });
+
+        if (!includeExternal)
+        {
+            all = all.Where(a => !a.Configuration.IsExternal);
+        }
+
+        return all.Count(a => a.Agent.State != AgentState.Finished);
     }
 
     public IReadOnlyDictionary<string, int> GetActiveAgentsByConfigurationCount()
     {
         return agentsConfigurationIndex.Value
-            .Select(a => new { AgentConfiguration = a.Key, ActiveAgentsCount = GetActiveAgentsCount(a.Value) })
+            .Select(a => new { AgentConfiguration = a.Key, ActiveAgentsCount = GetActiveAgentsCount(a.Value, true) })
             .Where(a => a.ActiveAgentsCount > 0)
             .ToDictionary(a => a.AgentConfiguration, a => a.ActiveAgentsCount, StringComparer.OrdinalIgnoreCase);
     }
@@ -126,7 +134,7 @@ internal sealed class AgentsRepository : IAgentsRepository
             {
                 AgentConfiguration = simulationContext.Payload.AgentConfigurations.GetEntity(a.Key),
                 Agents = a.Value,
-                ActiveAgentsCount = GetActiveAgentsCount(a.Value)
+                ActiveAgentsCount = GetActiveAgentsCount(a.Value, true)
             })
             .OrderBy(a => a.ActiveAgentsCount);
 

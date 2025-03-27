@@ -4,7 +4,6 @@ using Dzaba.QueueSimulator.WebApi.ActionFilters;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace Dzaba.QueueSimulator.WebApi.Controllers
 {
@@ -15,21 +14,26 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
     {
         private readonly ISimulation simulation;
         private readonly ICsvSerializer csvSerializer;
+        private readonly ISimulationContext simulationContext;
 
         public SimulateController(ISimulation simulation,
-            ICsvSerializer csvSerializer)
+            ICsvSerializer csvSerializer,
+            ISimulationContext simulationContext)
         {
             ArgumentNullException.ThrowIfNull(simulation, nameof(simulation));
             ArgumentNullException.ThrowIfNull(csvSerializer, nameof(csvSerializer));
+            ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
             this.simulation = simulation;
             this.csvSerializer = csvSerializer;
+            this.simulationContext = simulationContext;
         }
 
         [HttpPost]
         [ValidateModel]
         public SimulationReport Post([FromBody][Required] SimulationSettings settings)
         {
+            simulationContext.SetSettings(settings);
             return simulation.Run(settings);
         }
 
@@ -37,9 +41,9 @@ namespace Dzaba.QueueSimulator.WebApi.Controllers
         [ValidateModel]
         public string PostCsv([FromBody][Required] SimulationSettings settings)
         {
-            var report = simulation.Run(settings);
+            var report = Post(settings);
 
-            return csvSerializer.Serialize(report.Events, settings).Trim();
+            return csvSerializer.Serialize(report.Events, simulationContext.Payload).Trim();
         }
     }
 }

@@ -3,7 +3,7 @@ using System;
 
 namespace Dzaba.QueueSimulator.Lib;
 
-internal interface ISimulationContext
+public interface ISimulationContext
 {
     public SimulationPayload Payload { get; }
     void SetSettings(SimulationSettings settings);

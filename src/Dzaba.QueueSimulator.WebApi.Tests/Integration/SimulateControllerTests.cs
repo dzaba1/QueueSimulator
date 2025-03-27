@@ -184,6 +184,6 @@ public class SimulateControllerTests : ControllerTestFixture
         using var resp = await client.PostAsync("/simulate/csv", body);
         var result = await ReadFullStringAsync(resp);
         result.Should().StartWith("Timestamp_Ticks,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,AvgFinishedRequestDuration_Full_pipeline,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline");
-        result.Should().EndWith("\"01/01/2025 07:44:00\",\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0,0,0,0,0,0,0");
+        result.Should().EndWith("638713142400000000,\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0");
     }
 }

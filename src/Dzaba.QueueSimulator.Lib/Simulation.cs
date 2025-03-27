@@ -50,8 +50,6 @@ internal sealed class Simulation : ISimulation
     {
         ArgumentNullException.ThrowIfNull(settings, nameof(settings));
 
-        context.SetSettings(settings);
-
         simulationValidation.Validate(context.Payload);
 
         InitRequests();

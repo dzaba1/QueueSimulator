@@ -24,18 +24,22 @@ internal sealed class App : IApp
     private readonly ILogger<App> logger;
     private readonly ISimulation simulation;
     private readonly ICsvSerializer csvSerializer;
+    private readonly ISimulationContext simulationContext;
 
     public App(ILogger<App> logger,
         ISimulation simulation,
-        ICsvSerializer csvSerializer)
+        ICsvSerializer csvSerializer,
+        ISimulationContext simulationContext)
     {
         ArgumentNullException.ThrowIfNull(logger, nameof(logger));
         ArgumentNullException.ThrowIfNull(simulation, nameof(simulation));
         ArgumentNullException.ThrowIfNull(csvSerializer, nameof(csvSerializer));
+        ArgumentNullException.ThrowIfNull(simulationContext, nameof(simulationContext));
 
         this.logger = logger;
         this.simulation = simulation;
         this.csvSerializer = csvSerializer;
+        this.simulationContext = simulationContext;
     }
 
     public ExitCode Run(FileInfo input, FileInfo output, Format format)
@@ -43,8 +47,9 @@ internal sealed class App : IApp
         try
         {
             var settings = FromJsonFile(input);
+            simulationContext.SetSettings(settings);
             var result = simulation.Run(settings);
-            SaveResult(result, settings, output, format);
+            SaveResult(result, simulationContext.Payload, output, format);
 
             return ExitCode.Ok;
         }
@@ -65,7 +70,7 @@ internal sealed class App : IApp
     }
 
     private void SaveResult(SimulationReport result,
-        SimulationSettings simulationSettings,
+        SimulationPayload simulationPayload,
         FileInfo output,
         Format format)
     {
@@ -80,7 +85,7 @@ internal sealed class App : IApp
                 writer.Flush();
                 break;
             case Format.Csv:
-                csvSerializer.Serialize(stream, result.Events, simulationSettings);
+                csvSerializer.Serialize(stream, result.Events, simulationPayload);
                 using (var statsStream = new FileStream(output.FullName + ".stats.json", FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     var statsJson = JsonSerializer.Serialize(result.RequestDurationStatistics, JsonOptions);

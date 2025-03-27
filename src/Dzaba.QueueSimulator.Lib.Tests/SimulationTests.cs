@@ -69,19 +69,6 @@ public class SimulationTests
     }
 
     [Test]
-    public void Run_WhenCalled_ThenContextIsSet()
-    {
-        var settings = GetSomeSettings();
-        var context = fixture.SetupSimulationContext(settings);
-
-        var sut = CreateSut();
-
-        sut.Run(settings);
-
-        context.Verify(x => x.SetSettings(settings), Times.Once());
-    }
-
-    [Test]
     public void Run_WhenCalled_ThenEventPumpIsCalled()
     {
         var settings = GetSomeSettings();

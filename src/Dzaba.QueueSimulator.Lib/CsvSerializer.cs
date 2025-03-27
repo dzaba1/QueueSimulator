@@ -11,8 +11,8 @@ namespace Dzaba.QueueSimulator.Lib;
 
 public interface ICsvSerializer
 {
-    string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings);
-    void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings);
+    string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationPayload simulationPayload);
+    void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationPayload simulationPayload);
 }
 
 internal sealed class CsvSerializer : ICsvSerializer
@@ -22,14 +22,14 @@ internal sealed class CsvSerializer : ICsvSerializer
         typeof(string), typeof(DateTime), typeof(TimeSpan), typeof(DateTimeOffset)
     };
 
-    public string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings)
+    public string Serialize(IEnumerable<TimeEventData> timedEvents, SimulationPayload simulationPayload)
     {
         ArgumentNullException.ThrowIfNull(timedEvents, nameof(timedEvents));
-        ArgumentNullException.ThrowIfNull(simulationSettings, nameof(simulationSettings));
+        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
         using var stream = new MemoryStream();
         
-        Serialize(stream, timedEvents, simulationSettings);
+        Serialize(stream, timedEvents, simulationPayload);
 
         stream.Seek(0, SeekOrigin.Begin);
 
@@ -37,11 +37,11 @@ internal sealed class CsvSerializer : ICsvSerializer
         return reader.ReadToEnd();
     }
 
-    public void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationSettings simulationSettings)
+    public void Serialize(Stream stream, IEnumerable<TimeEventData> timedEvents, SimulationPayload simulationPayload)
     {
         ArgumentNullException.ThrowIfNull(stream, nameof(stream));
         ArgumentNullException.ThrowIfNull(timedEvents, nameof(timedEvents));
-        ArgumentNullException.ThrowIfNull(simulationSettings, nameof(simulationSettings));
+        ArgumentNullException.ThrowIfNull(simulationPayload, nameof(simulationPayload));
 
         var filtered = timedEvents
             .GroupBy(e => e.Timestamp)
@@ -56,7 +56,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         };
         var csv = new CsvWriter(writer, csvOptions);
 
-        var headers = GetHeaders(simulationSettings);
+        var headers = GetHeaders(simulationPayload);
 
         foreach (var heading in headers)
         {
@@ -68,7 +68,7 @@ internal sealed class CsvSerializer : ICsvSerializer
 
         foreach (var item in filtered)
         {
-            var values = GetValues(item, simulationSettings);
+            var values = GetValues(item, simulationPayload);
             foreach (var value in values)
             {
                 csv.WriteField(value);
@@ -96,9 +96,21 @@ internal sealed class CsvSerializer : ICsvSerializer
         return false;
     }
 
-    private static IEnumerable<string> GetHeaders(SimulationSettings simulationSettings)
+    private static IEnumerable<AgentConfiguration> GetAgentConfigurations(SimulationPayload simulationPayload)
     {
-        if (simulationSettings.ReportSettings.CsvSaveTimestampTicks)
+        return simulationPayload.SimulationSettings.Agents
+            .Where(a => simulationPayload.AgentConfigurations.ShouldObserve(a.Name));
+    }
+
+    private static IEnumerable<RequestConfiguration> GetRequestConfigurations(SimulationPayload simulationPayload)
+    {
+        return simulationPayload.SimulationSettings.RequestConfigurations
+            .Where(a => simulationPayload.RequestConfigurations.ShouldObserve(a.Name));
+    }
+
+    private static IEnumerable<string> GetHeaders(SimulationPayload simulationPayload)
+    {
+        if (simulationPayload.SimulationSettings.ReportSettings.CsvSaveTimestampTicks)
         {
             yield return "Timestamp_Ticks";
         }
@@ -114,29 +126,29 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return "TotalRunningRequests";
         yield return "TotalRequestsQueue";
 
-        if (simulationSettings.ReportSettings.IncludeAllRequests)
+        if (simulationPayload.SimulationSettings.ReportSettings.IncludeAllRequests)
         {
-            foreach (var request in simulationSettings.InitialRequests)
+            foreach (var request in simulationPayload.SimulationSettings.InitialRequests)
             {
                 yield return $"AvgFinishedRequestDuration_{request.Name}".Replace(' ', '_');
             }
         }
 
-        foreach (var agent in simulationSettings.Agents)
+        foreach (var agent in GetAgentConfigurations(simulationPayload))
         {
             yield return $"RunningAgent_{agent.Name}".Replace(' ', '_');
         }
 
-        foreach (var request in simulationSettings.RequestConfigurations)
+        foreach (var request in GetRequestConfigurations(simulationPayload))
         {
             yield return $"RunningRequests_{request.Name}".Replace(' ', '_');
             yield return $"RequestsQueue_{request.Name}".Replace(' ', '_');
         }
     }
 
-    private static IEnumerable<object> GetValues(TimeEventData timeEvent, SimulationSettings simulationSettings)
+    private static IEnumerable<object> GetValues(TimeEventData timeEvent, SimulationPayload simulationPayload)
     {
-        if (simulationSettings.ReportSettings.CsvSaveTimestampTicks)
+        if (simulationPayload.SimulationSettings.ReportSettings.CsvSaveTimestampTicks)
         {
             yield return timeEvent.Timestamp.Ticks;
         }
@@ -152,14 +164,14 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return timeEvent.RunningRequests.Total;
         yield return timeEvent.RequestsQueue.Total;
 
-        if (simulationSettings.ReportSettings.IncludeAllRequests)
+        if (simulationPayload.SimulationSettings.ReportSettings.IncludeAllRequests)
         {
             var avgDict = timeEvent.AllRequests
                 .Where(r => r.State == RequestState.Finished)
                 .GroupBy(r => r.RequestConfiguration, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Average(r => r.RunningDuration().Value));
 
-            foreach (var request in simulationSettings.InitialRequests)
+            foreach (var request in simulationPayload.SimulationSettings.InitialRequests)
             {
                 if (avgDict.TryGetValue(request.Name, out var value))
                 {
@@ -173,7 +185,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         }
 
         var runningAgentDict = timeEvent.RunningAgents.ToDictionary();
-        foreach (var agent in simulationSettings.Agents)
+        foreach (var agent in GetAgentConfigurations(simulationPayload))
         {
             if (runningAgentDict.TryGetValue(agent.Name, out var value))
             {
@@ -187,7 +199,7 @@ internal sealed class CsvSerializer : ICsvSerializer
 
         var runningRequestsDict = timeEvent.RunningRequests.ToDictionary();
         var requestsQueueDict = timeEvent.RequestsQueue.ToDictionary();
-        foreach (var request in simulationSettings.RequestConfigurations)
+        foreach (var request in GetRequestConfigurations(simulationPayload))
         {
             if (runningRequestsDict.TryGetValue(request.Name, out var value))
             {

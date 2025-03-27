@@ -6,7 +6,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 using System;
-using System.Linq;
 
 namespace Dzaba.QueueSimulator.Lib.Tests.Integration;
 
@@ -85,6 +84,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -162,6 +162,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -241,6 +242,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -304,6 +306,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -396,6 +399,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -462,6 +466,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -536,6 +541,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;
@@ -617,6 +623,7 @@ public class SimulationTests : IocTestFixture
             }
         };
 
+        Container.GetRequiredService<ISimulationContext>().SetSettings(settings);
         var sut = CreateSut();
 
         var result = sut.Run(settings).Events;

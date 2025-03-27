@@ -106,7 +106,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return "TotalRunningRequests";
         yield return "TotalRequestsQueue";
 
-        if (simulationSettings.IncludeAllRequests)
+        if (simulationSettings.ReportSettings.IncludeAllRequests)
         {
             foreach (var request in simulationSettings.InitialRequests)
             {
@@ -136,7 +136,7 @@ internal sealed class CsvSerializer : ICsvSerializer
         yield return timeEvent.RunningRequests.Total;
         yield return timeEvent.RequestsQueue.Total;
 
-        if (simulationSettings.IncludeAllRequests)
+        if (simulationSettings.ReportSettings.IncludeAllRequests)
         {
             var avgDict = timeEvent.AllRequests
                 .Where(r => r.State == RequestState.Finished)

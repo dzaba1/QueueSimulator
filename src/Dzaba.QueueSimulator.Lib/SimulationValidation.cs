@@ -18,7 +18,7 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         var errors = new List<KeyValuePair<ExitCode, string>>();
 
-        foreach (var request in simulationPayload.RequestConfigurationsCached.Values)
+        foreach (var request in simulationPayload.RequestConfigurations.Cache.Values)
         {
             ValidateCompatibleAgents(request, simulationPayload, errors);
             ValidateRequestDependencies(request, simulationPayload, errors); 
@@ -31,14 +31,14 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         ValidateCyclicDependency(simulationPayload, errors);
 
-        if (simulationPayload.SimulationSettings.RequestConfigurationsToObserve != null)
+        if (simulationPayload.SimulationSettings.ReportSettings.RequestConfigurationsToObserve != null)
         {
-            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.RequestConfigurationsToObserve, errors);
+            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.ReportSettings.RequestConfigurationsToObserve, errors);
         }
 
-        if (simulationPayload.SimulationSettings.AgentConfigurationsToObserve != null)
+        if (simulationPayload.SimulationSettings.ReportSettings.AgentConfigurationsToObserve != null)
         {
-            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.AgentConfigurationsToObserve, errors);
+            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.ReportSettings.AgentConfigurationsToObserve, errors);
         }
 
         if (errors.Any())
@@ -51,7 +51,7 @@ internal sealed class SimulationValidation : ISimulationValidation
     {
         foreach (var queuedRequest in simulationPayload.SimulationSettings.InitialRequests)
         {
-            if (!simulationPayload.RequestConfigurationsCached.ContainsKey(queuedRequest.Name))
+            if (!simulationPayload.RequestConfigurations.Cache.ContainsKey(queuedRequest.Name))
             {
                 errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find request configuration {queuedRequest.Name}."));
                 continue;
@@ -72,7 +72,7 @@ internal sealed class SimulationValidation : ISimulationValidation
                 }
 
                 chainSet.Add(requestChain.RequestName);
-                if (simulationPayload.RequestConfigurationsCached.TryGetValue(requestChain.RequestName, out var request))
+                if (simulationPayload.RequestConfigurations.Cache.TryGetValue(requestChain.RequestName, out var request))
                 {
                     if (request.RequestDependencies != null)
                     {
@@ -92,7 +92,7 @@ internal sealed class SimulationValidation : ISimulationValidation
     {
         foreach (var requestName in requests)
         {
-            if (!simulationPayload.RequestConfigurationsCached.ContainsKey(requestName))
+            if (!simulationPayload.RequestConfigurations.Cache.ContainsKey(requestName))
             {
                 errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.RequestNotFound, $"Couldn't find request configuration {requestName}."));
             }
@@ -120,7 +120,7 @@ internal sealed class SimulationValidation : ISimulationValidation
     {
         foreach (var agentName in agents)
         {
-            if (!simulationPayload.AgentConfigurationsCached.ContainsKey(agentName))
+            if (!simulationPayload.AgentConfigurations.Cache.ContainsKey(agentName))
             {
                 errors.Add(new KeyValuePair<ExitCode, string>(ExitCode.AgentNotFound, $"Couldn't find agent {agentName}."));
             }

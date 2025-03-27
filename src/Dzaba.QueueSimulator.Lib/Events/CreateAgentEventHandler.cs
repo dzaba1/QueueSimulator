@@ -82,7 +82,7 @@ internal sealed class CreateAgentEventHandler : EventHandler<Request[]>
     {
         foreach (var request in payload)
         {
-            var requestConfig = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
+            var requestConfig = simulationContext.Payload.RequestConfigurations.GetEntity(request.RequestConfiguration);
 
             if (requestConfig.IsComposite)
             {

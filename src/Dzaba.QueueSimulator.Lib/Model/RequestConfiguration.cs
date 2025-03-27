@@ -39,7 +39,7 @@ public sealed class RequestConfiguration
         }
 
         var current = RequestDependencies
-            .Select(simulationPayload.GetRequestConfiguration);
+            .Select(simulationPayload.RequestConfigurations.GetEntity);
 
         foreach (var dep in current)
         {

@@ -17,8 +17,6 @@ public class SimulateControllerTests : ControllerTestFixture
 
         var settings = new SimulationSettings
         {
-            IncludeAllAgents = true,
-            IncludeAllRequests = true,
             Agents = [
                 new AgentConfiguration
                 {
@@ -79,7 +77,12 @@ public class SimulateControllerTests : ControllerTestFixture
                         NumberToQueue = 20
                     }
                 }
-            ]
+            ],
+            ReportSettings = new ReportSettings
+            {
+                IncludeAllAgents = true,
+                IncludeAllRequests = true
+            }
         };
 
         using var body = SerializeJsonBody(settings);
@@ -87,6 +90,100 @@ public class SimulateControllerTests : ControllerTestFixture
         using var resp = await client.PostAsync("/simulate/csv", body);
         var result = await ReadFullStringAsync(resp);
         result.Should().StartWith("Timestamp,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,AvgFinishedRequestDuration_Full_pipeline,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline,RunningRequests_Build,RequestsQueue_Build,RunningRequests_Tests,RequestsQueue_Tests,RunningRequests_Publish,RequestsQueue_Publish");
+        result.Should().EndWith("\"01/01/2025 07:44:00\",\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0,0,0,0,0,0,0");
+    }
+
+    [Test]
+    public async Task Csv_WhenSomeModelWithFilters_ThenCsv()
+    {
+        var client = CreateClient();
+
+        var settings = new SimulationSettings
+        {
+            Agents = [
+                new AgentConfiguration
+                {
+                    Name = "Agent1",
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
+                },
+                new AgentConfiguration
+                {
+                    Name = "Agent2",
+                    InitTime = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    }
+                }
+            ],
+            RequestConfigurations = [
+                new RequestConfiguration
+                {
+                    Name = "Full pipeline",
+                    RequestDependencies = ["Build", "Tests", "Publish"],
+                    IsComposite = true,
+                },
+                new RequestConfiguration
+                {
+                    Name = "Build",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(3)
+                    },
+                },
+                new RequestConfiguration
+                {
+                    Name = "Tests",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    },
+                    RequestDependencies = ["Build"]
+                },
+                new RequestConfiguration
+                {
+                    Name = "Publish",
+                    CompatibleAgents = ["Agent1"],
+                    Duration = new StaticDuration
+                    {
+                        Value = TimeSpan.FromMinutes(1)
+                    },
+                    RequestDependencies = ["Tests"]
+                }
+            ],
+            InitialRequests = [
+                new InitialRequest
+                {
+                    Name = "Full pipeline",
+                    Distribution = new DurationInitialDistribution
+                    {
+                        Duration = new StaticDuration
+                        {
+                            Value = TimeSpan.FromHours(8)
+                        },
+                        NumberToQueue = 20
+                    }
+                }
+            ],
+            ReportSettings = new ReportSettings
+            {
+                IncludeAllAgents = true,
+                IncludeAllRequests = true,
+                RequestConfigurationsToObserve = ["Full pipeline"],
+                AgentConfigurationsToObserve = ["Agent1"],
+                CsvSaveTimestampTicks = true
+            }
+        };
+
+        using var body = SerializeJsonBody(settings);
+
+        using var resp = await client.PostAsync("/simulate/csv", body);
+        var result = await ReadFullStringAsync(resp);
+        result.Should().StartWith("Timestamp_Ticks,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,AvgFinishedRequestDuration_Full_pipeline,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline");
         result.Should().EndWith("\"01/01/2025 07:44:00\",\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0,0,0,0,0,0,0");
     }
 }

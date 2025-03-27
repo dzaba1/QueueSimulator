@@ -37,10 +37,13 @@ public class SimulationEventsTests
     {
         var settings = new SimulationSettings
         {
-            IncludeAllAgents = include,
-            IncludeAllRequests = include,
             RequestConfigurations = [],
             Agents = [],
+            ReportSettings = new ReportSettings
+            {
+                IncludeAllAgents = include,
+                IncludeAllRequests = include,
+            }
         };
         fixture.FreezeMock<ISimulationContext>()
             .Setup(x => x.Payload)

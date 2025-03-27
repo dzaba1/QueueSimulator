@@ -47,7 +47,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
         logger.LogInformation("Start finishing request {RequestdId} [{Request}], Current time: {Time}",
             request.Id, request.RequestConfiguration, eventData.Time);
 
-        var requestConfiguration = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
+        var requestConfiguration = simulationContext.Payload.RequestConfigurations.GetEntity(request.RequestConfiguration);
 
         request.EndTime = eventData.Time;
         request.State = RequestState.Finished;
@@ -77,7 +77,7 @@ internal sealed class EndRequestEventHandler : EventHandler<Request>
             .Select(r => new RequestWithConfiguration
             {
                 Request = r,
-                RequestConfiguration = simulationContext.Payload.GetRequestConfiguration(r.RequestConfiguration)
+                RequestConfiguration = simulationContext.Payload.RequestConfigurations.GetEntity(r.RequestConfiguration)
             })
             .Where(r => {
                 return r.Request.State == RequestState.WaitingForDependencies ||

@@ -40,7 +40,7 @@ internal sealed class AgentsRepository : IAgentsRepository
     private Dictionary<string, List<Agent>> InitAgentsConfigurationIndex()
     {
         var local = new Dictionary<string, List<Agent>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var agentConfiguration in simulationContext.Payload.AgentConfigurationsCached)
+        foreach (var agentConfiguration in simulationContext.Payload.AgentConfigurations.Cache)
         {
             local.Add(agentConfiguration.Key, new List<Agent>());
         }
@@ -124,7 +124,7 @@ internal sealed class AgentsRepository : IAgentsRepository
             .Where(a => tempSet.Contains(a.Key))
             .Select(a => new AgentList
             {
-                AgentConfiguration = simulationContext.Payload.GetAgentConfiguration(a.Key),
+                AgentConfiguration = simulationContext.Payload.AgentConfigurations.GetEntity(a.Key),
                 Agents = a.Value,
                 ActiveAgentsCount = GetActiveAgentsCount(a.Value)
             })

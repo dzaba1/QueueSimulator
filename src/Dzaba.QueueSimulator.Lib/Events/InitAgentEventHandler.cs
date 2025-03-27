@@ -53,7 +53,7 @@ internal sealed class InitAgentEventHandler : EventHandler<Request>
             request.RequestConfiguration,
             eventData.Time);
 
-        var agentConfig = simulationContext.Payload.GetAgentConfiguration(agent.AgentConfiguration);
+        var agentConfig = simulationContext.Payload.AgentConfigurations.GetEntity(agent.AgentConfiguration);
 
         var endTime = eventData.Time;
         if (agentConfig.InitTime != null)

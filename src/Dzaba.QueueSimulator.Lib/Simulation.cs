@@ -68,7 +68,7 @@ internal sealed class Simulation : ISimulation
     private IEnumerable<RequestConfigurationStatistics> GetRequestDurationStats()
     {
         return requestsRepo.EnumerateRequests()
-            .Where(r => context.Payload.ShouldObserveRequest(r.RequestConfiguration))
+            .Where(r => context.Payload.RequestConfigurations.ShouldObserve(r.RequestConfiguration))
             .Where(r => r.State == RequestState.Finished)
             .GroupBy(r => r.RequestConfiguration, StringComparer.OrdinalIgnoreCase)
             .Select(g =>
@@ -100,7 +100,7 @@ internal sealed class Simulation : ISimulation
             var initTimes = initRequest.Distribution.GetInitTimes(StartTime, rand);
             foreach (var initTime in initTimes)
             {
-                var request = simulationPayload.GetRequestConfiguration(initRequest.Name);
+                var request = simulationPayload.RequestConfigurations.GetEntity(initRequest.Name);
                 var eventPayload = new QueueRequestEventPayload(request, new Pipeline(request, simulationPayload), null);
                 eventsQueue.AddQueueRequestQueueEvent(eventPayload, initTime);
             }

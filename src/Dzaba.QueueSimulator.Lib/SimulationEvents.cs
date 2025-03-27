@@ -42,7 +42,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = requestRepo.GetQueueLength(),
             Grouped = requestRepo.GroupQueueByConfiguration()
-                .Where(g => context.Payload.ShouldObserveRequest(g.Key))
+                .Where(g => context.Payload.RequestConfigurations.ShouldObserve(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
@@ -55,7 +55,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = agentsRepo.GetActiveAgentsCount(),
             Grouped = agentsRepo.GetActiveAgentsByConfigurationCount()
-                .Where(g => context.Payload.ShouldObserveAgent(g.Key))
+                .Where(g => context.Payload.AgentConfigurations.ShouldObserve(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
@@ -68,7 +68,7 @@ internal sealed class SimulationEvents : ISimulationEvents
         {
             Total = requestRepo.GetRunningRequestCount(),
             Grouped = requestRepo.GroupRunningRequestsByConfiguration()
-                .Where(g => context.Payload.ShouldObserveRequest(g.Key))
+                .Where(g => context.Payload.RequestConfigurations.ShouldObserve(g.Key))
                 .Select(g => new NamedQueueData<int>
                 {
                     Name = g.Key,
@@ -87,14 +87,14 @@ internal sealed class SimulationEvents : ISimulationEvents
             RunningRequests = runningRequests
         };
 
-        if (context.Payload.SimulationSettings.IncludeAllAgents)
+        if (context.Payload.SimulationSettings.ReportSettings.IncludeAllAgents)
         {
             timedEvent.AllAgents = agentsRepo.EnumerateAgents()
                 .Select(a => a.ShallowCopy())
                 .ToArray();
         }
 
-        if (context.Payload.SimulationSettings.IncludeAllRequests)
+        if (context.Payload.SimulationSettings.ReportSettings.IncludeAllRequests)
         {
             timedEvent.AllRequests = requestRepo.EnumerateRequests()
                 .Select(a => a.ShallowCopy())

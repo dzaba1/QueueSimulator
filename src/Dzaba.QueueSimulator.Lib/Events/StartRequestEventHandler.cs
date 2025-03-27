@@ -59,7 +59,7 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
 
         SetCompositeStart(request, eventData);
 
-        var requestConfig = simulationContext.Payload.GetRequestConfiguration(request.RequestConfiguration);
+        var requestConfig = simulationContext.Payload.RequestConfigurations.GetEntity(request.RequestConfiguration);
         var requestEndTime = eventData.Time + requestConfig.Duration.Get(rand);
 
         eventQueue.AddEndRequestQueueEvent(request, requestEndTime);
@@ -76,7 +76,7 @@ internal sealed class StartRequestEventHandler : EventHandler<Request>
             .Select(r => new RequestWithConfiguration
             {
                 Request = r,
-                RequestConfiguration = simulationContext.Payload.GetRequestConfiguration(r.RequestConfiguration)
+                RequestConfiguration = simulationContext.Payload.RequestConfigurations.GetEntity(r.RequestConfiguration)
             })
             .Where(r => r.RequestConfiguration.IsComposite)
             .Where(r => r.Request.State == RequestState.WaitingForDependencies)

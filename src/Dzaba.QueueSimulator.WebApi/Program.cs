@@ -18,8 +18,11 @@ var outputTemplate = "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] ({S
 var logger = new LoggerConfiguration()
     .Enrich.WithThreadId()
     .MinimumLevel.Debug()
-    .WriteTo.Console(LogEventLevel.Information, outputTemplate: outputTemplate)
-    .WriteTo.File(logFile, rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, outputTemplate: outputTemplate)
+    .WriteTo.Async(a => a.Console(LogEventLevel.Information, outputTemplate: outputTemplate))
+    .WriteTo.Async(a => a.File(logFile,
+        rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true,
+        fileSizeLimitBytes: 8 * 1024 * 1024, retainedFileCountLimit: 15,
+        outputTemplate: outputTemplate))
     .CreateLogger();
 builder.Services.AddLogging(l => l.AddSerilog(logger, true));
 

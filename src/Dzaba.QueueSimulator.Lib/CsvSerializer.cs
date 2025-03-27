@@ -98,7 +98,15 @@ internal sealed class CsvSerializer : ICsvSerializer
 
     private static IEnumerable<string> GetHeaders(SimulationSettings simulationSettings)
     {
-        yield return "Timestamp";
+        if (simulationSettings.ReportSettings.CsvSaveTimestampTicks)
+        {
+            yield return "Timestamp_Ticks";
+        }
+        else
+        {
+            yield return "Timestamp";
+        }
+        
         yield return "Name";
         yield return "Message";
 
@@ -128,7 +136,15 @@ internal sealed class CsvSerializer : ICsvSerializer
 
     private static IEnumerable<object> GetValues(TimeEventData timeEvent, SimulationSettings simulationSettings)
     {
-        yield return timeEvent.Timestamp;
+        if (simulationSettings.ReportSettings.CsvSaveTimestampTicks)
+        {
+            yield return timeEvent.Timestamp.Ticks;
+        }
+        else
+        {
+            yield return timeEvent.Timestamp;
+        }
+            
         yield return timeEvent.Name;
         yield return timeEvent.Message;
 

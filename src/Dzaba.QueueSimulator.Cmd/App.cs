@@ -1,12 +1,9 @@
 ﻿using Dzaba.QueueSimulator.Lib.Model;
 using Dzaba.QueueSimulator.Lib;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System;
 using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
 using System.Linq;
 
 namespace Dzaba.QueueSimulator.Cmd;
@@ -50,6 +47,15 @@ internal sealed class App : IApp
             SaveResult(result, settings, output, format);
 
             return ExitCode.Ok;
+        }
+        catch (ExitCodeException eEx)
+        {
+            foreach (var error in eEx.Errors)
+            {
+                logger.LogError("{ExitCode}: {Error}", error.Key, error.Value);
+            }
+            return eEx.Errors.First().Key;
+            
         }
         catch (Exception ex)
         {

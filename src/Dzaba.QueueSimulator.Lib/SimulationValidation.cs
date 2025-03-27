@@ -38,7 +38,7 @@ internal sealed class SimulationValidation : ISimulationValidation
 
         if (simulationPayload.SimulationSettings.ReportSettings.AgentConfigurationsToObserve != null)
         {
-            ValidateRequestsExist(simulationPayload, simulationPayload.SimulationSettings.ReportSettings.AgentConfigurationsToObserve, errors);
+            ValidateAgentsExist(simulationPayload, simulationPayload.SimulationSettings.ReportSettings.AgentConfigurationsToObserve, errors);
         }
 
         if (errors.Any())

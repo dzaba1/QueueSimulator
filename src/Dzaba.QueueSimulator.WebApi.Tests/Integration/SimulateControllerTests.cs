@@ -3,6 +3,7 @@ using Dzaba.QueueSimulator.Lib.Model.Distribution;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Dzaba.QueueSimulator.WebApi.Tests.Integration;
@@ -10,6 +11,28 @@ namespace Dzaba.QueueSimulator.WebApi.Tests.Integration;
 [TestFixture]
 public class SimulateControllerTests : ControllerTestFixture
 {
+    private void AssertCsvFieldsCount(string csv)
+    {
+        using var reader = new StringReader(csv);
+        int? firstCount = null;
+
+        var line = reader.ReadLine();
+        if (line != null)
+        {
+            var count = line.Split(',').Length;
+            if (firstCount == null)
+            {
+                firstCount = count;
+            }
+            else
+            {
+                count.Should().Be(firstCount.Value);
+            }
+
+            line = reader.ReadLine();
+        }
+    }
+
     [Test]
     public async Task Csv_WhenSomeModel_ThenCsv()
     {
@@ -89,6 +112,7 @@ public class SimulateControllerTests : ControllerTestFixture
 
         using var resp = await client.PostAsync("/simulate/csv", body);
         var result = await ReadFullStringAsync(resp);
+        AssertCsvFieldsCount(result);
         result.Should().StartWith("Timestamp,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,AvgFinishedRequestDuration_Full_pipeline,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline,RunningRequests_Build,RequestsQueue_Build,RunningRequests_Tests,RequestsQueue_Tests,RunningRequests_Publish,RequestsQueue_Publish");
         result.Should().EndWith("\"01/01/2025 07:44:00\",\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0,0,0,0,0,0,0");
     }
@@ -183,6 +207,7 @@ public class SimulateControllerTests : ControllerTestFixture
 
         using var resp = await client.PostAsync("/simulate/csv", body);
         var result = await ReadFullStringAsync(resp);
+        AssertCsvFieldsCount(result);
         result.Should().StartWith("Timestamp_Ticks,Name,Message,TotalRunningAgents,TotalRunningRequests,TotalRequestsQueue,AvgFinishedRequestDuration_Full_pipeline,RunningAgent_Agent1,RunningRequests_Full_pipeline,RequestsQueue_Full_pipeline");
         result.Should().EndWith("638713142400000000,\"FinishRequest\",\"Finished the request 77 [Full pipeline].\",0,0,0,\"00:07:00\",0,0,0");
     }
